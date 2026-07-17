@@ -1,0 +1,15 @@
+# Learning English with Coach
+
+> Plataforma de ensino de inglês assistida por IA (AI Coach) do nível A1 ao C2, com aulas personalizadas para crianças, adolescentes e adultos, sala de conversa moderada e certificados CEFR.
+
+## Pages
+
+- [Home](/): Visão geral da plataforma, modos por idade e destaque das funcionalidades.
+- [Pricing](/pricing): Planos Essencial, Premium e VIP nos ciclos mensal, trimestral e semestral (preços em Kz).
+- [AI Coach](/ai-coach): Professor de inglês assistido por IA, disponível 24/7 para prática de conversação e correção.
+- [Community](/community): Salas de prática de inglês separadas por faixa etária (crianças, adolescentes, adultos) com moderação por IA.
+- [Games](/games): Jogos de vocabulário, pronúncia e gramática para reforçar o aprendizado.
+
+## Optional
+
+- [Lesson demo](/lesson): Exemplo de aula interativa com vocabulário, diálogo e prática de pronúncia.

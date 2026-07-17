@@ -1,0 +1,234 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Learning English with Coach — Design System
+ * Palette: Sunset Blaze (#ff6b35, #f7931e, #e84393, #6c5ce7)
+ * Type: Sora (display) + Manrope (body)
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 16px);
+  --radius-4xl: calc(var(--radius) + 24px);
+
+  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sunset: var(--sunset);
+  --color-amber: var(--amber);
+  --color-magenta: var(--magenta);
+  --color-violet: var(--violet);
+  --color-ink: var(--ink);
+  --color-cream: var(--cream);
+
+  --color-chart-1: var(--sunset);
+  --color-chart-2: var(--amber);
+  --color-chart-3: var(--magenta);
+  --color-chart-4: var(--violet);
+  --color-chart-5: var(--ink);
+}
+
+:root {
+  --radius: 0.875rem;
+
+  /* Professional base — Navy Trust + teal accent (default: admin / adults) */
+  --sunset:  oklch(0.55 0.14 250);   /* indigo/steel */
+  --amber:   oklch(0.72 0.12 220);   /* steel blue */
+  --magenta: oklch(0.55 0.11 210);   /* deep teal */
+  --violet:  oklch(0.40 0.12 260);   /* deep indigo */
+  --ink:     oklch(0.18 0.03 260);
+  --cream:   oklch(0.985 0.005 250);
+
+  --background: oklch(0.985 0.005 250);
+  --foreground: oklch(0.18 0.03 260);
+
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+
+  --primary: var(--violet);
+  --primary-foreground: oklch(0.99 0.005 250);
+
+  --secondary: oklch(0.96 0.01 250);
+  --secondary-foreground: var(--foreground);
+
+  --muted: oklch(0.965 0.008 250);
+  --muted-foreground: oklch(0.5 0.02 260);
+
+  --accent: oklch(0.94 0.03 220 / 0.7);
+  --accent-foreground: var(--foreground);
+
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  --border: oklch(0.9 0.01 250);
+  --input: oklch(0.9 0.01 250);
+  --ring: var(--violet);
+
+  /* Gradients */
+  --gradient-sunset: linear-gradient(135deg, var(--sunset) 0%, var(--amber) 50%, var(--magenta) 100%);
+  --gradient-aurora: linear-gradient(135deg, var(--magenta) 0%, var(--violet) 100%);
+  --gradient-warm:   linear-gradient(135deg, var(--amber) 0%, var(--sunset) 100%);
+  --gradient-hero:   radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--amber) 40%, transparent) 0%, transparent 60%),
+                     radial-gradient(900px 500px at 90% 10%, color-mix(in oklab, var(--magenta) 35%, transparent) 0%, transparent 60%),
+                     radial-gradient(700px 500px at 60% 100%, color-mix(in oklab, var(--violet) 30%, transparent) 0%, transparent 60%);
+
+  /* Shadows */
+  --shadow-soft: 0 10px 30px -12px color-mix(in oklab, var(--violet) 30%, transparent);
+  --shadow-glow: 0 20px 60px -20px color-mix(in oklab, var(--magenta) 40%, transparent);
+  --shadow-card: 0 8px 24px -12px oklch(0.2 0.03 260 / 0.15);
+}
+
+/* =========================================================
+   Age-group themes — override brand accents only.
+   Base (root) stays professional (navy/indigo) for admin
+   and unauthenticated pages.
+   ========================================================= */
+
+/* Kids — playful, warm, high energy */
+.theme-kids {
+  --sunset:  oklch(0.75 0.19 45);    /* orange */
+  --amber:   oklch(0.82 0.16 85);    /* sunny yellow */
+  --magenta: oklch(0.68 0.22 350);   /* pink */
+  --violet:  oklch(0.62 0.20 300);   /* fun purple */
+  --primary: var(--sunset);
+  --ring: var(--magenta);
+  --accent: oklch(0.95 0.06 85 / 0.7);
+  --radius: 1.25rem;
+}
+
+/* Teens — vibrant, modern, electric */
+.theme-teens {
+  --sunset:  oklch(0.68 0.22 20);    /* coral */
+  --amber:   oklch(0.75 0.18 55);    /* orange */
+  --magenta: oklch(0.60 0.25 340);   /* hot pink */
+  --violet:  oklch(0.55 0.24 285);   /* electric violet */
+  --primary: var(--magenta);
+  --ring: var(--violet);
+  --accent: oklch(0.94 0.06 340 / 0.7);
+  --radius: 1rem;
+}
+
+/* Adults — refined, calm, professional (matches base) */
+.theme-adults {
+  --sunset:  oklch(0.55 0.14 250);
+  --amber:   oklch(0.72 0.12 220);
+  --magenta: oklch(0.55 0.11 210);
+  --violet:  oklch(0.40 0.12 260);
+  --primary: var(--violet);
+  --ring: var(--violet);
+  --accent: oklch(0.94 0.03 220 / 0.7);
+  --radius: 0.875rem;
+}
+
+.dark {
+  --background: oklch(0.16 0.03 285);
+  --foreground: oklch(0.98 0.01 70);
+  --card: oklch(0.21 0.035 285);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.21 0.035 285);
+  --popover-foreground: var(--foreground);
+  --primary: var(--sunset);
+  --primary-foreground: oklch(0.15 0.02 285);
+  --secondary: oklch(0.26 0.04 285);
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.24 0.03 285);
+  --muted-foreground: oklch(0.72 0.02 285);
+  --accent: oklch(0.3 0.08 355 / 0.4);
+  --accent-foreground: var(--foreground);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: var(--magenta);
+}
+
+@utility bg-gradient-sunset {
+  background-image: var(--gradient-sunset);
+}
+@utility bg-gradient-aurora {
+  background-image: var(--gradient-aurora);
+}
+@utility bg-gradient-warm {
+  background-image: var(--gradient-warm);
+}
+@utility bg-hero {
+  background-image: var(--gradient-hero);
+}
+@utility text-gradient-sunset {
+  background-image: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@utility text-gradient-aurora {
+  background-image: var(--gradient-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+@utility shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
+@utility glass {
+  background-color: color-mix(in oklab, var(--card) 70%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}

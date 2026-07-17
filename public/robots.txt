@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /certificate
+Disallow: /placement
+
+Sitemap: https://coach-speak-bright.lovable.app/sitemap.xml
