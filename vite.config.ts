@@ -7,6 +7,10 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  // The application is self-hosted on the LearningCoach VPS. Nitro's default
+  // target for this Lovable project is Cloudflare Workers, which is not
+  // executable by Node.js on the server.
+  nitro: { preset: "node-server" },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

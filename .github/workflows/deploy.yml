@@ -1,0 +1,66 @@
+name: Deploy LearningCoach
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Package production output
+        run: tar -C .output -czf learningcoach-${{ github.sha }}.tar.gz .
+
+      - name: Configure deployment SSH key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H 64.31.22.234 >> ~/.ssh/known_hosts
+
+      - name: Upload release
+        run: |
+          scp learningcoach-${{ github.sha }}.tar.gz \
+            learningcoach@64.31.22.234:/home/learningcoach/apps/learningcoach/releases/
+
+      - name: Activate release
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          ssh learningcoach@64.31.22.234 "RELEASE_SHA=$RELEASE_SHA bash -s" <<'REMOTE'
+          set -euo pipefail
+          app_dir=/home/learningcoach/apps/learningcoach
+          release_dir="$app_dir/releases/$RELEASE_SHA"
+          archive="$app_dir/releases/learningcoach-$RELEASE_SHA.tar.gz"
+
+          mkdir -p "$release_dir"
+          tar -xzf "$archive" -C "$release_dir"
+          rm -f "$archive"
+          ln -sfn "$release_dir" "$app_dir/current"
+          export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+          export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
+          systemctl --user daemon-reload
+          systemctl --user restart learningcoach
+          curl --fail --silent --show-error http://127.0.0.1:3000/ > /dev/null
+          REMOTE
