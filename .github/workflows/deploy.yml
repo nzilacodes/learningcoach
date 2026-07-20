@@ -62,5 +62,12 @@ jobs:
           export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
           systemctl --user daemon-reload
           systemctl --user restart learningcoach
-          curl --fail --silent --show-error http://127.0.0.1:3000/ > /dev/null
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "LearningCoach did not become healthy within 60 seconds." >&2
+          exit 1
           REMOTE
