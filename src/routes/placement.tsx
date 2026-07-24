@@ -24,8 +24,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { useAwardXp } from "@/lib/learning";
+import { awardActivity } from "@/lib/gamification";
 import { supabase } from "@/integrations/supabase/client";
+import { apiFetch, apiFetchFormData } from "@/lib/api/client";
 import { toast } from "sonner";
 import {
   GRAMMAR,
@@ -35,7 +36,6 @@ import {
   WRITING,
   SPEAKING,
   PRONUNCIATION,
-  CEFR_WEIGHT,
   type Cefr,
 } from "@/lib/diagnostic-bank";
 
@@ -82,24 +82,12 @@ interface Report {
   }>;
 }
 
-/* ---------------- Weighted MCQ scorer ---------------- */
-
-function scoreMcq(items: { level: Cefr; correct: number }[], answers: (number | null)[]): number {
-  const totalWeight = items.reduce((s, it) => s + CEFR_WEIGHT[it.level], 0);
-  const earned = items.reduce(
-    (s, it, i) => (answers[i] === it.correct ? s + CEFR_WEIGHT[it.level] : s),
-    0,
-  );
-  return totalWeight ? Math.round((earned / totalWeight) * 100) : 0;
-}
-
 /* ---------------- Root component ---------------- */
 
 function DiagnosticPage() {
   const { locale } = useLocale();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const awardXp = useAwardXp();
 
   const [section, setSection] = useState<Section>("intro");
   const [grammarAns, setGrammarAns] = useState<(number | null)[]>(GRAMMAR.map(() => null));
@@ -160,14 +148,7 @@ function DiagnosticPage() {
     console.log("[placement] submitting evaluation…");
 
 
-    const scores = {
-      grammar: scoreMcq(GRAMMAR, grammarAns),
-      vocabulary: scoreMcq(VOCABULARY, vocabAns),
-      reading: scoreMcq(readingQs, readingAns),
-      listening: scoreMcq(LISTENING, listeningAns),
-    };
-
-    // Get profile context for personalization.
+    // Get profile context for personalization (grading itself happens server-side).
     const { data: profile } = await supabase
       .from("profiles")
       .select("age,native_language,learning_goal,interests")
@@ -175,63 +156,25 @@ function DiagnosticPage() {
       .maybeSingle();
 
     try {
-      const res = await fetch("/api/diagnostic-evaluate", {
+      // Server recomputes grammar/vocab/reading/listening from raw answers
+      // against its own answer key, and grades writing/speaking/pronunciation
+      // itself — it also persists diagnostic_results + profiles.cefr_level,
+      // so nothing here is trusted from the client anymore.
+      const data = await apiFetch<Report>("/v1/assessments/diagnostic", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          scores,
-          writing: WRITING.map((w, i) => ({ id: w.id, prompt: w.prompt, text: writingAns[i] })),
-          speaking: SPEAKING.map((s, i) => ({ id: s.id, prompt: s.prompt, transcript: speakingAns[i] })),
-          pronunciation: PRONUNCIATION.map((p, i) => ({
-            id: p.id,
-            expected: p.sentence,
-            transcribed: pronAns[i],
-          })),
-          profile: profile ?? {},
-        }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const data = (await res.json()) as Report;
-
-      // Persist to diagnostic_results.
-      const { error: insErr } = await supabase.from("diagnostic_results").insert({
-        user_id: user.id,
-        cefr_level: data.cefr_level,
-        overall_score: data.scores.overall,
-        grammar_score: data.scores.grammar,
-        vocabulary_score: data.scores.vocabulary,
-        reading_score: data.scores.reading,
-        listening_score: data.scores.listening,
-        writing_score: data.scores.writing,
-        speaking_score: data.scores.speaking,
-        pronunciation_score: data.scores.pronunciation,
-        strengths: data.strengths,
-        weaknesses: data.weaknesses,
-        feedback: data.feedback,
-        learning_plan: data.learning_plan,
-        raw_answers: {
-          grammar: grammarAns,
-          vocabulary: vocabAns,
-          reading: readingAns,
-          listening: listeningAns,
+          grammarAnswers: grammarAns,
+          vocabAnswers: vocabAns,
+          readingAnswers: readingAns,
+          listeningAnswers: listeningAns,
           writing: writingAns,
           speaking: speakingAns,
           pronunciation: pronAns,
-        },
+          profile: profile ?? {},
+        }),
       });
-      if (insErr) throw insErr;
 
-      // Update profile: CEFR level + advance onboarding if still in placement.
-      const { data: current } = await supabase
-        .from("profiles")
-        .select("onboarding_status")
-        .eq("id", user.id)
-        .maybeSingle();
-      const patch: { cefr_level: string; onboarding_status?: string } = { cefr_level: data.cefr_level };
-      if (current?.onboarding_status === "placement") patch.onboarding_status = "plan";
-      await supabase.from("profiles").update(patch).eq("id", user.id);
-
-      awardXp.mutate(150);
+      awardActivity("diagnostic_complete", { silent: true }).catch(() => {});
       setReport(data);
       setSection("report");
       toast.success(locale === "pt" ? `Nível ${data.cefr_level} identificado!` : `Level ${data.cefr_level} identified!`);
@@ -549,13 +492,10 @@ function ListeningSection({
   const play = async (idx: number) => {
     setPlayingIdx(idx);
     try {
-      const res = await fetch("/api/tts", {
+      const blob = await apiFetch<Blob>("/v1/audio/speech", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: LISTENING[idx].audio }),
       });
-      if (!res.ok) throw new Error(await res.text());
-      const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       if (audioRef.current) audioRef.current.pause();
       const audio = new Audio(url);
@@ -773,9 +713,7 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
       }
       const fd = new FormData();
       fd.append("file", blob, "recording.wav");
-      const res = await fetch("/api/stt", { method: "POST", body: fd });
-      if (!res.ok) throw new Error(await res.text());
-      const data = (await res.json()) as { text: string };
+      const data = await apiFetchFormData<{ text: string }>("/v1/audio/transcriptions", fd);
       const text = (data.text ?? "").trim();
       if (!text) {
         toast.error(locale === "pt" ? "Não conseguimos ouvir a sua voz. Tente novamente mais perto do microfone." : "We couldn't hear your voice. Try again closer to the mic.");

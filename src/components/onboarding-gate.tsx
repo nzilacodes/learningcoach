@@ -1,8 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
 import { useAgeTheme } from "@/lib/age-theme";
 
 // Routes that are always accessible (no login required for content).
@@ -32,28 +30,13 @@ export function OnboardingGate() {
   const { setTheme } = useAgeTheme();
   const themeInitialized = useRef(false);
 
-  const { data: profile } = useQuery({
-    queryKey: ["profile-gate", user?.id],
-    enabled: !!user,
-    staleTime: 10_000,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("age,onboarding_status")
-        .eq("id", user!.id)
-        .maybeSingle();
-      return data;
-    },
-  });
-
   useEffect(() => {
     if (loading || !user) return;
-    if (profile === undefined) return;
 
     // Admin bypasses onboarding entirely.
     if (isAdmin) return;
 
-    const status = profile?.onboarding_status ?? "profile";
+    const status = user.onboardingStatus ?? "profile";
     const isPublic = PUBLIC_PATHS.has(path);
     const isOnboarding = path === ONBOARDING_PATH;
 
@@ -72,11 +55,11 @@ export function OnboardingGate() {
     }
 
     // Apply age theme once.
-    if (profile?.age != null && !themeInitialized.current) {
-      setTheme(ageToRoom(profile.age));
+    if (user.age != null && !themeInitialized.current) {
+      setTheme(ageToRoom(user.age));
       themeInitialized.current = true;
     }
-  }, [loading, user, profile, path, navigate, setTheme, isAdmin]);
+  }, [loading, user, path, navigate, setTheme, isAdmin]);
 
   return null;
 }

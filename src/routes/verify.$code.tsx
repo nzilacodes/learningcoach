@@ -5,12 +5,30 @@ import { SiteFooter } from "@/components/site-footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { verifyCertificate } from "@/lib/certificates.functions";
+import { apiFetch, ApiError } from "@/lib/api/client";
+
+type VerifiedCertificate = {
+  verification_code: string;
+  full_name: string | null;
+  level: string;
+  course_title: string | null;
+  score: number | null;
+  issued_at: string;
+  signature: string | null;
+  valid: boolean;
+};
 
 export const Route = createFileRoute("/verify/$code")({
   loader: async ({ params }) => {
-    const cert = await verifyCertificate({ data: { code: params.code } });
-    return { cert };
+    try {
+      const cert = await apiFetch<VerifiedCertificate>(
+        `/v1/certificates/verify/${encodeURIComponent(params.code)}`,
+      );
+      return { cert };
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) return { cert: null };
+      throw e;
+    }
   },
   errorComponent: ({ error, reset }) => (
     <div className="min-h-screen">

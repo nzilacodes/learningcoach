@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { toast } from "sonner";
 
 export type ActivitySource =
@@ -8,7 +8,8 @@ export type ActivitySource =
   | "reading"
   | "speaking"
   | "listening"
-  | "daily_study";
+  | "daily_study"
+  | "diagnostic_complete";
 
 export type AwardResult = {
   xp: number;
@@ -19,35 +20,27 @@ export type AwardResult = {
   coins_gained: number;
 };
 
-const DEFAULT_REWARDS: Record<ActivitySource, { xp: number; coins: number }> = {
-  watch_video: { xp: 20, coins: 5 },
-  lesson_complete: { xp: 50, coins: 20 },
-  exercise: { xp: 15, coins: 5 },
-  reading: { xp: 40, coins: 15 },
-  speaking: { xp: 30, coins: 10 },
-  listening: { xp: 25, coins: 8 },
-  daily_study: { xp: 10, coins: 5 },
-};
-
-/** Award XP + coins to the current user. Shows toast + optional level-up animation. */
+/**
+ * Award XP + coins to the current user. Shows toast + optional level-up
+ * animation. The reward amount per source is decided server-side (see
+ * learningcoachbackEnd's gamification module) — this used to accept
+ * xp/coins overrides that the award_activity RPC trusted verbatim, which
+ * let any authenticated caller inflate their own XP arbitrarily.
+ */
 export async function awardActivity(
   source: ActivitySource,
-  overrides: { xp?: number; coins?: number; meta?: Record<string, unknown>; silent?: boolean } = {},
+  overrides: { meta?: Record<string, unknown>; silent?: boolean } = {},
 ): Promise<AwardResult | null> {
-  const base = DEFAULT_REWARDS[source];
-  const xp = overrides.xp ?? base.xp;
-  const coins = overrides.coins ?? base.coins;
-  const { data, error } = await supabase.rpc("award_activity", {
-    _source: source,
-    _xp: xp,
-    _coins: coins,
-    _meta: (overrides.meta ?? {}) as never,
-  });
-  if (error) {
-    if (!overrides.silent) console.error("awardActivity", error.message);
+  let r: AwardResult;
+  try {
+    r = await apiFetch<AwardResult>("/v1/xp/events", {
+      method: "POST",
+      body: JSON.stringify({ source, meta: overrides.meta ?? {} }),
+    });
+  } catch (e) {
+    if (!overrides.silent) console.error("awardActivity", e instanceof Error ? e.message : e);
     return null;
   }
-  const r = data as AwardResult;
   if (!overrides.silent && r) {
     if (r.level_up) {
       toast.success(`🎉 Nível ${r.level} desbloqueado!`, {

@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import {
   CreditCard, Landmark, Smartphone, Hash, Copy, Check, Loader2,
   ShieldCheck, ArrowLeft, Sparkles,
@@ -14,14 +13,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
-import {
-  listPlans, createSubscriptionOrder, simulatePaymentConfirmation,
-  type PlanRow, type PaymentMethod, type OrderInfo,
-} from "@/lib/subscriptions.functions";
+import { apiFetch } from "@/lib/api/client";
+import type { PlanRow, PaymentMethod, OrderInfo } from "@/lib/api/billing-types";
 
 export const Route = createFileRoute("/checkout/$planId")({
   loader: async ({ params }) => {
-    const plans = await listPlans();
+    const plans = await apiFetch<PlanRow[]>("/v1/plans");
     const plan = plans.find((p) => p.id === params.planId);
     if (!plan) throw new Error("Plano não encontrado");
     return { plan };
@@ -57,8 +54,6 @@ const METHODS: {
 function CheckoutPage() {
   const { plan } = Route.useLoaderData();
   const navigate = useNavigate();
-  const createFn = useServerFn(createSubscriptionOrder);
-  const simulateFn = useServerFn(simulatePaymentConfirmation);
 
   const [method, setMethod] = useState<PaymentMethod>("reference");
   const [phone, setPhone] = useState("");
@@ -69,7 +64,10 @@ function CheckoutPage() {
   async function submit() {
     setLoading(true);
     try {
-      const o = await createFn({ data: { planId: plan.id, method, phone: phone || null } });
+      const o = await apiFetch<OrderInfo>("/v1/checkout-sessions", {
+        method: "POST",
+        body: JSON.stringify({ planId: plan.id, method, phone: phone || undefined }),
+      });
       setOrder(o);
       toast.success("Pedido criado. Complete o pagamento.");
     } catch (e) {
@@ -83,7 +81,7 @@ function CheckoutPage() {
     if (!order) return;
     setConfirming(true);
     try {
-      await simulateFn({ data: { paymentId: order.payment_id } });
+      await apiFetch(`/v1/payments/${order.payment_id}/simulate`, { method: "POST" });
       toast.success("Pagamento confirmado — cursos liberados!");
       navigate({ to: "/subscription" });
     } catch (e) {

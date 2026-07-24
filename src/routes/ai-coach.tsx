@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocale } from "@/lib/i18n";
+import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/ai-coach")({
   component: AICoachPage,
@@ -23,10 +24,10 @@ export const Route = createFileRoute("/ai-coach")({
         content:
           "Prática guiada de inglês com IA: gramática, pronúncia, vocabulário e conversação livre.",
       },
-      { property: "og:url", content: "https://coach-speak-bright.lovable.app/ai-coach" },
+      { property: "og:url", content: `${SITE_URL}/ai-coach` },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "canonical", href: "https://coach-speak-bright.lovable.app/ai-coach" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/ai-coach` }],
   }),
 });
 

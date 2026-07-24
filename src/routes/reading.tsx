@@ -196,8 +196,7 @@ function ReadingPage() {
       });
       setReport(r);
       setAttempts((n) => n + 1);
-      const bonus = Math.round((r.overall ?? 0) / 3);
-      awardActivity("reading", { xp: 40 + bonus, coins: 15 }).catch(() => {});
+      awardActivity("reading", { meta: { overall: r.overall ?? 0 } }).catch(() => {});
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha na análise");
     } finally {

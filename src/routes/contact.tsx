@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useLocale } from "@/lib/i18n";
+import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/contact")({
   component: ContactPage,
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/contact")({
       },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "canonical", href: "https://coach-speak-bright.lovable.app/contact" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/contact` }],
   }),
 });
 

@@ -20,6 +20,7 @@ import { useLocale } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { useAgeGroup } from "@/lib/use-age-group";
 import { AGE_TRACKS, AGE_GROUP_LABEL } from "@/lib/age-tracks";
+import { SITE_URL } from "@/lib/site-url";
 
 
 export const Route = createFileRoute("/games")({
@@ -34,10 +35,10 @@ export const Route = createFileRoute("/games")({
       },
       { property: "og:title", content: "Jogos de inglês — Learning English with Coach" },
       { property: "og:description", content: "Vocabulário, pronúncia e gramática em jogos rápidos." },
-      { property: "og:url", content: "https://coach-speak-bright.lovable.app/games" },
+      { property: "og:url", content: `${SITE_URL}/games` },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "canonical", href: "https://coach-speak-bright.lovable.app/games" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/games` }],
   }),
 });
 

@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/lib/i18n";
+import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/about")({
   component: AboutPage,
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/about")({
       },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "canonical", href: "https://coach-speak-bright.lovable.app/about" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/about` }],
   }),
 });
 

@@ -20,37 +20,6 @@ export function useUserStats() {
   });
 }
 
-export function useAwardXp() {
-  const { user } = useAuth();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (delta: number) => {
-      if (!user) return;
-      const today = new Date().toISOString().slice(0, 10);
-      const { data: existing } = await supabase
-        .from("user_stats")
-        .select("xp,streak_days,last_activity_date")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      const prev = existing ?? { xp: 0, streak_days: 0, last_activity_date: null as string | null };
-      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-      let streak = prev.streak_days;
-      if (prev.last_activity_date !== today) {
-        streak = prev.last_activity_date === yesterday ? streak + 1 : 1;
-      }
-      const { error } = await supabase.from("user_stats").upsert({
-        user_id: user.id,
-        xp: prev.xp + delta,
-        streak_days: streak,
-        last_activity_date: today,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["user_stats", user?.id] }),
-  });
-}
-
 // ---------- LESSON PROGRESS ----------
 export function useLessonProgress() {
   const { user } = useAuth();
@@ -64,28 +33,6 @@ export function useLessonProgress() {
         .eq("user_id", user!.id);
       return data ?? [];
     },
-  });
-}
-
-export function useSaveUnitProgress() {
-  const { user } = useAuth();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (input: { unitId: string; lessonId?: string; pct: number }) => {
-      if (!user) return;
-      const payload = {
-        user_id: user.id,
-        unit_id: input.unitId,
-        lesson_id: input.lessonId ?? null,
-        progress_pct: Math.max(0, Math.min(100, Math.round(input.pct))),
-        completed_at: input.pct >= 100 ? new Date().toISOString() : null,
-      };
-      const { error } = await supabase
-        .from("lesson_progress")
-        .upsert(payload, { onConflict: "user_id,unit_id,lesson_id" });
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["lesson_progress", user?.id] }),
   });
 }
 

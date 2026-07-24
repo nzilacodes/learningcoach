@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import {
   Crown, Calendar, FileText, Receipt, Clock, CheckCircle2,
   XCircle, Loader2, Download,
@@ -11,10 +10,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  listMyPayments, listMySubscriptions,
-  type PaymentRow, type SubscriptionRow, type PlanRow,
-} from "@/lib/subscriptions.functions";
+import { apiFetch } from "@/lib/api/client";
+import type { PaymentRow, SubscriptionRow, PlanRow } from "@/lib/api/billing-types";
 
 export const Route = createFileRoute("/subscription")({
   component: SubscriptionPage,
@@ -30,8 +27,6 @@ type SubWithPlan = SubscriptionRow & { subscription_plans: PlanRow | null };
 type PayWithPlan = PaymentRow & { subscription_plans: Pick<PlanRow, "tier" | "billing_cycle" | "price_kz" | "duration_days"> | null };
 
 function SubscriptionPage() {
-  const subsFn = useServerFn(listMySubscriptions);
-  const paysFn = useServerFn(listMyPayments);
   const [subs, setSubs] = useState<SubWithPlan[]>([]);
   const [pays, setPays] = useState<PayWithPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,14 +34,17 @@ function SubscriptionPage() {
   useEffect(() => {
     (async () => {
       try {
-        const [s, p] = await Promise.all([subsFn(), paysFn()]);
-        setSubs(s as SubWithPlan[]);
-        setPays(p as PayWithPlan[]);
+        const [s, p] = await Promise.all([
+          apiFetch<SubWithPlan[]>("/v1/me/subscriptions"),
+          apiFetch<PayWithPlan[]>("/v1/me/payments"),
+        ]);
+        setSubs(s);
+        setPays(p);
       } finally {
         setLoading(false);
       }
     })();
-     
+
   }, []);
 
   const active = subs.find((s) => s.status === "active");

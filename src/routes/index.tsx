@@ -24,6 +24,7 @@ import heroStudents from "@/assets/hero-students.jpg";
 import panelKids from "@/assets/panel-kids.jpg";
 import panelTeens from "@/assets/panel-teens.jpg";
 import panelAdults from "@/assets/panel-adults.jpg";
+import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -42,10 +43,10 @@ export const Route = createFileRoute("/")({
           "Aprenda inglês mais rápido. Fale com confiança. Aprenda com Coach — para crianças, adolescentes e adultos.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://coach-speak-bright.lovable.app/" },
+      { property: "og:url", content: SITE_URL },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://coach-speak-bright.lovable.app/" }],
+    links: [{ rel: "canonical", href: SITE_URL }],
   }),
 });
 

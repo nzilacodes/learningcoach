@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
+import { apiFetch } from "@/lib/api/client";
 import {
-  getWordData,
   assessPronunciation,
   type WordEntry,
   type PronScore,
@@ -38,19 +38,18 @@ export function WordCard({ word, lessonId = null, showTranslation = true }: Prop
   const [data, setData] = useState<WordEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [practiceOpen, setPracticeOpen] = useState(false);
-  const fetchWord = useServerFn(getWordData);
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    fetchWord({ data: { word } })
+    apiFetch<WordEntry>(`/v1/dictionary/${encodeURIComponent(word)}`)
       .then((d) => alive && setData(d))
       .catch((e) => alive && toast.error(`Erro: ${e.message ?? e}`))
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
     };
-  }, [word, fetchWord]);
+  }, [word]);
 
   const play = (accent: "us" | "uk", slow = false) =>
     speak(word, { accent, speed: slow ? 0.7 : 1 }).catch(() => toast.error("Áudio indisponível"));

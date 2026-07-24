@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Sparkles, Mail, Lock, User, ArrowRight, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLocale } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { apiFetch, ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/auth")({
@@ -25,30 +24,13 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { locale } = useLocale();
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
-  const { session, loading } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading || !session) return;
-    (async () => {
-      const { data } = await supabase.from("profiles").select("age").eq("id", session.user.id).maybeSingle();
-      navigate({ to: data?.age == null ? "/onboarding" : "/dashboard" });
-    })();
-  }, [session, loading, navigate]);
-
-  const signInGoogle = async () => {
-    const res = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (res.error) toast.error(res.error.message || "Google sign-in failed");
-  };
-
-  const signInApple = async () => {
-    const res = await lovable.auth.signInWithOAuth("apple", {
-      redirect_uri: window.location.origin,
-    });
-    if (res.error) toast.error(res.error.message || "Apple sign-in failed");
-  };
+    if (loading || !user) return;
+    navigate({ to: user.age == null ? "/onboarding" : "/dashboard" });
+  }, [user, loading, navigate]);
 
   return (
     <div className="min-h-screen">
@@ -74,7 +56,7 @@ function AuthPage() {
             <div className="mt-8 space-y-3">
               {[
                 { pt: "Dados sincronizados em todos os seus dispositivos", en: "Data synced across all your devices" },
-                { pt: "Sessão segura e privacidade total (RLS)", en: "Secure session and full privacy (RLS)" },
+                { pt: "Sessão segura com cookies HttpOnly", en: "Secure session with HttpOnly cookies" },
                 { pt: "Certificados oficiais a cada nível CEFR", en: "Official CEFR certificates per level" },
               ].map((f) => (
                 <div key={f.en} className="flex items-center gap-3 text-sm">
@@ -112,33 +94,6 @@ function AuthPage() {
             {mode === "signin" && <SignInForm onForgot={() => setMode("forgot")} />}
             {mode === "signup" && <SignUpForm onDone={() => setMode("signin")} />}
             {mode === "forgot" && <ForgotForm onBack={() => setMode("signin")} />}
-
-            {mode !== "forgot" && (
-              <>
-                <div className="mt-6 flex items-center gap-3">
-                  <div className="h-px flex-1 bg-border" />
-                  <span className="text-xs uppercase tracking-widest text-muted-foreground">
-                    {locale === "pt" ? "ou" : "or"}
-                  </span>
-                  <div className="h-px flex-1 bg-border" />
-                </div>
-                <Button variant="outline" className="mt-4 w-full" onClick={signInGoogle}>
-                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                  </svg>
-                  {locale === "pt" ? "Continuar com Google" : "Continue with Google"}
-                </Button>
-                <Button variant="outline" className="mt-2 w-full" onClick={signInApple}>
-                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                  </svg>
-                  {locale === "pt" ? "Continuar com Apple" : "Continue with Apple"}
-                </Button>
-              </>
-            )}
           </div>
         </div>
       </div>
@@ -150,50 +105,22 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
   const { locale } = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const { refresh } = useAuth();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Check lockout before attempting
-    const { data: lockData } = await supabase.rpc("is_account_locked", { _email: email });
-    const lock = lockData as { locked: boolean; until: string | null } | null;
-    if (lock?.locked) {
+    try {
+      await apiFetch("/v1/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+      await refresh();
+      toast.success(locale === "pt" ? "Sessão iniciada" : "Signed in");
+      // Route handled by AuthPage's useEffect based on profile completeness.
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : locale === "pt" ? "Falha ao entrar" : "Sign-in failed");
+    } finally {
       setLoading(false);
-      const mins = lock.until ? Math.max(1, Math.ceil((new Date(lock.until).getTime() - Date.now()) / 60000)) : 15;
-      return toast.error(locale === "pt"
-        ? `Conta bloqueada por segurança. Tente novamente em ${mins} min.`
-        : `Account locked for security. Try again in ${mins} min.`);
     }
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    // Record attempt (best-effort)
-    supabase.rpc("record_login_attempt", {
-      _email: email,
-      _success: !error,
-      _ua: navigator.userAgent,
-      _reason: error?.message ?? undefined,
-    }).then(({ data }) => {
-      const r = data as { locked: boolean; failed_attempts: number } | null;
-      if (r?.locked) toast.error(locale === "pt"
-        ? "Muitas tentativas falhadas. Conta bloqueada por 15 minutos."
-        : "Too many failed attempts. Account locked for 15 minutes.");
-    });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    if (!remember) {
-      // best-effort: clear on tab close via sessionStorage swap
-      try {
-        const key = Object.keys(localStorage).find((k) => k.startsWith("sb-"));
-        if (key) {
-          sessionStorage.setItem(key, localStorage.getItem(key)!);
-          localStorage.removeItem(key);
-        }
-      } catch {}
-    }
-    toast.success(locale === "pt" ? "Sessão iniciada" : "Signed in");
-    // Route handled by parent useEffect based on profile completeness.
   };
 
   return (
@@ -217,10 +144,6 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
           <Input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="pl-9" />
         </div>
       </div>
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 rounded border-border" />
-        {locale === "pt" ? "Lembrar de mim" : "Remember me"}
-      </label>
       <Button type="submit" disabled={loading} size="lg" className="bg-gradient-sunset w-full text-white shadow-soft hover:opacity-90">
         {loading ? "..." : locale === "pt" ? "Entrar" : "Sign in"} <ArrowRight className="ml-1.5 h-4 w-4" />
       </Button>
@@ -237,6 +160,7 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
   const [terms, setTerms] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { refresh } = useAuth();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -244,18 +168,19 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
     if (password !== confirm) return toast.error(locale === "pt" ? "Senhas não coincidem" : "Passwords don't match");
     if (!terms || !privacy) return toast.error(locale === "pt" ? "Aceite os termos e a política" : "Accept terms & privacy");
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { full_name: fullName },
-      },
-    });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success(locale === "pt" ? "Conta criada! Pode iniciar sessão." : "Account created! You can sign in.");
-    onDone();
+    try {
+      await apiFetch("/v1/auth/register", {
+        method: "POST",
+        body: JSON.stringify({ email, password, fullName }),
+      });
+      await refresh();
+      toast.success(locale === "pt" ? "Conta criada!" : "Account created!");
+      onDone();
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : locale === "pt" ? "Falha ao criar conta" : "Failed to create account");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -307,13 +232,15 @@ function ForgotForm({ onBack }: { onBack: () => void }) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success(locale === "pt" ? "Verifique o seu email" : "Check your email");
-    onBack();
+    try {
+      await apiFetch("/v1/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
+      toast.success(locale === "pt" ? "Verifique o seu email" : "Check your email");
+      onBack();
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : locale === "pt" ? "Falha ao enviar" : "Failed to send");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
