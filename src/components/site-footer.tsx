@@ -17,7 +17,7 @@ export function SiteFooter() {
             </div>
           </div>
           <div className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Coach EDU · {t("footer.rights")}
+            © {new Date().getFullYear()} Narcidi Spaces · {t("footer.rights")}
           </div>
         </div>
       </div>
