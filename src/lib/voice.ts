@@ -1,4 +1,5 @@
 /** Client helpers for TTS playback and STT recording. */
+import { apiFetch, apiFetchFormData } from "@/lib/api/client";
 
 let currentAudio: HTMLAudioElement | null = null;
 
@@ -25,13 +26,10 @@ export async function speak(text: string, opts: SpeakOpts | string = {}): Promis
       currentAudio.pause();
       currentAudio = null;
     }
-    const res = await fetch("/api/tts", {
+    const blob = await apiFetch<Blob>("/v1/audio/speech", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text, voice, instructions, speed: o.speed }),
     });
-    if (!res.ok) throw new Error(`TTS ${res.status}`);
-    const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     currentAudio = audio;
@@ -76,9 +74,7 @@ export async function startRecording(): Promise<Recorder> {
 export async function transcribe(blob: Blob): Promise<string> {
   const form = new FormData();
   form.append("file", blob, "recording.webm");
-  const res = await fetch("/api/stt", { method: "POST", body: form });
-  if (!res.ok) throw new Error(`STT ${res.status}`);
-  const data = (await res.json()) as { text: string };
+  const data = await apiFetchFormData<{ text: string }>("/v1/audio/transcriptions", form);
   return data.text ?? "";
 }
 

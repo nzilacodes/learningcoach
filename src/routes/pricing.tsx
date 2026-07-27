@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { useLocale } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/pricing")({
   component: PricingPage,
@@ -40,10 +41,10 @@ export const Route = createFileRoute("/pricing")({
         content:
           "Escolha entre Essencial (10.000 Kz), Premium (15.000 Kz) e VIP (25.000 Kz) por mês. Descontos no trimestral e semestral.",
       },
-      { property: "og:url", content: "https://coach-speak-bright.lovable.app/pricing" },
+      { property: "og:url", content: `${SITE_URL}/pricing` },
       { property: "og:type", content: "product" },
     ],
-    links: [{ rel: "canonical", href: "https://coach-speak-bright.lovable.app/pricing" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/pricing` }],
     scripts: [
       {
         type: "application/ld+json",

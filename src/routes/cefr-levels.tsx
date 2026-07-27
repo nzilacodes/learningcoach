@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Lock, Trophy } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cefrRank, useMaxUnlockedLevel, useMinExamScore, type CefrLevel } from "@/lib/level-access";
+import { SITE_URL } from "@/lib/site-url";
 
 
 export const Route = createFileRoute("/cefr-levels")({
@@ -23,10 +24,10 @@ export const Route = createFileRoute("/cefr-levels")({
         content:
           "Guia prático dos níveis CEFR A1–C2 aplicado ao aprendizado de inglês, com competências, tempo estimado e próximos passos.",
       },
-      { property: "og:url", content: "https://coach-speak-bright.lovable.app/cefr-levels" },
+      { property: "og:url", content: `${SITE_URL}/cefr-levels` },
       { property: "og:type", content: "article" },
     ],
-    links: [{ rel: "canonical", href: "https://coach-speak-bright.lovable.app/cefr-levels" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/cefr-levels` }],
     scripts: [
       {
         type: "application/ld+json",

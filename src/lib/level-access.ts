@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
 
@@ -10,43 +11,38 @@ export const cefrRank = (l: CefrLevel | string | null | undefined): number => {
   return i < 0 ? 0 : i + 1;
 };
 
-/** Max level the current user has unlocked. Base = diagnostic CEFR, +1 per passed level exam. */
-export function useMaxUnlockedLevel() {
+type LevelAccess = { maxUnlockedLevel: CefrLevel | null; minExamScore: number };
+
+/** Max unlocked level + min passing score, computed server-side from the
+ * user's diagnostic CEFR level and passed level_exam_attempts rows. */
+function useLevelAccess() {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["max_unlocked_level", user?.id],
+    queryKey: ["level_access", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("my_max_unlocked_level");
-      if (error) throw error;
-      return (data as CefrLevel | null) ?? null;
-    },
+    queryFn: () => apiFetch<LevelAccess>("/v1/me/level-access"),
   });
+}
+
+export function useMaxUnlockedLevel() {
+  const { data, ...rest } = useLevelAccess();
+  return { ...rest, data: data?.maxUnlockedLevel ?? null };
 }
 
 export function useMinExamScore() {
-  return useQuery({
-    queryKey: ["app_settings_min_score"],
-    queryFn: async () => {
-      const { data } = await supabase.from("app_settings").select("min_exam_score").maybeSingle();
-      return data?.min_exam_score ?? 70;
-    },
-    staleTime: 60_000,
-  });
+  const { data, ...rest } = useLevelAccess();
+  return { ...rest, data: data?.minExamScore ?? 70 };
 }
 
 export function useLevelExam(level: CefrLevel) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["level_exam", level],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("level_exams")
-        .select("level,title,questions")
-        .eq("level", level)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
+    queryKey: ["level_exam", level, user?.id],
+    enabled: !!user,
+    // Questions come back without the answer key — grading happens server-side.
+    queryFn: () => apiFetch<{ level: CefrLevel; title: string; questions: { q: string; opts: string[] }[] }>(
+      `/v1/level-exams/${level}`,
+    ),
   });
 }
 

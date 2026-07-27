@@ -20,8 +20,12 @@ import {
   Compass,
 } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
+<<<<<<< HEAD
 import { useAuth } from "@/lib/auth";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+=======
+import { SITE_URL } from "@/lib/site-url";
+>>>>>>> 9e3df0bbbcbf182a52931de2416ce98ba79417ad
 
 export const Route = createFileRoute("/ai-coach")({
   component: AICoachPage,
@@ -32,8 +36,21 @@ export const Route = createFileRoute("/ai-coach")({
         name: "description",
         content: "Converse com o AI Coach para praticar inglês em qualquer nível.",
       },
+<<<<<<< HEAD
       { property: "og:title", content: "AI Coach — Learning English with Coach" },
     ],
+=======
+      { property: "og:title", content: "AI Coach — Professor de inglês com IA 24/7" },
+      {
+        property: "og:description",
+        content:
+          "Prática guiada de inglês com IA: gramática, pronúncia, vocabulário e conversação livre.",
+      },
+      { property: "og:url", content: `${SITE_URL}/ai-coach` },
+      { property: "og:type", content: "website" },
+    ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/ai-coach` }],
+>>>>>>> 9e3df0bbbcbf182a52931de2416ce98ba79417ad
   }),
 });
 

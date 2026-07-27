@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/community")({
   component: CommunityPage,
@@ -27,10 +28,10 @@ export const Route = createFileRoute("/community")({
         content:
           "Salas de prática de inglês isoladas por idade, com moderação por IA e ambiente seguro.",
       },
-      { property: "og:url", content: "https://coach-speak-bright.lovable.app/community" },
+      { property: "og:url", content: `${SITE_URL}/community` },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "canonical", href: "https://coach-speak-bright.lovable.app/community" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/community` }],
   }),
 });
 

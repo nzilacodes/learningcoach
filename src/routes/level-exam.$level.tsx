@@ -12,7 +12,7 @@ import {
   useMaxUnlockedLevel,
   useMinExamScore,
 } from "@/lib/level-access";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { toast } from "sonner";
 import { CheckCircle2, Lock, Trophy, XCircle, ArrowLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/level-exam/$level")({
   }),
 });
 
-type Question = { q: string; opts: string[]; a: number };
+type Question = { q: string; opts: string[] };
 
 function LevelExamPage() {
   const { level: raw } = Route.useParams();
@@ -86,21 +86,19 @@ function LevelExamPage() {
       return;
     }
     setSubmitting(true);
-    const correct = questions.reduce((acc, q, i) => acc + (answers[i] === q.a ? 1 : 0), 0);
-    const score = Math.round((correct / questions.length) * 100);
-    const passed = score >= minScore;
-    const { error } = await supabase.from("level_exam_attempts").insert({
-      user_id: user.id,
-      level,
-      score,
-      passed,
-      answers,
-    });
-    setSubmitting(false);
-    if (error) {
+    let outcome: { score: number; passed: boolean };
+    try {
+      outcome = await apiFetch<{ score: number; passed: boolean }>(
+        `/v1/assessments/level-exam/${level}`,
+        { method: "POST", body: JSON.stringify({ answers }) },
+      );
+    } catch {
+      setSubmitting(false);
       toast.error("Falha ao guardar tentativa.");
       return;
     }
+    setSubmitting(false);
+    const { score, passed } = outcome;
     setResult({ score, passed });
     qc.invalidateQueries({ queryKey: ["max_unlocked_level"] });
     qc.invalidateQueries({ queryKey: ["level_attempts"] });

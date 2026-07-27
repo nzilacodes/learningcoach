@@ -2,8 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-2.5-flash";
+const AI_URL = "https://api.openai.com/v1/chat/completions";
+const MODEL = "gpt-4o-mini";
 
 const WordSchema = z.object({
   word: z.string(),
@@ -21,8 +21,8 @@ const WordSchema = z.object({
 export type WordEntry = z.infer<typeof WordSchema>;
 
 async function callAI<T>(system: string, user: string, schema: z.ZodType<T>): Promise<T> {
-  const apiKey = process.env.LOVABLE_API_KEY;
-  if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error("OPENAI_API_KEY is not configured");
   const res = await fetch(AI_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -40,33 +40,8 @@ async function callAI<T>(system: string, user: string, schema: z.ZodType<T>): Pr
   return schema.parse(JSON.parse(data.choices?.[0]?.message?.content ?? "{}"));
 }
 
-// -- Word data ---------------------------------------------------------------
-export const getWordData = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => z.object({ word: z.string().min(1).max(60) }).parse(d))
-  .handler(async ({ data }) => {
-    const word = data.word.trim().toLowerCase();
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: cached } = await supabaseAdmin
-      .from("word_entries")
-      .select("*")
-      .eq("word", word)
-      .maybeSingle();
-    if (cached) return cached as unknown as WordEntry;
-
-    const generated = await callAI(
-      "You are an English lexicography expert. Return strict JSON with keys: word, ipa_uk, ipa_us, part_of_speech, example, translation_pt (European Portuguese), synonyms (array of strings, up to 6), antonyms (array, up to 6), collocations (array, up to 8), phrasal_verbs (array, up to 6, related), expressions (array, up to 6, idioms). IPA must use standard slash-free symbols (e.g. həˈloʊ).",
-      `Word: "${word}"`,
-      WordSchema,
-    );
-
-    const row = { ...generated, word };
-    const { data: inserted } = await supabaseAdmin
-      .from("word_entries")
-      .upsert(row, { onConflict: "word" })
-      .select("*")
-      .single();
-    return (inserted ?? row) as unknown as WordEntry;
-  });
+// getWordData moved to learningcoachbackEnd's ai module (GET /v1/dictionary/:word) —
+// it used to be unauthenticated and write via service role with no rate limit.
 
 // -- Assessment --------------------------------------------------------------
 const AssessSchema = z.object({

@@ -24,6 +24,7 @@ import vocabMenu from "@/assets/vocab-menu.jpg";
 import vocabWaiter from "@/assets/vocab-waiter.jpg";
 import vocabDelicious from "@/assets/vocab-delicious.jpg";
 import vocabBill from "@/assets/vocab-bill.jpg";
+import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/lesson")({
   component: LessonPage,
@@ -37,10 +38,10 @@ export const Route = createFileRoute("/lesson")({
       },
       { property: "og:title", content: "Aula demo — Learning English with Coach" },
       { property: "og:description", content: "Vocabulário, diálogo e pronúncia em uma aula interativa." },
-      { property: "og:url", content: "https://coach-speak-bright.lovable.app/lesson" },
+      { property: "og:url", content: `${SITE_URL}/lesson` },
       { property: "og:type", content: "article" },
     ],
-    links: [{ rel: "canonical", href: "https://coach-speak-bright.lovable.app/lesson" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/lesson` }],
     scripts: [
       {
         type: "application/ld+json",

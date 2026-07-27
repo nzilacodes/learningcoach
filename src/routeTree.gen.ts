@@ -41,9 +41,6 @@ import { Route as WatchVideoIdRouteImport } from './routes/watch.$videoId'
 import { Route as VerifyCodeRouteImport } from './routes/verify.$code'
 import { Route as LevelExamLevelRouteImport } from './routes/level-exam.$level'
 import { Route as CheckoutPlanIdRouteImport } from './routes/checkout.$planId'
-import { Route as ApiTtsRouteImport } from './routes/api/tts'
-import { Route as ApiSttRouteImport } from './routes/api/stt'
-import { Route as ApiDiagnosticEvaluateRouteImport } from './routes/api/diagnostic-evaluate'
 
 const VideosRoute = VideosRouteImport.update({
   id: '/videos',
@@ -205,21 +202,6 @@ const CheckoutPlanIdRoute = CheckoutPlanIdRouteImport.update({
   path: '/checkout/$planId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTtsRoute = ApiTtsRouteImport.update({
-  id: '/api/tts',
-  path: '/api/tts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSttRoute = ApiSttRouteImport.update({
-  id: '/api/stt',
-  path: '/api/stt',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiDiagnosticEvaluateRoute = ApiDiagnosticEvaluateRouteImport.update({
-  id: '/api/diagnostic-evaluate',
-  path: '/api/diagnostic-evaluate',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -250,9 +232,6 @@ export interface FileRoutesByFullPath {
   '/subscription': typeof SubscriptionRoute
   '/track': typeof TrackRoute
   '/videos': typeof VideosRoute
-  '/api/diagnostic-evaluate': typeof ApiDiagnosticEvaluateRoute
-  '/api/stt': typeof ApiSttRoute
-  '/api/tts': typeof ApiTtsRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/level-exam/$level': typeof LevelExamLevelRoute
   '/verify/$code': typeof VerifyCodeRoute
@@ -287,9 +266,6 @@ export interface FileRoutesByTo {
   '/subscription': typeof SubscriptionRoute
   '/track': typeof TrackRoute
   '/videos': typeof VideosRoute
-  '/api/diagnostic-evaluate': typeof ApiDiagnosticEvaluateRoute
-  '/api/stt': typeof ApiSttRoute
-  '/api/tts': typeof ApiTtsRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/level-exam/$level': typeof LevelExamLevelRoute
   '/verify/$code': typeof VerifyCodeRoute
@@ -325,9 +301,6 @@ export interface FileRoutesById {
   '/subscription': typeof SubscriptionRoute
   '/track': typeof TrackRoute
   '/videos': typeof VideosRoute
-  '/api/diagnostic-evaluate': typeof ApiDiagnosticEvaluateRoute
-  '/api/stt': typeof ApiSttRoute
-  '/api/tts': typeof ApiTtsRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/level-exam/$level': typeof LevelExamLevelRoute
   '/verify/$code': typeof VerifyCodeRoute
@@ -364,9 +337,6 @@ export interface FileRouteTypes {
     | '/subscription'
     | '/track'
     | '/videos'
-    | '/api/diagnostic-evaluate'
-    | '/api/stt'
-    | '/api/tts'
     | '/checkout/$planId'
     | '/level-exam/$level'
     | '/verify/$code'
@@ -401,9 +371,6 @@ export interface FileRouteTypes {
     | '/subscription'
     | '/track'
     | '/videos'
-    | '/api/diagnostic-evaluate'
-    | '/api/stt'
-    | '/api/tts'
     | '/checkout/$planId'
     | '/level-exam/$level'
     | '/verify/$code'
@@ -438,9 +405,6 @@ export interface FileRouteTypes {
     | '/subscription'
     | '/track'
     | '/videos'
-    | '/api/diagnostic-evaluate'
-    | '/api/stt'
-    | '/api/tts'
     | '/checkout/$planId'
     | '/level-exam/$level'
     | '/verify/$code'
@@ -476,9 +440,6 @@ export interface RootRouteChildren {
   SubscriptionRoute: typeof SubscriptionRoute
   TrackRoute: typeof TrackRoute
   VideosRoute: typeof VideosRoute
-  ApiDiagnosticEvaluateRoute: typeof ApiDiagnosticEvaluateRoute
-  ApiSttRoute: typeof ApiSttRoute
-  ApiTtsRoute: typeof ApiTtsRoute
   CheckoutPlanIdRoute: typeof CheckoutPlanIdRoute
   LevelExamLevelRoute: typeof LevelExamLevelRoute
   VerifyCodeRoute: typeof VerifyCodeRoute
@@ -711,27 +672,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutPlanIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/tts': {
-      id: '/api/tts'
-      path: '/api/tts'
-      fullPath: '/api/tts'
-      preLoaderRoute: typeof ApiTtsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/stt': {
-      id: '/api/stt'
-      path: '/api/stt'
-      fullPath: '/api/stt'
-      preLoaderRoute: typeof ApiSttRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/diagnostic-evaluate': {
-      id: '/api/diagnostic-evaluate'
-      path: '/api/diagnostic-evaluate'
-      fullPath: '/api/diagnostic-evaluate'
-      preLoaderRoute: typeof ApiDiagnosticEvaluateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -764,9 +704,6 @@ const rootRouteChildren: RootRouteChildren = {
   SubscriptionRoute: SubscriptionRoute,
   TrackRoute: TrackRoute,
   VideosRoute: VideosRoute,
-  ApiDiagnosticEvaluateRoute: ApiDiagnosticEvaluateRoute,
-  ApiSttRoute: ApiSttRoute,
-  ApiTtsRoute: ApiTtsRoute,
   CheckoutPlanIdRoute: CheckoutPlanIdRoute,
   LevelExamLevelRoute: LevelExamLevelRoute,
   VerifyCodeRoute: VerifyCodeRoute,

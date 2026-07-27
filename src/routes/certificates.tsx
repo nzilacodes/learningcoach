@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { Award, Download, ShieldCheck, QrCode, Loader2, ExternalLink } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -9,12 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import {
-  listMyCertificates,
-  issueCertificate,
-  type CertificateRow,
-} from "@/lib/certificates.functions";
+import { apiFetch } from "@/lib/api/client";
 import { generateCertificatePdf, downloadBlob } from "@/lib/certificate-pdf";
+
+type CertificateRow = {
+  id: string;
+  level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+  full_name: string | null;
+  course_title: string | null;
+  score: number | null;
+  issued_at: string;
+  verification_code: string;
+  signature: string | null;
+};
 
 const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
 
@@ -31,8 +37,6 @@ export const Route = createFileRoute("/certificates")({
 });
 
 function CertificatesPage() {
-  const listFn = useServerFn(listMyCertificates);
-  const issueFn = useServerFn(issueCertificate);
   const [items, setItems] = useState<CertificateRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [issuing, setIssuing] = useState<string | null>(null);
@@ -40,7 +44,7 @@ function CertificatesPage() {
   async function refresh() {
     setLoading(true);
     try {
-      const rows = await listFn();
+      const rows = await apiFetch<CertificateRow[]>("/v1/me/certificates");
       setItems(rows);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro a carregar certificados");
@@ -51,17 +55,20 @@ function CertificatesPage() {
 
   useEffect(() => {
     refresh();
-     
+
   }, []);
 
   async function handleIssue(level: (typeof LEVELS)[number]) {
     setIssuing(level);
     try {
-      const cert = await issueFn({ data: { level } });
+      const cert = await apiFetch<CertificateRow>("/v1/certificates", {
+        method: "POST",
+        body: JSON.stringify({ level }),
+      });
       toast.success(`Certificado ${cert.level} emitido!`);
       await refresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao emitir");
+      toast.error(e instanceof Error ? e.message : "Erro ao emitir (concluíste este nível?)");
     } finally {
       setIssuing(null);
     }

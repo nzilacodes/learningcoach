@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLocale } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch, ApiError } from "@/lib/api/client";
 
 export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
@@ -28,14 +28,27 @@ function ResetPasswordPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const token = new URLSearchParams(window.location.search).get("token");
+    if (!token) {
+      return toast.error(
+        locale === "pt" ? "Link inválido — peça um novo email de recuperação." : "Invalid link — request a new reset email.",
+      );
+    }
     if (password.length < 8) return toast.error(locale === "pt" ? "Senha mínima 8 caracteres" : "Password min 8 chars");
     if (password !== confirm) return toast.error(locale === "pt" ? "Senhas não coincidem" : "Passwords don't match");
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success(locale === "pt" ? "Senha atualizada" : "Password updated");
-    navigate({ to: "/dashboard" });
+    try {
+      await apiFetch("/v1/auth/reset-password", {
+        method: "POST",
+        body: JSON.stringify({ token, newPassword: password }),
+      });
+      toast.success(locale === "pt" ? "Senha atualizada — inicie sessão." : "Password updated — please sign in.");
+      navigate({ to: "/auth" });
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : locale === "pt" ? "Falha ao redefinir senha" : "Failed to reset password");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
