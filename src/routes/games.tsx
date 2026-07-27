@@ -17,15 +17,10 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useAgeGroup } from "@/lib/use-age-group";
-<<<<<<< HEAD
 import { AGE_TRACKS, AGE_GROUP_LABEL, type AgeTrack } from "@/lib/age-tracks";
 import { AgeThemeSwitcher } from "@/components/age-theme-switcher";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
-=======
-import { AGE_TRACKS, AGE_GROUP_LABEL } from "@/lib/age-tracks";
 import { SITE_URL } from "@/lib/site-url";
-
->>>>>>> 9e3df0bbbcbf182a52931de2416ce98ba79417ad
 
 export const Route = createFileRoute("/games")({
   component: GamesPage,
@@ -37,17 +32,15 @@ export const Route = createFileRoute("/games")({
         content:
           "Aprenda inglês jogando: vocabulário, gramática e conversação em jogos adaptados à sua idade.",
       },
-<<<<<<< HEAD
-      { property: "og:title", content: "Games — Learning English with Coach" },
-    ],
-=======
       { property: "og:title", content: "Jogos de inglês — Learning English with Coach" },
-      { property: "og:description", content: "Vocabulário, pronúncia e gramática em jogos rápidos." },
+      {
+        property: "og:description",
+        content: "Vocabulário, pronúncia e gramática em jogos rápidos.",
+      },
       { property: "og:url", content: `${SITE_URL}/games` },
       { property: "og:type", content: "website" },
     ],
     links: [{ rel: "canonical", href: `${SITE_URL}/games` }],
->>>>>>> 9e3df0bbbcbf182a52931de2416ce98ba79417ad
   }),
 });
 

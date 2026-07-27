@@ -20,12 +20,9 @@ import {
   Compass,
 } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
-<<<<<<< HEAD
 import { useAuth } from "@/lib/auth";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
-=======
 import { SITE_URL } from "@/lib/site-url";
->>>>>>> 9e3df0bbbcbf182a52931de2416ce98ba79417ad
 
 export const Route = createFileRoute("/ai-coach")({
   component: AICoachPage,
@@ -36,10 +33,6 @@ export const Route = createFileRoute("/ai-coach")({
         name: "description",
         content: "Converse com o AI Coach para praticar inglês em qualquer nível.",
       },
-<<<<<<< HEAD
-      { property: "og:title", content: "AI Coach — Learning English with Coach" },
-    ],
-=======
       { property: "og:title", content: "AI Coach — Professor de inglês com IA 24/7" },
       {
         property: "og:description",
@@ -50,18 +43,37 @@ export const Route = createFileRoute("/ai-coach")({
       { property: "og:type", content: "website" },
     ],
     links: [{ rel: "canonical", href: `${SITE_URL}/ai-coach` }],
->>>>>>> 9e3df0bbbcbf182a52931de2416ce98ba79417ad
   }),
 });
 
 type Msg = { role: "user" | "coach"; text: string };
 
 const MOCK_PROJECTS = [
-  { id: "1", title: "Learning From 100 Years o...", desc: "For athletes, high altitude prod...", active: true },
+  {
+    id: "1",
+    title: "Learning From 100 Years o...",
+    desc: "For athletes, high altitude prod...",
+    active: true,
+  },
   { id: "2", title: "Research officiants", desc: "Maxwell's equations—the foun...", active: true },
-  { id: "3", title: "What does a senior lead de...", desc: "Physiological respiration involv...", active: true },
-  { id: "4", title: "Write a sweet note to your...", desc: "In the eighteenth century the G...", active: true },
-  { id: "5", title: "Meet with cake bakers", desc: "Physical space is often conceiv...", active: true },
+  {
+    id: "3",
+    title: "What does a senior lead de...",
+    desc: "Physiological respiration involv...",
+    active: true,
+  },
+  {
+    id: "4",
+    title: "Write a sweet note to your...",
+    desc: "In the eighteenth century the G...",
+    active: true,
+  },
+  {
+    id: "5",
+    title: "Meet with cake bakers",
+    desc: "Physical space is often conceiv...",
+    active: true,
+  },
   { id: "6", title: "Archive Project Alpha", desc: "Completed marketing assets...", active: false },
 ];
 
@@ -72,9 +84,10 @@ function AICoachPage() {
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "coach",
-      text: locale === "pt"
-        ? "Olá! 👋 Sou seu Coach. Sobre o que quer praticar hoje?"
-        : "Hi! 👋 I'm your Coach. What would you like to practice today?",
+      text:
+        locale === "pt"
+          ? "Olá! 👋 Sou seu Coach. Sobre o que quer praticar hoje?"
+          : "Hi! 👋 I'm your Coach. What would you like to practice today?",
     },
   ]);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
@@ -250,7 +263,10 @@ function AICoachPage() {
                     rows={1}
                     className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm text-[var(--ink)] placeholder:text-gray-400 max-h-40 outline-none"
                   />
-                  <button onClick={send} className="ml-2 p-2 text-gray-400 hover:text-[var(--primary)] transition-colors shrink-0">
+                  <button
+                    onClick={send}
+                    className="ml-2 p-2 text-gray-400 hover:text-[var(--primary)] transition-colors shrink-0"
+                  >
                     <Send className="w-5 h-5" />
                   </button>
                 </div>
@@ -294,7 +310,9 @@ function AICoachPage() {
                   <ChevronRight className="w-5 h-5" />
                 </button>
                 <div className="flex items-center gap-2 flex-1">
-                  <span className="font-display text-lg font-semibold text-[var(--ink)]">Projects</span>
+                  <span className="font-display text-lg font-semibold text-[var(--ink)]">
+                    Projects
+                  </span>
                   <span className="text-gray-400 text-sm">({MOCK_PROJECTS.length})</span>
                 </div>
                 <button className="p-1 hover:bg-gray-50 rounded-md transition-colors text-gray-500">
@@ -322,10 +340,14 @@ function AICoachPage() {
                     }`}
                   >
                     <div className="flex justify-between items-start mb-1">
-                      <h4 className="text-sm font-bold text-[var(--ink)] truncate pr-4">{project.title}</h4>
-                      <div className={`w-2 h-2 rounded-full shrink-0 mt-1 ${
-                        project.active ? "bg-[var(--primary)]/20" : "bg-gray-200"
-                      }`} />
+                      <h4 className="text-sm font-bold text-[var(--ink)] truncate pr-4">
+                        {project.title}
+                      </h4>
+                      <div
+                        className={`w-2 h-2 rounded-full shrink-0 mt-1 ${
+                          project.active ? "bg-[var(--primary)]/20" : "bg-gray-200"
+                        }`}
+                      />
                     </div>
                     <p className="text-[12px] text-gray-500 line-clamp-1">{project.desc}</p>
                   </div>
