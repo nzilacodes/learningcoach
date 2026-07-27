@@ -26,6 +26,8 @@ jobs:
 
       - run: npm ci
       - run: npm run build
+        env:
+          VITE_API_URL: https://back.learningcoach.co.ao
 
       - name: Package production output
         run: tar -C .output -czf learningcoach-${{ github.sha }}.tar.gz .
