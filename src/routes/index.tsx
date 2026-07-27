@@ -468,7 +468,7 @@ function LandingPage() {
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Link
                 to="/placement"
-                className="group inline-flex items-center gap-3 rounded-full bg-white px-10 py-5 text-sm font-bold uppercase tracking-widest text-[#0F172A] shadow-2xl transition-all hover:scale-105"
+                className="group inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-[#0F172A] shadow-2xl transition-all hover:scale-105"
               >
                 {locale === "pt" ? "Começar grátis" : "Start for free"}
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0F172A] text-white">
@@ -477,7 +477,7 @@ function LandingPage() {
               </Link>
               <Link
                 to="/pricing"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-white/40 px-10 py-5 text-sm font-bold uppercase tracking-widest text-white transition-all hover:bg-white/10"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-white/40 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-all hover:bg-white/10"
               >
                 {locale === "pt" ? "Ver planos" : "View plans"}
               </Link>

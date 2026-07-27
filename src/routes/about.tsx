@@ -64,7 +64,7 @@ function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-6 py-16">
+      <main className="mx-auto max-w-6xl pt-28 pb-28 px-6 py-16">
         <section className="text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <GraduationCap className="h-3.5 w-3.5" /> {pt ? "Sobre nós" : "About us"}

@@ -205,7 +205,9 @@ export function AchievementsCard() {
         <Award className="h-4 w-4 text-amber" />
       </div>
       {data.length === 0 ? (
-        <p className="text-xs text-muted-foreground">Complete lições para desbloquear conquistas.</p>
+        <p className="text-xs text-muted-foreground">
+          Complete lições para desbloquear conquistas.
+        </p>
       ) : (
         <ul className="space-y-2">
           {data.map((a: any, i: number) => (

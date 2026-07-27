@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>LingoFlow - Painel do Aluno</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@500;600;800&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Inter', sans-serif;
+        }
+        h1, h2, h3, .brand-font {
+            font-family: 'Hanken Grotesk', sans-serif;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#565e74",
+                        "surface-bright": "#f7f9fb",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d8dadc",
+                        "tertiary-fixed": "#ffdcc5",
+                        "primary": "#4648d4",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#c0c1ff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#07006c",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#464554",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "tertiary-container": "#b55d00",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-primary-container": "#fffbff",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#c7c4d7",
+                        "secondary-fixed": "#dae2fd",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary-container": "#fffbff",
+                        "on-secondary-fixed": "#131b2e",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#904900",
+                        "outline": "#767586",
+                        "on-secondary-container": "#5c647a",
+                        "surface-tint": "#494bd6",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#dae2fd",
+                        "inverse-surface": "#2d3133",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-container": "#eceef0",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "background": "#f7f9fb",
+                        "on-background": "#191c1e",
+                        "on-surface": "#191c1e",
+                        "primary-fixed": "#e1e0ff",
+                        "on-tertiary-fixed": "#301400",
+                        "primary-container": "#6063ee",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-container-high": "#e6e8ea",
+                        "surface": "#f7f9fb",
+                        "primary-fixed-dim": "#c0c1ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "1.5rem",
+                        "gutter": "1.5rem",
+                        "container-max": "1200px",
+                        "margin-page": "2rem",
+                        "stack-xl": "4rem"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "button": ["Inter"],
+                        "label-sm": ["JetBrains Mono"],
+                        "display-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "button": ["14px", {"lineHeight": "1", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-sm h-16 flex items-center justify-between px-gutter max-w-container-max mx-auto">
+<div class="flex items-center gap-3 active:scale-95 transition-transform duration-200">
+<div class="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a cheerful university student with glasses and a friendly smile, set against a vibrant, out-of-focus modern campus library background with soft purple and orange evening light. The style is crisp, clean, and high-fidelity, following a professional educational app aesthetic with bright, airy lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRk6TVdBJJqSkj4Q31DPE2hwqNVcab0N2oPv_O-O0P5BkcLycgu9lbKpXKsESfddHzKBF2mLn8GeiC4IOjV38gXOOgBatQo48U0FQtkp-ZVrdV07jfjBoyl5tIV6BmH55go6JdXSZqxLTE2NWnUV-G2QKo6ybjCAwe_iw8ecuHObQJj7Y_CnuzBkNSJLBx-1gxu6gWMzVCblK0RD5YcJwNOScXLKV_kG3RL5nIydSwn8cuywsd4MaOFw"/>
+</div>
+<span class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">LingoFlow</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary text-2xl">notifications</span>
+</button>
+</header>
+<main class="mt-20 px-gutter space-y-8">
+<!-- Welcome Section -->
+<section class="flex items-end justify-between">
+<div>
+<p class="text-on-surface-variant font-medium">Bons estudos,</p>
+<h1 class="font-headline-md text-headline-md-mobile text-on-surface font-extrabold">Bom dia, Alex!</h1>
+</div>
+<div class="bg-primary-container text-on-primary-container px-4 py-1 rounded-full font-label-sm text-label-sm shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">stars</span>
+                B2 Upper Intermediate
+            </div>
+</section>
+<!-- Stats Grid (2-column) -->
+<section class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-2xl shadow-sm border border-outline-variant/30 flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-orange-600" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label-sm text-[10px] uppercase tracking-wider">Ofensiva</p>
+<p class="font-headline-md text-on-surface font-bold">12 dias</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl shadow-sm border border-outline-variant/30 flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-purple-600" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label-sm text-[10px] uppercase tracking-wider">Total XP</p>
+<p class="font-headline-md text-on-surface font-bold">2.450</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl shadow-sm border border-outline-variant/30 flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-blue-600" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label-sm text-[10px] uppercase tracking-wider">Unidades</p>
+<p class="font-headline-md text-on-surface font-bold">8 conc.</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl shadow-sm border border-outline-variant/30 flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-green-600" style="font-variation-settings: 'FILL' 1;">schedule</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label-sm text-[10px] uppercase tracking-wider">Estudo</p>
+<p class="font-headline-md text-on-surface font-bold">4.5h/sem</p>
+</div>
+</div>
+</section>
+<!-- Hero Section: Continuar Aprendendo -->
+<section class="relative h-56 rounded-[2rem] overflow-hidden shadow-xl active:scale-[0.98] transition-transform">
+<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAgv8M9r0uhBYFBBdeVhkuLaheSGPh8C50GXki3m-6Tc_I51ah8vAHJM7frx0b8rDUfvMEPJ4I1Mnh2q0AB4cRwMqHCG_LNy6_j-ZlvL4fwgI6EaWt_NnsmTrQT15JnJtoYYGb-PASQtO2C69qWZYSNPDfW5xbnmvu-simVtcNyPOLTg4_FuNOjCMUR_tXhSVjqz60bw_ja7Oy8WIwalZUF2Yk_fIjYPdE_bezwQy3dP03VGhfuPsK3FstO-wTjnp0HUns')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent"></div>
+<div class="absolute bottom-0 w-full p-6 space-y-3">
+<div class="flex justify-between items-end">
+<div>
+<span class="text-white/80 font-label-sm text-label-sm uppercase tracking-widest">Unidade 9</span>
+<h2 class="text-white font-headline-md text-headline-md-mobile font-bold">Expressões de Viagem</h2>
+</div>
+<button class="bg-white text-primary px-6 py-2.5 rounded-full font-button text-button shadow-lg active:scale-90 transition-transform">
+                        Retomar Lição
+                    </button>
+</div>
+<div class="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+<div class="bg-white h-full w-[65%] rounded-full shadow-[0_0_8px_rgba(255,255,255,0.5)]"></div>
+</div>
+<p class="text-white/80 font-label-sm text-[10px] text-right">65% concluído</p>
+</div>
+</section>
+<!-- Quick Actions -->
+<section>
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface font-bold mb-4">Prática Rápida</h3>
+<div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-gutter px-gutter">
+<div class="flex-shrink-0 w-24 flex flex-col items-center gap-2">
+<div class="w-16 h-16 rounded-2xl bg-secondary-container flex items-center justify-center text-primary shadow-sm hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined text-3xl">record_voice_over</span>
+</div>
+<span class="font-label-sm text-on-surface-variant">Falar</span>
+</div>
+<div class="flex-shrink-0 w-24 flex flex-col items-center gap-2">
+<div class="w-16 h-16 rounded-2xl bg-secondary-container flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined text-3xl">menu_book</span>
+</div>
+<span class="font-label-sm text-on-surface-variant">Ler</span>
+</div>
+<div class="flex-shrink-0 w-24 flex flex-col items-center gap-2">
+<div class="w-16 h-16 rounded-2xl bg-secondary-container flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined text-3xl">sports_esports</span>
+</div>
+<span class="font-label-sm text-on-surface-variant">Jogar</span>
+</div>
+<div class="flex-shrink-0 w-24 flex flex-col items-center gap-2">
+<div class="w-16 h-16 rounded-2xl bg-secondary-container flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined text-3xl">quiz</span>
+</div>
+<span class="font-label-sm text-on-surface-variant">Quiz</span>
+</div>
+</div>
+</section>
+<!-- Weekly Goal (Circular Progress) -->
+<section class="bg-surface-container-highest/30 p-6 rounded-[2rem] flex items-center gap-6">
+<div class="relative w-24 h-24">
+<svg class="w-full h-full" viewbox="0 0 36 36">
+<path class="text-surface-variant stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="text-primary stroke-current progress-ring__circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="80, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-headline-md text-primary font-bold">4/5</span>
+<span class="text-[10px] font-label-sm text-on-surface-variant uppercase">Dias</span>
+</div>
+</div>
+<div class="flex-1 space-y-1">
+<h4 class="font-headline-md text-[18px] text-on-surface font-bold">Meta Semanal</h4>
+<p class="body-md text-on-surface-variant text-sm">Falta apenas 1 dia para completar seu objetivo!</p>
+<div class="pt-2">
+<div class="flex gap-1.5">
+<div class="w-7 h-1.5 rounded-full bg-primary"></div>
+<div class="w-7 h-1.5 rounded-full bg-primary"></div>
+<div class="w-7 h-1.5 rounded-full bg-primary"></div>
+<div class="w-7 h-1.5 rounded-full bg-primary"></div>
+<div class="w-7 h-1.5 rounded-full bg-surface-variant"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Learning Track -->
+<section class="space-y-6">
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface font-bold">Trilha de Aprendizado</h3>
+<div class="space-y-4 relative">
+<!-- Track Line -->
+<div class="absolute left-6 top-6 bottom-6 w-0.5 bg-surface-variant -z-10"></div>
+<!-- Unit 7 (Completed) -->
+<div class="flex gap-6 items-center opacity-70">
+<div class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-green-100">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div class="flex-1 border-b border-outline-variant/30 pb-4">
+<p class="text-on-surface-variant font-label-sm text-[10px] uppercase">Unidade 7</p>
+<h4 class="font-headline-md text-[18px] text-on-surface font-semibold">Saudações e Apresentações</h4>
+</div>
+</div>
+<!-- Unit 8 (Completed) -->
+<div class="flex gap-6 items-center opacity-70">
+<div class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-green-100">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div class="flex-1 border-b border-outline-variant/30 pb-4">
+<p class="text-on-surface-variant font-label-sm text-[10px] uppercase">Unidade 8</p>
+<h4 class="font-headline-md text-[18px] text-on-surface font-semibold">Vida Profissional</h4>
+</div>
+</div>
+<!-- Unit 9 (Active) -->
+<div class="flex gap-6 items-center">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-white shrink-0 shadow-xl ring-4 ring-primary-fixed">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+<div class="flex-1 border-b border-outline-variant/30 pb-4">
+<p class="text-primary font-label-sm text-[10px] uppercase font-bold">Atual • Unidade 9</p>
+<h4 class="font-headline-md text-[18px] text-on-surface font-bold">Expressões de Viagem</h4>
+</div>
+</div>
+<!-- Unit 10 (Locked) -->
+<div class="flex gap-6 items-center opacity-40">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant shrink-0">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<div class="flex-1 border-b border-outline-variant/30 pb-4">
+<p class="text-on-surface-variant font-label-sm text-[10px] uppercase">Unidade 10</p>
+<h4 class="font-headline-md text-[18px] text-on-surface font-semibold">Gastronomia Global</h4>
+</div>
+</div>
+<!-- Unit 11 (Locked) -->
+<div class="flex gap-6 items-center opacity-40">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant shrink-0">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<div class="flex-1 border-b border-outline-variant/30 pb-4">
+<p class="text-on-surface-variant font-label-sm text-[10px] uppercase">Unidade 11</p>
+<h4 class="font-headline-md text-[18px] text-on-surface font-semibold">História e Cultura</h4>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.04)] h-20 px-4 pb-safe flex justify-around items-center">
+<!-- Home (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1.5 transition-transform duration-150 active:scale-90" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span>
+<span class="font-label-sm text-label-sm mt-0.5">Learn</span>
+</a>
+<!-- Practice -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 transition-colors hover:text-primary active:scale-90" href="#">
+<span class="material-symbols-outlined">exercise</span>
+<span class="font-label-sm text-label-sm mt-0.5">Practice</span>
+</a>
+<!-- Leaderboard -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 transition-colors hover:text-primary active:scale-90" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-label-sm text-label-sm mt-0.5">Rank</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 transition-colors hover:text-primary active:scale-90" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm mt-0.5">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for Stats Cards
+        document.querySelectorAll('.bg-surface-container-low').forEach(card => {
+            card.addEventListener('touchstart', () => card.classList.add('scale-95'));
+            card.addEventListener('touchend', () => card.classList.remove('scale-95'));
+        });
+
+        // Hide navigation on scroll down, show on scroll up
+        let lastScrollTop = 0;
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                nav.style.transform = 'translateY(100%)';
+            } else {
+                nav.style.transform = 'translateY(0)';
+            }
+            lastScrollTop = scrollTop;
+            nav.style.transition = 'transform 0.3s ease-in-out';
+        });
+    </script>
+</body></html>

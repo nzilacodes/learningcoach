@@ -89,10 +89,10 @@ export function useLandingAnimations() {
       if (heroForStats && statsOverlay && statCards.length) {
         mm.add("(min-width: 768px)", () => {
           const heroText = heroForStats.querySelectorAll<HTMLElement>(
-            "[data-anim='hero-badge'], [data-anim='hero-line'], [data-anim='hero-copy'], [data-anim='hero-social']"
+            "[data-anim='hero-badge'], [data-anim='hero-line'], [data-anim='hero-copy'], [data-anim='hero-social']",
           );
           const heroImage = heroForStats.querySelectorAll<HTMLElement>(
-            "[data-anim='hero-image'], [data-anim='hero-float']"
+            "[data-anim='hero-image'], [data-anim='hero-float']",
           );
 
           // Set initial state for cards
@@ -110,41 +110,50 @@ export function useLandingAnimations() {
 
           // Hero content dims + blur
           tl.to(heroText, { opacity: 0.15, filter: "blur(4px)", duration: 1, ease: "none" }, 0);
-          tl.to(heroImage, { scale: 0.85, opacity: 0.25, filter: "blur(6px)", duration: 1, ease: "none" }, 0);
+          tl.to(
+            heroImage,
+            { scale: 0.85, opacity: 0.25, filter: "blur(6px)", duration: 1, ease: "none" },
+            0,
+          );
 
           // Overlay appears
           tl.to(statsOverlay, { opacity: 1, duration: 1, ease: "none" }, 0);
 
           // Cards one by one with scale
           statCards.forEach((card, i) => {
-            tl.to(card, {
+            tl.to(
+              card,
+              {
                 opacity: 1,
                 y: 0,
                 scale: 1,
-              duration: 0.4, ease: "back.out(1.2)",
-              onStart: () => {
-                // Counter animation
-                const counter = card.querySelector<HTMLElement>("[data-anim='stat-counter']");
+                duration: 0.12,
+                ease: "back.out(1.2)",
+                onStart: () => {
+                  // Counter animation
+                  const counter = card.querySelector<HTMLElement>("[data-anim='stat-counter']");
                   if (counter) {
                     const target = parseFloat(counter.dataset.target ?? "0");
                     const suffix = counter.dataset.suffix ?? "";
                     const decimals = Number(counter.dataset.decimals ?? 0);
-                  if (target > 0) {
-                    const obj = { val: 0 };
+                    if (target > 0) {
+                      const obj = { val: 0 };
                       gsap.to(obj, {
-                      val: target,
-                      duration: 1.2,
-                      ease: "power2.out",
-                      onUpdate: () => {
-                        counter.textContent = decimals
-                          ? obj.val.toFixed(decimals) + suffix
-                          : Math.round(obj.val).toLocaleString("en-US") + suffix;
-                      },
-                    });
+                        val: target,
+                        duration: 0.5,
+                        ease: "power2.out",
+                        onUpdate: () => {
+                          counter.textContent = decimals
+                            ? obj.val.toFixed(decimals) + suffix
+                            : Math.round(obj.val).toLocaleString("en-US") + suffix;
+                        },
+                      });
+                    }
                   }
-                }
+                },
               },
-            }, 0.1 + i * 0.2);
+              0.1 + i * 0.1,
+            );
           });
 
           return () => {
@@ -207,8 +216,8 @@ export function useLandingAnimations() {
             scrollTrigger: {
               trigger: pinContainer,
               start: "top top",
-              end: "+=9000",
-              scrub: 1.2,
+              end: "+=5000",
+              scrub: 0.5,
               pin: true,
               anticipatePin: 1,
               invalidateOnRefresh: true,
@@ -218,14 +227,14 @@ export function useLandingAnimations() {
           tl.to(".card-content", {
             opacity: 1,
             y: 0,
-            duration: 2,
-            stagger: { each: 0.5, ease: "power2.inOut" },
+            duration: 1,
+            stagger: { each: 0.25, ease: "power2.inOut" },
             ease: "power2.out",
           });
 
           tl.to(toolSection, {
             yPercent: -100,
-            duration: 2.8,
+            duration: 1.5,
             ease: "power3.inOut",
           });
 
@@ -234,35 +243,54 @@ export function useLandingAnimations() {
             {
               opacity: 1,
               y: 0,
-              duration: 1.0,
+              duration: 0.6,
               ease: "power2.out",
             },
-            "-=0.6",
+            "-=0.4",
           );
 
           bentoCards.forEach((card, index) => {
             const icon = card.querySelector<HTMLElement>(".icon-wrapper");
             const chars = card.querySelectorAll<HTMLElement>(".char");
 
-            tl.to(card, {
+            tl.to(
+              card,
+              {
                 opacity: 1,
                 y: 0,
                 scale: 1,
-                duration: 1.2,
+                duration: 0.5,
                 ease: "power2.out",
-            }, index === 0 ? "-=0.1" : "-=0.95");
+              },
+              index === 0 ? "-=0.1" : "-=0.45",
+            );
 
             if (icon) {
-              tl.to(icon, {
-                opacity: 1, y: 0, duration: 0.5, ease: "power2.out",
-              }, "-=0.9");
+              tl.to(
+                icon,
+                {
+                  opacity: 1,
+                  y: 0,
+                  duration: 0.25,
+                  ease: "power2.out",
+                },
+                "-=0.45",
+              );
             }
 
             if (chars.length) {
-              tl.to(chars, {
-                opacity: 1, y: 0, rotateX: 0, duration: 0.5,
-                stagger: 0.012, ease: "power1.out",
-              }, "-=0.7");
+              tl.to(
+                chars,
+                {
+                  opacity: 1,
+                  y: 0,
+                  rotateX: 0,
+                  duration: 0.2,
+                  stagger: 0.006,
+                  ease: "power1.out",
+                },
+                "-=0.35",
+              );
             }
           });
 
@@ -287,7 +315,9 @@ export function useLandingAnimations() {
           });
 
           gsap.set(".split-text .char", {
-            opacity: 1, y: 0, rotateX: 0,
+            opacity: 1,
+            y: 0,
+            rotateX: 0,
           });
         });
       }

@@ -1,168 +1,389 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState, useRef, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
-  Gamepad2,
-  Brain,
-  Puzzle,
-  Zap,
-  Grid3x3,
-  MousePointerClick,
-  Type,
-  Volume2,
-  Ear,
-  Timer,
-  Trophy,
-  Flame,
+  Star,
+  Play,
+  Search,
   Lock,
+  HelpCircle,
+  Gift,
+  User,
+  Settings,
+  LogOut,
+  Zap,
 } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { useLocale } from "@/lib/i18n";
-import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import { useAgeGroup } from "@/lib/use-age-group";
-import { AGE_TRACKS, AGE_GROUP_LABEL } from "@/lib/age-tracks";
-
+import { AGE_TRACKS, AGE_GROUP_LABEL, type AgeTrack } from "@/lib/age-tracks";
+import { AgeThemeSwitcher } from "@/components/age-theme-switcher";
+import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 
 export const Route = createFileRoute("/games")({
   component: GamesPage,
   head: () => ({
     meta: [
-      { title: "Jogos de inglês — Learning English with Coach" },
+      { title: "Games — Learning English with Coach" },
       {
         name: "description",
         content:
-          "Aprenda inglês jogando: vocabulário, pronúncia e gramática em jogos rápidos e divertidos.",
+          "Aprenda inglês jogando: vocabulário, gramática e conversação em jogos adaptados à sua idade.",
       },
-      { property: "og:title", content: "Jogos de inglês — Learning English with Coach" },
-      { property: "og:description", content: "Vocabulário, pronúncia e gramática em jogos rápidos." },
-      { property: "og:url", content: "https://coach-speak-bright.lovable.app/games" },
-      { property: "og:type", content: "website" },
+      { property: "og:title", content: "Games — Learning English with Coach" },
     ],
-    links: [{ rel: "canonical", href: "https://coach-speak-bright.lovable.app/games" }],
   }),
 });
 
-const games = [
-  { icon: Brain, pt: "Jogo da Memória", en: "Memory Game", xp: 40, unlocked: true, color: "from-sunset to-amber" },
-  { icon: Puzzle, pt: "Palavras Cruzadas", en: "Crossword", xp: 60, unlocked: true, color: "from-amber to-magenta" },
-  { icon: Grid3x3, pt: "Caça-Palavras", en: "Word Search", xp: 30, unlocked: true, color: "from-magenta to-violet" },
-  { icon: MousePointerClick, pt: "Arrastar e Soltar", en: "Drag & Drop", xp: 40, unlocked: true, color: "from-violet to-sunset" },
-  { icon: Type, pt: "Complete a Frase", en: "Fill the Blank", xp: 35, unlocked: true, color: "from-sunset to-magenta" },
-  { icon: Zap, pt: "Combinar Palavras", en: "Word Match", xp: 25, unlocked: true, color: "from-amber to-violet" },
-  { icon: Volume2, pt: "Desafio de Pronúncia", en: "Pronunciation Challenge", xp: 80, unlocked: true, color: "from-magenta to-sunset" },
-  { icon: Ear, pt: "Desafio de Escuta", en: "Listening Challenge", xp: 70, unlocked: true, color: "from-violet to-amber" },
-  { icon: Timer, pt: "Quiz Relâmpago", en: "Speed Quiz", xp: 100, unlocked: false, color: "from-sunset to-violet" },
-];
+type GameEntry = AgeTrack["games"][number];
+
+const CAT_LABELS: Record<GameEntry["cat"], { pt: string; en: string }> = {
+  vocabulary: { pt: "Vocabulário", en: "Vocabulary" },
+  grammar: { pt: "Gramática", en: "Grammar" },
+  speaking: { pt: "Conversação", en: "Speaking" },
+  listening: { pt: "Escuta", en: "Listening" },
+  writing: { pt: "Escrita", en: "Writing" },
+  mixed: { pt: "Misto", en: "Mixed" },
+};
+
+function formatPlays(n: number) {
+  return n >= 1000 ? `${(n / 1000).toFixed(1).replace(".0", "")}k` : String(n);
+}
 
 function GamesPage() {
   const { locale } = useLocale();
+  const { user, signOut } = useAuth();
   const { group } = useAgeGroup();
-  const ageGames = AGE_TRACKS[group].games;
+  const track = AGE_TRACKS[group];
   const ageLabel = AGE_GROUP_LABEL[group];
-  return (
-    <div className="min-h-screen">
-      <SiteHeader />
 
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-magenta/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-magenta">
-              <Gamepad2 className="h-3.5 w-3.5" /> {locale === "pt" ? "Jogar & Aprender" : "Play & Learn"}
-            </div>
-            <h1 className="mt-3 font-display text-4xl font-bold md:text-5xl">
-              {locale === "pt" ? "Jogos Educativos" : "Educational Games"}
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const avatarRef = useRef<HTMLDivElement>(null);
+  const [search, setSearch] = useState("");
+  const [activeCat, setActiveCat] = useState<"all" | GameEntry["cat"]>("all");
+
+  useEffect(() => {
+    setActiveCat("all");
+    setSearch("");
+  }, [group]);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
+        setAvatarMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const { data: profileStats } = useQuery({
+    queryKey: ["games-profile-stats", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("xp,coins,level,streak")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return data as { xp: number; coins: number; level: number; streak: number } | null;
+    },
+    staleTime: 30_000,
+  });
+
+  const stats = [
+    {
+      label: locale === "pt" ? "XP total" : "Total XP",
+      value: (profileStats?.xp ?? 0).toLocaleString(),
+    },
+    { label: locale === "pt" ? "Moedas" : "Coins", value: String(profileStats?.coins ?? 0) },
+    { label: locale === "pt" ? "Nível" : "Level", value: String(profileStats?.level ?? 1) },
+    {
+      label: locale === "pt" ? "Dias seguidos" : "Day streak",
+      value: String(profileStats?.streak ?? 0),
+    },
+  ];
+
+  const categories = Array.from(new Set(track.games.map((g) => g.cat)));
+
+  const filteredGames = track.games.filter((g) => {
+    if (activeCat !== "all" && g.cat !== activeCat) return false;
+    if (search.trim()) {
+      const title = (locale === "pt" ? g.pt : g.en).toLowerCase();
+      if (!title.includes(search.trim().toLowerCase())) return false;
+    }
+    return true;
+  });
+
+  const mostPlayed = [...track.games]
+    .filter((g) => !g.locked)
+    .sort((a, b) => b.plays - a.plays)
+    .slice(0, 5);
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+      {/* Left Sidebar */}
+      <VideosSidebar />
+
+      {/* Main area */}
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        {/* Top Header Bar */}
+        <header className="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 shrink-0 z-10">
+          <div className="flex items-center gap-3 min-w-0">
+            <h1 className="font-display text-xl font-bold text-[var(--ink)] shrink-0">
+              {locale === "pt" ? "Jogos" : "Games"}
             </h1>
-            <p className="mt-2 max-w-xl text-muted-foreground">
-              {locale === "pt"
-                ? "Ganhe XP, moedas e medalhas enquanto pratica inglês em jogos rápidos e divertidos."
-                : "Earn XP, coins and badges while practicing English in quick, fun games."}
-            </p>
+            <div className="hidden md:block">
+              <AgeThemeSwitcher />
+            </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="glass rounded-2xl px-4 py-3 text-center shadow-card">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber">
-                <Trophy className="h-3.5 w-3.5" /> XP
-              </div>
-              <div className="font-display text-2xl font-bold">2.450</div>
-            </div>
-            <div className="glass rounded-2xl px-4 py-3 text-center shadow-card">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-sunset">
-                <Flame className="h-3.5 w-3.5" /> {locale === "pt" ? "Streak" : "Streak"}
-              </div>
-              <div className="font-display text-2xl font-bold">12</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Age-personalized games */}
-        <div className="mt-10">
-          <div className="flex items-end justify-between mb-4">
-            <div>
-              <div className="text-xs font-bold uppercase tracking-widest text-magenta">
-                {locale === "pt" ? "Para você" : "For you"} · {ageLabel.pt} ({ageLabel.range})
-              </div>
-              <h2 className="mt-1 font-display text-2xl font-bold">
-                {locale === "pt" ? "Jogos recomendados para a sua idade" : "Games recommended for your age"}
-              </h2>
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {ageGames.map((g) => (
-              <div key={g.en} className="rounded-2xl border bg-card p-5 shadow-card hover:-translate-y-0.5 transition">
-                <div className="flex items-start justify-between">
-                  <span className="text-3xl" aria-hidden>{g.emoji}</span>
-                  <span className="rounded-full bg-amber/15 px-2.5 py-1 text-xs font-bold text-amber">
-                    +{g.xp} XP
-                  </span>
-                </div>
-                <h3 className="mt-4 font-display text-lg font-bold">{locale === "pt" ? g.pt : g.en}</h3>
-                <Button asChild className="bg-gradient-sunset mt-4 w-full text-white shadow-soft hover:opacity-90">
-                  <Link to="/lesson">{locale === "pt" ? "Jogar" : "Play"}</Link>
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
-          {games.map((g) => (
-            <div
-              key={g.en}
-              className={`group relative overflow-hidden rounded-3xl border p-6 shadow-card transition-all ${
-                g.unlocked
-                  ? "border-border bg-card hover:-translate-y-1 hover:shadow-glow"
-                  : "border-border bg-muted/40 opacity-70"
-              }`}
-            >
-              <div className={`absolute -right-12 -top-12 h-40 w-40 rounded-full bg-gradient-to-br ${g.color} opacity-15 blur-2xl transition-opacity group-hover:opacity-30`} />
-              <div className="flex items-start justify-between">
-                <div className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${g.color} shadow-soft`}>
-                  <g.icon className="h-7 w-7 text-white" />
-                </div>
-                {g.unlocked ? (
-                  <span className="rounded-full bg-amber/15 px-2.5 py-1 text-xs font-bold text-amber">
-                    +{g.xp} XP
-                  </span>
-                ) : (
-                  <Lock className="h-4 w-4 text-muted-foreground" />
-                )}
-              </div>
-              <h3 className="mt-5 font-display text-xl font-bold">{locale === "pt" ? g.pt : g.en}</h3>
-              <div className="mt-1 text-sm text-muted-foreground">
-                {g.unlocked
-                  ? locale === "pt" ? "2–5 min · Todos os níveis" : "2–5 min · All levels"
-                  : locale === "pt" ? "Complete a Unidade 3 para desbloquear" : "Complete Unit 3 to unlock"}
-              </div>
-              {g.unlocked && (
-                <Button asChild className="bg-gradient-sunset mt-5 w-full text-white shadow-soft hover:opacity-90">
-                  <Link to="/lesson">{locale === "pt" ? "Jogar" : "Play"}</Link>
-                </Button>
+            <button className="bg-[var(--ink)] text-white px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity">
+              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              Upgrade
+            </button>
+            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
+              <HelpCircle className="w-5 h-5" />
+            </button>
+            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
+              <Gift className="w-5 h-5" />
+            </button>
+            {/* Avatar — mobile */}
+            <div className="relative md:hidden" ref={avatarRef}>
+              {avatarMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
+                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                      <User className="w-4 h-4 text-(--violet)" />
+                      {locale === "pt" ? "Ver perfil" : "View profile"}
+                    </button>
+                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                      <Settings className="w-4 h-4 text-gray-400" />
+                      {locale === "pt" ? "Definições" : "Settings"}
+                    </button>
+                    <div className="mx-3 my-1 h-px bg-gray-50" />
+                    <button
+                      onClick={() => signOut()}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      {locale === "pt" ? "Sair da conta" : "Sign out"}
+                    </button>
+                  </div>
+                </>
               )}
+              <button
+                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
+                className="relative inline-flex"
+              >
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User className="w-4 h-4 text-gray-600" />
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+              </button>
             </div>
-          ))}
+            {/* Avatar — desktop */}
+            <div className="hidden md:block">
+              <div className="relative inline-flex">
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User className="w-4 h-4 text-gray-600" />
+                </div>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
+          <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10">
+            {/* Hero: title/tagline + stats */}
+            <div className="grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-6 md:gap-0 border border-gray-100 rounded-2xl overflow-hidden mb-8 md:mb-12">
+              <div className="p-6 md:p-10 md:border-r border-gray-100 flex flex-col justify-center gap-3">
+                <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-orange-600">
+                  {locale === "pt" ? "Para você" : "For you"} · {ageLabel.pt} ({ageLabel.range})
+                </span>
+                <h2 className="font-display text-2xl md:text-4xl font-bold text-(--ink)">
+                  {locale === "pt" ? "Jogos Educativos" : "Educational Games"}
+                </h2>
+                <p className="text-gray-500 text-sm md:text-base max-w-md">
+                  {locale === "pt" ? track.tagline.pt : track.tagline.en}
+                </p>
+                <div className="md:hidden mt-1">
+                  <AgeThemeSwitcher />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-px bg-gray-100">
+                {stats.map((s) => (
+                  <div
+                    key={s.label}
+                    className="bg-white p-5 md:p-6 flex flex-col justify-center gap-1"
+                  >
+                    <span className="font-display text-2xl md:text-3xl font-bold text-(--ink)">
+                      {s.value}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-gray-400">
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Toolbar: search + category chips */}
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-4 md:mb-6">
+              <div>
+                <h3 className="font-display text-xl md:text-2xl font-bold text-(--ink) mb-1">
+                  {locale === "pt" ? "Todos os jogos" : "All games"}
+                </h3>
+                <span className="text-sm text-gray-400">
+                  {filteredGames.length} {locale === "pt" ? "jogos" : "games"}
+                </span>
+              </div>
+              <div className="relative w-full md:w-72">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={locale === "pt" ? "Buscar jogos" : "Search games"}
+                  className="w-full rounded-xl border border-gray-200 pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-(--primary)/30 focus:border-primary"
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 mb-8 md:mb-12">
+              <button
+                onClick={() => setActiveCat("all")}
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+                  activeCat === "all"
+                    ? "bg-orange-600 text-white"
+                    : "bg-white border border-gray-200 text-gray-500 hover:border-gray-300"
+                }`}
+              >
+                {locale === "pt" ? "Todos" : "All"} ({track.games.length})
+              </button>
+              {categories.map((c) => {
+                const count = track.games.filter((g) => g.cat === c).length;
+                return (
+                  <button
+                    key={c}
+                    onClick={() => setActiveCat(c)}
+                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+                      activeCat === c
+                        ? "bg-orange-600 text-white"
+                        : "bg-white border border-gray-200 text-gray-500 hover:border-gray-300"
+                    }`}
+                  >
+                    {locale === "pt" ? CAT_LABELS[c].pt : CAT_LABELS[c].en} ({count})
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Catalog */}
+            {filteredGames.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                {filteredGames.map((game) => (
+                  <GameCard key={game.en} game={game} locale={locale} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 border-2 border-dashed border-gray-100 rounded-2xl">
+                <p className="text-gray-400 text-sm">
+                  {locale === "pt" ? "Nenhum jogo encontrado." : "No games found."}
+                </p>
+              </div>
+            )}
+
+            {/* Most played */}
+            <div className="mt-10 md:mt-14">
+              <h3 className="font-display text-xl md:text-2xl font-bold text-(--ink) mb-4 md:mb-6">
+                {locale === "pt" ? "Mais jogados esta semana" : "Most played this week"}
+              </h3>
+              <div className="divide-y divide-gray-100">
+                {mostPlayed.map((g, i) => (
+                  <div key={g.en} className="flex items-center gap-4 md:gap-5 py-3 md:py-4">
+                    <span className="font-display text-xl md:text-2xl font-bold text-orange-600 w-8 shrink-0">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="flex-1 min-w-0 font-display font-bold text-sm md:text-base truncate text-(--ink)">
+                      {locale === "pt" ? g.pt : g.en}
+                    </span>
+                    <span className="hidden sm:inline-block text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-2 py-1 rounded-full shrink-0">
+                      {locale === "pt" ? CAT_LABELS[g.cat].pt : CAT_LABELS[g.cat].en}
+                    </span>
+                    <span className="text-xs md:text-sm text-gray-400 font-semibold w-16 md:w-20 text-right shrink-0">
+                      {formatPlays(g.plays)} {locale === "pt" ? "jogadas" : "plays"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* CTA banner */}
+            <div className="mt-10 md:mt-16 rounded-2xl overflow-hidden bg-orange-600 text-white p-6 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6">
+              <h2 className="font-display text-2xl md:text-4xl font-bold text-center md:text-left max-w-md">
+                {locale === "pt" ? "Aprenda inglês jogando." : "Learn English by playing."}
+              </h2>
+              <button className="px-6 py-3 rounded-xl bg-white text-primary text-sm md:text-base font-semibold hover:opacity-90 transition-opacity shrink-0">
+                {locale === "pt" ? "Começar um jogo →" : "Start a game →"}
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      {/* Mobile bottom nav */}
+      <VideosMobileNav />
+    </div>
+  );
+}
+
+function GameCard({ game, locale }: { game: GameEntry; locale: string }) {
+  const title = locale === "pt" ? game.pt : game.en;
+  const catLabel = CAT_LABELS[game.cat];
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all group flex flex-col">
+      <div className="relative h-40 md:h-44 bg-gray-50 flex items-center justify-center">
+        <span
+          className="text-5xl md:text-6xl group-hover:scale-105 transition-transform duration-500"
+          aria-hidden
+        >
+          {game.emoji}
+        </span>
+        <span className="absolute top-3 right-3 bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+          +{game.xp} XP
+        </span>
+        <span className="absolute top-3 left-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
+          <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+          <span className="text-xs font-bold text-(--ink)">{game.rating}</span>
+        </span>
+      </div>
+      <div className="p-5 flex flex-col flex-1 gap-2">
+        <span className="self-start text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
+          {locale === "pt" ? catLabel.pt : catLabel.en}
+        </span>
+        <h3 className="font-display text-lg font-bold text-[var(--ink)]">{title}</h3>
+        <div className="text-xs text-gray-400 font-semibold flex items-center gap-3">
+          <span>{game.dur}</span>
+          <span>{game.level}</span>
+        </div>
+        <div className="mt-auto pt-2">
+          {game.locked ? (
+            <div className="w-full py-2.5 rounded-xl bg-gray-50 text-gray-400 text-sm font-semibold flex items-center justify-center gap-2">
+              <Lock className="w-4 h-4" />
+              {locale === "pt" ? game.unlockPt : game.unlockEn}
+            </div>
+          ) : (
+            <button className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+              {locale === "pt" ? "Jogar" : "Play"}
+              <Play className="w-4 h-4" fill="currentColor" />
+            </button>
+          )}
         </div>
       </div>
-      <SiteFooter />
     </div>
   );
 }

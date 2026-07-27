@@ -1,0 +1,373 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@500;600;800&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#301400",
+                        "on-tertiary-container": "#fffbff",
+                        "tertiary-container": "#b55d00",
+                        "on-primary-container": "#fffbff",
+                        "on-secondary-container": "#5c647a",
+                        "tertiary": "#904900",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#494bd6",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-container-highest": "#e0e3e5",
+                        "outline-variant": "#c7c4d7",
+                        "inverse-primary": "#c0c1ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-container": "#dae2fd",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#dae2fd",
+                        "background": "#f7f9fb",
+                        "on-surface-variant": "#464554",
+                        "surface": "#f7f9fb",
+                        "primary": "#4648d4",
+                        "on-primary-fixed": "#07006c",
+                        "surface-container-low": "#f2f4f6",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#d8dadc",
+                        "surface-container": "#eceef0",
+                        "inverse-on-surface": "#eff1f3",
+                        "tertiary-fixed": "#ffdcc5",
+                        "surface-bright": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "outline": "#767586",
+                        "on-background": "#191c1e",
+                        "on-surface": "#191c1e",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "primary-container": "#6063ee",
+                        "inverse-surface": "#2d3133",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#e1e0ff",
+                        "secondary": "#565e74",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#131b2e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "1.5rem",
+                        "stack-md": "1.5rem",
+                        "margin-page": "2rem",
+                        "container-max": "1200px",
+                        "stack-xl": "4rem"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "button": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "display-lg-mobile": ["Hanken Grotesk"],
+                        "label-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "button": ["14px", {"lineHeight": "1", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    }catch(_e){}</script></head><body class="bg-background font-body-md text-on-surface min-h-screen flex flex-col overflow-hidden">
+<!-- Header -->
+<header class="h-16 flex items-center justify-between px-6 bg-white border-b border-outline-variant z-50">
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md font-bold text-on-surface">AI Coach</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-on-background text-white px-4 py-1.5 rounded-lg flex items-center gap-2 font-button text-button hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-yellow-400 text-[18px]" style="font-variation-settings: &quot;FILL&quot; 1;">bolt</span>
+                Upgrade
+            </button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">redeem</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center relative">
+<span class="material-symbols-outlined text-[20px] text-on-secondary-fixed">face</span>
+<div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+</div>
+</div>
+</header>
+<div class="flex flex-grow overflow-hidden"><aside class="w-[280px] flex-shrink-0 bg-white border-r border-outline-variant flex flex-col h-full overflow-y-auto scrollbar-hide">
+<!-- Sidebar Header -->
+<div class="p-6 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img alt="User" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNtLiY5nSvi0g9lDqU0XphlePf5ffECd4kvyFOM3_I_fkC3rggmcSYX5ksC5_d4132srLw45VPlAFI2GB-QZdn3Uo2Fo8fDkZwS86suTMDI5q-qhw0986G5rjZmgngD3RLJ0km899UAb_VHX19I7AEbCSJbmvECewPbZ0TWZTNAEQH2WdbJZi5aNtw1tM3LqH0m_X2kuiwnuq7ryORL3FIQKzAZVvusHKbZLtEgy4GGmxykZRgKKdsFQ">
+</div>
+<div>
+<div class="font-headline-md text-[18px] font-bold text-on-surface">Learning</div>
+<div class="text-[10px] font-label-sm text-on-surface-variant opacity-60 uppercase tracking-wider">COACH</div>
+</div>
+</div>
+<button class="text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">first_page</span>
+</button>
+</div>
+<!-- Navigation Groups -->
+<div class="flex-grow px-4 py-2 space-y-6">
+<!-- PLATAFORMA -->
+<div>
+<div class="px-4 mb-2 text-[11px] font-label-sm text-on-surface-variant opacity-50 uppercase tracking-widest">Plataforma</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">home</span>
+<span class="font-button">Home</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">grid_view</span>
+<span class="font-button">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">sports_esports</span>
+<span class="font-button">Jogos</span>
+</a>
+</nav>
+</div>
+<!-- APRENDIZADO -->
+<div>
+<div class="px-4 mb-2 text-[11px] font-label-sm text-on-surface-variant opacity-50 uppercase tracking-widest">Aprendizado</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">menu_book</span>
+<span class="font-button">Currículo</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">smart_toy</span>
+<span class="font-button">AI Coach</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-surface-container-low text-primary font-semibold" href="#">
+<span class="material-symbols-outlined text-[22px]">movie</span>
+<span class="font-button">Vídeos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">mic</span>
+<span class="font-button">Pronúncia</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">auto_stories</span>
+<span class="font-button">Reading</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">emoji_events</span>
+<span class="font-button">Recompensas</span>
+</a>
+</nav>
+</div>
+<!-- COMUNIDADE -->
+<div>
+<div class="px-4 mb-2 text-[11px] font-label-sm text-on-surface-variant opacity-50 uppercase tracking-widest">Comunidade</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">groups</span>
+<span class="font-button">Comunidade</span>
+</a>
+</nav>
+</div>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-4 border-t border-outline-variant mt-auto">
+<div class="flex items-center justify-between p-2 rounded-xl hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center relative">
+<span class="material-symbols-outlined text-white">person</span>
+<div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+</div>
+<div class="overflow-hidden">
+<div class="font-button text-on-surface truncate">Utilizador</div>
+<div class="text-[11px] text-on-surface-variant opacity-60 truncate">Premium Member</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">expand_more</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-grow relative flex flex-col bg-white">
+<div class="flex-grow overflow-y-auto scrollbar-hide px-gutter py-12 flex flex-col items-center justify-center">
+<div class="w-full max-w-[800px]">
+<!-- Welcome Header -->
+<div class="text-center mb-12">
+<h1 class="font-display-lg text-display-lg text-on-surface mb-4">O que vamos aprender hoje?</h1>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+<div class="flex items-center gap-4 p-4 bg-white border border-outline-variant rounded-2xl hover:border-primary/40 cursor-pointer transition-all shadow-sm">
+<div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary">menu_book</span>
+</div>
+<span class="font-button text-on-surface">Explicar Present Perfect</span>
+</div>
+<div class="flex items-center gap-4 p-4 bg-white border border-outline-variant rounded-2xl hover:border-primary/40 cursor-pointer transition-all shadow-sm">
+<div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary">mic</span>
+</div>
+<span class="font-button text-on-surface">Praticar pronúncia de 'th'</span>
+</div>
+<div class="flex items-center gap-4 p-4 bg-white border border-outline-variant rounded-2xl hover:border-primary/40 cursor-pointer transition-all shadow-sm">
+<div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary">edit</span>
+</div>
+<span class="font-button text-on-surface">Corrigir minha redação</span>
+</div>
+<div class="flex items-center gap-4 p-4 bg-white border border-outline-variant rounded-2xl hover:border-primary/40 cursor-pointer transition-all shadow-sm">
+<div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary">chat_bubble</span>
+</div>
+<span class="font-button text-on-surface">Simular entrevista de emprego</span>
+</div>
+</div>
+</div>
+<!-- Quick Action Cards Grid -->
+</div>
+</div>
+<!-- Integrated Chat Input Footer -->
+<div class="w-full max-w-[800px] mx-auto px-6 pb-6 relative">
+<div class="relative bg-white rounded-2xl border border-outline-variant shadow-sm focus-within:shadow-md focus-within:ring-1 focus-within:ring-primary/20 transition-all overflow-hidden">
+<div class="flex items-center px-4 pt-4 pb-2">
+<textarea class="w-full bg-transparent border-none focus:ring-0 resize-none font-body-md text-on-surface placeholder:text-on-surface-variant/60 max-h-40" placeholder="Digite sua pergunta..." rows="1"></textarea>
+<button class="ml-2 p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+<div class="flex items-center justify-between px-4 py-3 bg-surface-container-low/30 border-t border-outline-variant/30">
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">attachment</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Attach</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Voice Message</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">explore</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Browse Prompts</span>
+</button>
+</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant opacity-60">20 / 3,000</div>
+</div>
+</div>
+<p class="text-[10px] text-center mt-3 text-on-surface-variant opacity-50">
+                    Script may generate inaccurate information about people, places, or facts. Model: Script AI v1.3
+                </p>
+</div>
+<!-- Dynamic Floating Orb -->
+</main>
+<!-- Right Sidebar - Projects -->
+<aside class="w-[320px] flex-shrink-0 bg-surface-container-lowest border-l border-outline-variant flex flex-col transition-all" id="projects-sidebar">
+<div class="p-6 flex items-center"><button onclick="const s = document.getElementById('projects-sidebar'); const isCol = s.classList.contains('w-[320px]'); s.classList.toggle('w-[320px]', !isCol); s.classList.toggle('w-16', isCol); this.querySelector('span').textContent = isCol ? 'last_page' : 'first_page'; document.querySelectorAll('#projects-sidebar &gt; div:not(:first-child)').forEach(el =&gt; el.classList.toggle('hidden', isCol))" class="p-1 hover:bg-surface-container rounded-md transition-colors text-on-surface-variant mr-2"><span class="material-symbols-outlined text-[20px]">last_page</span></button>
+<div class="flex items-center gap-2 flex-grow">
+<span class="font-headline-md text-[18px] font-semibold">Projects</span>
+<span class="text-on-surface-variant opacity-60 text-sm">(7)</span>
+</div>
+<button class="p-1 hover:bg-surface-container rounded-md transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</div>
+<div class="flex-grow overflow-y-auto px-4 pb-6 space-y-3 scrollbar-hide">
+<!-- New Project Button -->
+<button class="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-outline-variant hover:border-primary hover:bg-primary-container/5 transition-all text-left">
+<span class="material-symbols-outlined text-primary">add_circle</span>
+<div>
+<div class="font-button text-on-surface font-bold">New Project</div>
+<div class="text-[12px] text-on-surface-variant">—</div>
+</div>
+</button>
+<!-- Project List -->
+<div class="space-y-3">
+<!-- Project 1 -->
+<div class="p-4 rounded-xl bg-white border border-outline-variant hover:border-primary/40 cursor-pointer transition-all shadow-sm">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-button text-sm font-bold text-on-surface truncate pr-4">Learning From 100 Years o...</h4>
+<div class="w-2 h-2 rounded-full bg-primary/20"></div>
+</div>
+<p class="text-[12px] text-on-surface-variant line-clamp-1">For athletes, high altitude prod...</p>
+</div>
+<!-- Project 2 -->
+<div class="p-4 rounded-xl bg-white border border-outline-variant hover:border-primary/40 cursor-pointer transition-all shadow-sm">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-button text-sm font-bold text-on-surface truncate pr-4">Research officiants</h4>
+<div class="w-2 h-2 rounded-full bg-primary/20"></div>
+</div>
+<p class="text-[12px] text-on-surface-variant line-clamp-1">Maxwell's equations—the foun...</p>
+</div>
+<!-- Project 3 -->
+<div class="p-4 rounded-xl bg-white border border-outline-variant hover:border-primary/40 cursor-pointer transition-all shadow-sm">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-button text-sm font-bold text-on-surface truncate pr-4">What does a senior lead de...</h4>
+<div class="w-2 h-2 rounded-full bg-primary/20"></div>
+</div>
+<p class="text-[12px] text-on-surface-variant line-clamp-1">Physiological respiration involv...</p>
+</div>
+<!-- Project 4 -->
+<div class="p-4 rounded-xl bg-white border border-outline-variant hover:border-primary/40 cursor-pointer transition-all shadow-sm">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-button text-sm font-bold text-on-surface truncate pr-4">Write a sweet note to your...</h4>
+<div class="w-2 h-2 rounded-full bg-primary/20"></div>
+</div>
+<p class="text-[12px] text-on-surface-variant line-clamp-1">In the eighteenth century the G...</p>
+</div>
+<!-- Project 5 -->
+<div class="p-4 rounded-xl bg-white border border-outline-variant hover:border-primary/40 cursor-pointer transition-all shadow-sm">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-button text-sm font-bold text-on-surface truncate pr-4">Meet with cake bakers</h4>
+<div class="w-2 h-2 rounded-full bg-primary/20"></div>
+</div>
+<p class="text-[12px] text-on-surface-variant line-clamp-1">Physical space is often conceiv...</p>
+</div>
+<!-- Project 6 -->
+<div class="p-4 rounded-xl bg-white border border-outline-variant hover:border-primary/40 cursor-pointer transition-all shadow-sm opacity-60">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-button text-sm font-bold text-on-surface truncate pr-4">Archive Project Alpha</h4>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+<p class="text-[12px] text-on-surface-variant line-clamp-1">Completed marketing assets...</p>
+</div>
+</div>
+</div>
+<div class="p-6 border-t border-outline-variant bg-surface-container-low/50">
+<button class="w-full flex items-center justify-center gap-2 font-button text-button text-primary hover:underline">Ver Todos Projectos<span class="material-symbols-outlined text-[18px]">arrow_right_alt</span>
+</button>
+</div>
+</aside>
+</div>
+<script>
+        // Micro-interactions for textarea
+        const textarea = document.querySelector('textarea');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+        });
+
+        // Simple scroll shadow for sidebar header
+        const sidebar = document.querySelector('aside .overflow-y-auto');
+        const sidebarHeader = document.querySelector('aside .p-6');
+        sidebar.addEventListener('scroll', () => {
+            if (sidebar.scrollTop > 0) {
+                sidebarHeader.classList.add('shadow-sm', 'bg-white');
+            } else {
+                sidebarHeader.classList.remove('shadow-sm', 'bg-white');
+            }
+        });
+    </script>
+
+
+</body></html>

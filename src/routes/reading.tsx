@@ -1,13 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Volume2, Mic, Square, Loader2, Sparkles, RotateCcw, BookOpen, Gauge } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import {
+  Volume2,
+  Mic,
+  Square,
+  Loader2,
+  Sparkles,
+  BookOpen,
+  User,
+  Settings,
+  LogOut,
+  Zap,
+  CheckCircle,
+  XCircle,
+  HelpCircle,
+  Gift,
+} from "lucide-react";
+import { useLocale } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
 import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
 import { assessReading, getReadingHistory } from "@/lib/reading.functions";
 import { awardActivity } from "@/lib/gamification";
@@ -21,20 +32,18 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 
 export const Route = createFileRoute("/reading")({
   component: ReadingPage,
   head: () => ({
     meta: [
-      { title: "Reading Mode — Learning English with Coach" },
+      { title: "Reading — Learning English with Coach" },
       {
         name: "description",
-        content:
-          "Modo Reading completo: texto, áudio nativo, vocabulário, IPA, quiz e Read Aloud com análise por IA (pronúncia, fluência, ritmo).",
+        content: "Modo Reading: texto, áudio nativo, vocabulário, pronúncia e quiz.",
       },
-      { property: "og:title", content: "Reading Mode — Coach" },
-      { property: "og:description", content: "Leia, ouça, grave e receba um relatório detalhado." },
-      { property: "og:type", content: "article" },
+      { property: "og:title", content: "Reading — Coach" },
     ],
   }),
 });
@@ -45,6 +54,7 @@ type Passage = {
   title: { pt: string; en: string };
   text: string;
   vocab: { word: string; ipa: string; pt: string }[];
+  idiom: { pt: string; en: string; meaning: string };
   quiz: { q: string; options: string[]; answer: number }[];
 };
 
@@ -53,84 +63,63 @@ const PASSAGES: Passage[] = [
     key: "morning-routine-a2",
     level: "A2",
     title: { pt: "Rotina da manhã", en: "Morning routine" },
-    text:
-      "Every morning I wake up at seven o'clock. I drink a glass of water and open the window. The sun is bright and the birds are singing. After a quick shower, I have breakfast with my family. We usually eat toast, fruit and coffee. Then I walk to the bus stop and go to work.",
+    text: "Every morning I wake up at seven o'clock. I drink a glass of water and open the window. The sun is bright and the birds are singing. After a quick shower, I have breakfast with my family. We usually eat toast, fruit and coffee. Then I walk to the bus stop and go to work.",
     vocab: [
       { word: "wake up", ipa: "/ˈweɪk ʌp/", pt: "acordar" },
       { word: "bright", ipa: "/braɪt/", pt: "brilhante" },
       { word: "shower", ipa: "/ˈʃaʊ.ər/", pt: "duche" },
       { word: "breakfast", ipa: "/ˈbrek.fəst/", pt: "pequeno-almoço" },
     ],
+    idiom: { pt: "Chave para o sucesso", en: "The key to success", meaning: "Algo fundamental para alcançar o sucesso." },
     quiz: [
-      { q: "What time do I wake up?", options: ["6", "7", "8"], answer: 1 },
-      { q: "What do we eat for breakfast?", options: ["Rice", "Toast and fruit", "Soup"], answer: 1 },
-      { q: "How do I go to work?", options: ["By car", "By bus", "By bike"], answer: 1 },
+      { q: "Que horas eu acordo?", options: ["6 horas", "7 horas", "8 horas"], answer: 1 },
+      { q: "O que comemos ao pequeno-almoço?", options: ["Arroz", "Torradas e fruta", "Sopa"], answer: 1 },
+      { q: "Como vou trabalhar?", options: ["De carro", "De autocarro", "De bicicleta"], answer: 1 },
     ],
   },
   {
     key: "city-park-b1",
     level: "B1",
     title: { pt: "No parque da cidade", en: "At the city park" },
-    text:
-      "On Saturday afternoons the park is full of families. Children run across the grass while their parents chat on wooden benches. Near the pond, an old man feeds the ducks with pieces of bread. A street musician plays a soft guitar melody and a few tourists stop to listen and drop coins into his open case.",
+    text: "On Saturday afternoons the park is full of families. Children run across the grass while their parents chat on wooden benches. Near the pond, an old man feeds the ducks with pieces of bread. A street musician plays a soft guitar melody and a few tourists stop to listen and drop coins into his open case.",
     vocab: [
       { word: "grass", ipa: "/ɡrɑːs/", pt: "relva" },
       { word: "bench", ipa: "/bentʃ/", pt: "banco" },
       { word: "pond", ipa: "/pɒnd/", pt: "lago pequeno" },
       { word: "melody", ipa: "/ˈmel.ə.di/", pt: "melodia" },
     ],
+    idiom: { pt: "Deitar moedas", en: "Drop coins", meaning: "Contribuir com dinheiro para alguém." },
     quiz: [
-      { q: "When is the park full?", options: ["Monday morning", "Saturday afternoon", "Sunday night"], answer: 1 },
-      { q: "Who feeds the ducks?", options: ["A child", "An old man", "A tourist"], answer: 1 },
-      { q: "What does the musician play?", options: ["Piano", "Guitar", "Violin"], answer: 1 },
+      { q: "Quando o parque está cheio?", options: ["Segunda de manhã", "Sábado à tarde", "Domingo à noite"], answer: 1 },
+      { q: "Quem alimenta os patos?", options: ["Uma criança", "Um homem idoso", "Um turista"], answer: 1 },
+      { q: "O que o músico toca?", options: ["Piano", "Guitarra", "Violino"], answer: 1 },
     ],
   },
   {
     key: "climate-change-b2",
     level: "B2",
     title: { pt: "Mudanças climáticas", en: "Climate change" },
-    text:
-      "Scientists agree that human activity is warming the planet at an unprecedented rate. Rising sea levels threaten coastal cities, while extreme weather events have become alarmingly frequent. Although governments have pledged ambitious targets, meaningful progress depends on the daily choices of individuals: how we travel, what we eat and the energy we consume at home.",
+    text: "Scientists agree that human activity is warming the planet at an unprecedented rate. Rising sea levels threaten coastal cities, while extreme weather events have become alarmingly frequent. Although governments have pledged ambitious targets, meaningful progress depends on the daily choices of individuals: how we travel, what we eat and the energy we consume at home.",
     vocab: [
       { word: "unprecedented", ipa: "/ʌnˈpres.ɪ.den.tɪd/", pt: "sem precedentes" },
       { word: "threaten", ipa: "/ˈθret.ən/", pt: "ameaçar" },
       { word: "pledge", ipa: "/pledʒ/", pt: "prometer" },
       { word: "consume", ipa: "/kənˈsjuːm/", pt: "consumir" },
     ],
+    idiom: { pt: "Sem precedentes", en: "Unprecedented", meaning: "Algo que nunca aconteceu antes na história." },
     quiz: [
-      { q: "What is rising?", options: ["Prices", "Sea levels", "Populations"], answer: 1 },
-      { q: "Progress depends on…", options: ["Only governments", "Individual choices too", "Scientists"], answer: 1 },
-      { q: "How frequent are extreme events?", options: ["Rare", "Alarmingly frequent", "Unchanged"], answer: 1 },
+      { q: "O que está a subir?", options: ["Preços", "Nível do mar", "Populações"], answer: 1 },
+      { q: "O progresso depende de…", options: ["Apenas governos", "Escolhas individuais também", "Cientistas"], answer: 1 },
+      { q: "Quão frequentes são os eventos extremos?", options: ["Raros", "Alarmemente frequentes", "Inalterados"], answer: 1 },
     ],
   },
 ];
 
-function highlightPassage(text: string, wrongWords: string[], vocab: string[]) {
-  const wrong = new Set(wrongWords.map((w) => w.toLowerCase()));
-  const vocabSet = new Set(vocab.map((w) => w.toLowerCase()));
-  const parts = text.split(/(\s+|[.,!?;:])/);
-  return parts.map((tok, i) => {
-    const norm = tok.toLowerCase().replace(/[^a-z']/g, "");
-    if (wrong.has(norm))
-      return (
-        <span key={i} className="rounded-md bg-red-500/20 px-1 font-semibold text-red-700 dark:text-red-300">
-          {tok}
-        </span>
-      );
-    if (vocabSet.has(norm))
-      return (
-        <span key={i} className="rounded-md bg-sunset/10 px-1 font-semibold text-sunset">
-          {tok}
-        </span>
-      );
-    return <span key={i}>{tok}</span>;
-  });
-}
-
 function ReadingPage() {
+  const { locale } = useLocale();
+  const { user, signOut } = useAuth();
   const [idx, setIdx] = useState(0);
   const passage = PASSAGES[idx];
-  const [showTranslation, setShowTranslation] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [recording, setRecording] = useState(false);
@@ -138,12 +127,25 @@ function ReadingPage() {
   const [report, setReport] = useState<Awaited<ReturnType<typeof assessReading>> | null>(null);
   const [transcript, setTranscript] = useState("");
   const [attempts, setAttempts] = useState(0);
+  const [quizChecked, setQuizChecked] = useState(false);
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const recorderRef = useRef<Recorder | null>(null);
   const startRef = useRef<number>(0);
+  const avatarRef = useRef<HTMLDivElement>(null);
 
   const [history, setHistory] = useState<Array<Record<string, number | string | null>>>([]);
   const fetchHistory = useServerFn(getReadingHistory);
   const runAssess = useServerFn(assessReading);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
+        setAvatarMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   useEffect(() => {
     fetchHistory({ data: { passageKey: passage.key } })
@@ -205,289 +207,299 @@ function ReadingPage() {
     }
   };
 
-  const wrong = report?.mispronounced?.map((m) => m.word) ?? report?.missing ?? [];
   const quizScore = passage.quiz.reduce(
     (acc, q, i) => acc + (quizAnswers[i] === q.answer ? 1 : 0),
     0,
   );
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <main className="mx-auto max-w-5xl px-6 py-10">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Reading Mode
-            </div>
-            <h1 className="font-display text-3xl font-bold md:text-4xl">
-              {passage.title.pt}
-            </h1>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {PASSAGES.map((p, i) => (
-              <button
-                key={p.key}
-                onClick={() => {
-                  setIdx(i);
-                  setReport(null);
-                  setTranscript("");
-                  setQuizAnswers({});
-                }}
-                className={`rounded-full border-2 px-3 py-1.5 text-xs font-bold transition-all ${
-                  i === idx
-                    ? "border-sunset bg-sunset text-white shadow-soft"
-                    : "border-border bg-background hover:border-magenta/50"
-                }`}
-              >
-                {p.level} · {p.title.pt}
-              </button>
-            ))}
-          </div>
-        </div>
+    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+      {/* Left Sidebar */}
+      <VideosSidebar />
 
-        {/* Passage */}
-        <Card className="mt-6">
-          <CardContent className="p-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge>{passage.level}</Badge>
-              <Button size="sm" variant="outline" onClick={handlePlay} disabled={playing}>
-                {playing ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Volume2 className="mr-1.5 h-4 w-4" />}
-                Ouvir nativo (UK)
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setShowTranslation((s) => !s)}>
-                <BookOpen className="mr-1.5 h-4 w-4" />
-                {showTranslation ? "Ocultar tradução" : "Mostrar tradução"}
-              </Button>
-            </div>
-            <p className="mt-5 font-display text-xl leading-relaxed">
-              {highlightPassage(passage.text, wrong, vocabWords)}
-            </p>
-            {showTranslation && (
-              <p className="mt-3 rounded-2xl bg-muted/40 p-4 text-sm italic text-muted-foreground">
-                Tradução gerada pelo aluno via <em>Mostrar tradução</em> — usa o coach de IA para pedir uma tradução contextual quando precisar.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Vocab */}
-        <section className="mt-6">
-          <h2 className="mb-3 font-display text-lg font-bold">Vocabulário destacado</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {passage.vocab.map((v) => (
-              <Card key={v.word}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="font-display text-lg font-bold">{v.word}</div>
-                    <button
-                      onClick={() => speak(v.word, { accent: "uk" }).catch(() => {})}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-sunset/10 text-sunset hover:bg-sunset/20"
-                      aria-label={`Ouvir ${v.word}`}
-                    >
-                      <Volume2 className="h-4 w-4" />
+      {/* Main area */}
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        {/* Top Header Bar */}
+        <header className="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 shrink-0 z-10">
+          <div className="flex items-center gap-2">
+            <h1 className="font-display text-xl font-bold text-[var(--ink)]">Reading</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="bg-[var(--ink)] text-white px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity">
+              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              Upgrade
+            </button>
+            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
+              <HelpCircle className="w-5 h-5" />
+            </button>
+            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
+              <Gift className="w-5 h-5" />
+            </button>
+            {/* Avatar — mobile */}
+            <div className="relative md:hidden" ref={avatarRef}>
+              {avatarMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
+                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                      <User className="w-4 h-4 text-[var(--violet)]" />
+                      {locale === "pt" ? "Ver perfil" : "View profile"}
+                    </button>
+                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                      <Settings className="w-4 h-4 text-gray-400" />
+                      {locale === "pt" ? "Definições" : "Settings"}
+                    </button>
+                    <div className="mx-3 my-1 h-px bg-gray-50" />
+                    <button onClick={() => signOut()} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left">
+                      <LogOut className="w-4 h-4" />
+                      {locale === "pt" ? "Sair da conta" : "Sign out"}
                     </button>
                   </div>
-                  <div className="mt-1 font-mono text-xs text-magenta">{v.ipa}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">{v.pt}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Read Aloud */}
-        <section className="mt-8">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Read Aloud
+                </>
+              )}
+              <button onClick={() => setAvatarMenuOpen(!avatarMenuOpen)} className="relative inline-flex">
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User className="w-4 h-4 text-gray-600" />
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+              </button>
+            </div>
+            {/* Avatar — desktop */}
+            <div className="hidden md:block">
+              <div className="relative inline-flex">
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User className="w-4 h-4 text-gray-600" />
+                </div>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
               </div>
-              <h2 className="mt-2 font-display text-2xl font-bold">Lê o texto em voz alta</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                A IA vai avaliar pronúncia, fluência, ritmo, entoação, velocidade, pausas e clareza.
-              </p>
+            </div>
+          </div>
+        </header>
 
-              <div className="mt-6 flex flex-col items-center gap-3">
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
+          {/* Mobile: single column | Desktop: two columns */}
+          <div className="px-4 md:px-6 py-6 md:py-10">
+
+            {/* 1. Pronunciation Section — full width on both */}
+            <section className="bg-white rounded-2xl p-5 md:p-6 shadow-[0_4px_20px_0px_rgba(0,0,0,0.04)] border border-gray-100 mb-6 md:mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Mic className="w-5 h-5 text-[var(--primary)]" />
+                <h2 className="font-display text-lg font-bold text-[var(--ink)]">Pronúncia</h2>
+              </div>
+              <p className="text-gray-500 mb-6 text-sm md:text-base">
+                {locale === "pt" ? "Repita a frase abaixo para praticar sua fluência:" : "Repeat the sentence below to practice your fluency:"}
+              </p>
+              <div className="bg-gray-50 rounded-xl p-5 md:p-6 mb-6 md:mb-8 text-center">
+                <p className="text-lg md:text-xl font-bold text-[var(--ink)] leading-relaxed mb-2">
+                  "O aprendizado contínuo é a chave para o domínio de qualquer idioma."
+                </p>
+                <p className="text-xs md:text-sm text-gray-400 italic">
+                  "Continuous learning is the key to mastering any language."
+                </p>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-3 md:gap-4">
                 <button
                   onClick={handleMic}
                   disabled={processing}
-                  className={`bg-gradient-sunset shadow-glow relative flex h-24 w-24 items-center justify-center rounded-full text-white transition-transform disabled:opacity-70 ${
-                    recording ? "scale-110 animate-pulse" : ""
+                  className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center text-white shadow-lg transition-all ${
+                    recording
+                      ? "bg-red-500 animate-pulse scale-110"
+                      : processing
+                        ? "bg-gray-400"
+                        : "bg-[var(--primary)] hover:scale-105"
                   }`}
                 >
                   {processing ? (
-                    <Loader2 className="h-10 w-10 animate-spin" />
+                    <Loader2 className="w-7 h-7 md:w-8 md:h-8 animate-spin" />
                   ) : recording ? (
-                    <Square className="h-8 w-8" />
+                    <Square className="w-6 h-6 md:w-8 md:h-8" />
                   ) : (
-                    <Mic className="h-10 w-10" />
+                    <Mic className="w-7 h-7 md:w-8 md:h-8" />
                   )}
                 </button>
-                <div className="text-sm text-muted-foreground">
-                  {processing
-                    ? "A analisar..."
-                    : recording
-                      ? "A gravar... toca para parar"
-                      : "Toca para gravar"}
-                </div>
-                {report && (
-                  <Button size="sm" variant="outline" onClick={handleMic}>
-                    <RotateCcw className="mr-1.5 h-4 w-4" />
-                    Repetir tentativa
-                  </Button>
-                )}
+                <span className="text-[11px] md:text-xs font-bold text-[var(--primary)] tracking-widest uppercase">
+                  {processing ? "Analisando..." : recording ? "Gravando..." : "Toque para falar"}
+                </span>
               </div>
-
-              {transcript && (
-                <div className="mx-auto mt-6 max-w-2xl rounded-2xl border border-border bg-background/60 p-4 text-left text-sm">
-                  <div className="font-semibold">O que ouvimos:</div>
-                  <div className="text-muted-foreground">"{transcript}"</div>
+              {report && (
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  {[
+                    { label: "Geral", v: report.overall },
+                    { label: "Pronúncia", v: report.pronunciation },
+                    { label: "Fluência", v: report.fluency },
+                    { label: "Clareza", v: report.clarity },
+                  ].map((m) => (
+                    <div key={m.label} className="rounded-xl border border-gray-100 bg-gray-50 p-3 text-center">
+                      <div className="text-[10px] md:text-xs text-gray-400">{m.label}</div>
+                      <div className="mt-1 font-display text-xl md:text-2xl font-bold text-[var(--ink)]">{Math.round(m.v)}</div>
+                    </div>
+                  ))}
                 </div>
               )}
+            </section>
 
-              {report && (
-                <div className="mx-auto mt-6 max-w-3xl space-y-4 text-left">
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                    {[
-                      { label: "Geral", v: report.overall },
-                      { label: "Pronúncia", v: report.pronunciation },
-                      { label: "Fluência", v: report.fluency },
-                      { label: "Entoação", v: report.intonation },
-                      { label: "Ritmo", v: report.rhythm },
-                      { label: "Clareza", v: report.clarity },
-                      { label: "Pausas", v: report.pauses },
-                      { label: "WPM", v: report.wpm, raw: true },
-                    ].map((m) => (
-                      <div key={m.label} className="rounded-xl border border-border bg-card p-3">
-                        <div className="text-xs text-muted-foreground">{m.label}</div>
-                        <div className="mt-1 font-display text-2xl font-bold">
-                          {Math.round(m.v)}
-                          {m.raw ? "" : ""}
-                        </div>
-                        {!m.raw && <Progress value={m.v} className="mt-2 h-1.5" />}
+            {/* Desktop: two columns | Mobile: stacked */}
+            <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
+              {/* Left Column: Reading + Vocabulary */}
+              <div className="flex-1 space-y-6 md:space-y-8">
+                {/* 2. Reading Section */}
+                <section className="flex flex-col gap-3 md:gap-4">
+                  <div className="flex items-center gap-2 px-1">
+                    <BookOpen className="w-5 h-5 text-[var(--primary)]" />
+                    <h2 className="font-display text-lg font-bold text-[var(--ink)]">Leitura</h2>
+                  </div>
+                  <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-100">
+                    <h3 className="font-display text-xl font-bold mb-4 text-[var(--ink)]">{passage.title.pt}</h3>
+                    <div className="space-y-4 text-gray-600 text-sm md:text-base leading-relaxed">
+                      <p>{passage.text}</p>
+                    </div>
+                    <button
+                      onClick={handlePlay}
+                      disabled={playing}
+                      className="mt-4 flex items-center gap-2 text-sm font-semibold text-[var(--primary)] hover:underline"
+                    >
+                      <Volume2 className="w-4 h-4" />
+                      {playing ? "A reproduzir..." : "Ouvir áudio"}
+                    </button>
+                  </div>
+                </section>
+
+                {/* 3. Vocabulary Section */}
+                <section className="flex flex-col gap-3 md:gap-4">
+                  <div className="flex items-center gap-2 px-1">
+                    <BookOpen className="w-5 h-5 text-[var(--primary)]" />
+                    <h2 className="font-display text-lg font-bold text-[var(--ink)]">Vocabulário</h2>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {passage.vocab.map((v) => (
+                      <div key={v.word} className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 hover:border-[var(--primary)]/30 transition-colors">
+                        <span className="text-[10px] md:text-xs font-bold text-[var(--primary)] mb-1 md:mb-2 block">Palavra</span>
+                        <h4 className="font-bold text-base md:text-lg mb-0.5 md:mb-1">{v.word}</h4>
+                        <p className="text-xs md:text-sm text-gray-500">{v.pt}</p>
+                        <button
+                          onClick={() => speak(v.word, { accent: "uk" }).catch(() => {})}
+                          className="mt-2 text-[var(--primary)]"
+                        >
+                          <Volume2 className="w-4 h-4" />
+                        </button>
                       </div>
                     ))}
-                  </div>
-
-                  <div className="rounded-2xl border border-border bg-background/60 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold">
-                      <Sparkles className="h-4 w-4 text-violet" /> Feedback do Coach
+                    {/* Idiom card */}
+                    <div className="col-span-2 bg-[var(--primary)] p-4 md:p-5 rounded-xl text-white">
+                      <span className="text-[10px] md:text-xs font-bold text-white/80 mb-1 md:mb-2 block">Expressão Idiomática</span>
+                      <h4 className="font-bold text-lg md:text-xl mb-1">{passage.idiom.pt}</h4>
+                      <p className="text-xs md:text-sm opacity-90">"{passage.idiom.en}" - {passage.idiom.meaning}</p>
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{report.feedback}</p>
                   </div>
-
-                  {report.mispronounced && report.mispronounced.length > 0 && (
-                    <div className="rounded-2xl border border-border bg-background/60 p-4">
-                      <div className="text-sm font-semibold">Palavras a melhorar</div>
-                      <ul className="mt-2 space-y-2 text-sm">
-                        {report.mispronounced.map((m, i) => (
-                          <li key={i} className="flex items-start justify-between gap-3 rounded-lg bg-muted/40 p-2">
-                            <div>
-                              <span className="font-semibold text-red-700 dark:text-red-300">{m.word}</span>
-                              {m.expected_ipa && (
-                                <span className="ml-2 font-mono text-xs text-magenta">{m.expected_ipa}</span>
-                              )}
-                              {m.tip && <div className="text-xs text-muted-foreground">{m.tip}</div>}
-                            </div>
-                            <button
-                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sunset/10 text-sunset hover:bg-sunset/20"
-                              onClick={() => speak(m.word, { accent: "uk", speed: 0.7 }).catch(() => {})}
-                              aria-label={`Ouvir ${m.word} devagar`}
-                            >
-                              <Volume2 className="h-4 w-4" />
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Comprehension quiz */}
-        <section className="mt-8">
-          <h2 className="mb-3 font-display text-lg font-bold">Questões de compreensão</h2>
-          <div className="space-y-4">
-            {passage.quiz.map((q, qi) => (
-              <Card key={qi}>
-                <CardContent className="p-5">
-                  <div className="font-semibold">
-                    {qi + 1}. {q.q}
-                  </div>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                    {q.options.map((opt, oi) => {
-                      const chosen = quizAnswers[qi] === oi;
-                      const correct = quizAnswers[qi] !== undefined && oi === q.answer;
-                      const wrongPick = chosen && oi !== q.answer;
-                      return (
-                        <button
-                          key={oi}
-                          onClick={() => setQuizAnswers((s) => ({ ...s, [qi]: oi }))}
-                          className={`rounded-xl border-2 px-3 py-2 text-sm font-semibold transition-all ${
-                            correct
-                              ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                              : wrongPick
-                                ? "border-red-500 bg-red-500/10 text-red-700 dark:text-red-300"
-                                : chosen
-                                  ? "border-sunset bg-sunset/10"
-                                  : "border-border hover:border-magenta/40"
-                          }`}
-                        >
-                          {opt}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {Object.keys(quizAnswers).length === passage.quiz.length && (
-              <div className="rounded-2xl border border-border bg-card p-4 text-center">
-                <Gauge className="mx-auto h-6 w-6 text-sunset" />
-                <div className="mt-1 font-display text-lg font-bold">
-                  {quizScore} / {passage.quiz.length} corretas
-                </div>
+                </section>
               </div>
+
+              {/* Right Column: Quiz (Compreensão) */}
+              <div className="w-full lg:w-[380px] shrink-0">
+                <section className="flex flex-col gap-3 md:gap-4">
+                  <div className="flex items-center gap-2 px-1">
+                    <Sparkles className="w-5 h-5 text-[var(--primary)]" />
+                    <h2 className="font-display text-lg font-bold text-[var(--ink)]">Compreensão</h2>
+                  </div>
+                  <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-100">
+                    <p className="text-xs text-gray-400 mb-4">Teste seu entendimento do texto</p>
+
+                    <div className="space-y-6">
+                      {passage.quiz.map((q, qi) => (
+                        <div key={qi}>
+                          <p className="font-bold text-[var(--ink)] mb-3 text-sm md:text-base">
+                            {qi + 1}. {q.q}
+                          </p>
+                          <div className="flex flex-col gap-2">
+                            {q.options.map((opt, oi) => {
+                              const chosen = quizAnswers[qi] === oi;
+                              const correct = quizChecked && oi === q.answer;
+                              const wrongPick = quizChecked && chosen && oi !== q.answer;
+                              return (
+                                <label
+                                  key={oi}
+                                  className={`flex items-center p-3 rounded-xl border cursor-pointer transition-all text-sm ${
+                                    wrongPick
+                                      ? "border-red-400 bg-red-50"
+                                      : correct
+                                        ? "border-green-500 bg-green-50"
+                                        : chosen
+                                          ? "border-[var(--primary)] bg-[var(--primary)]/5"
+                                          : "border-gray-200 hover:bg-gray-50"
+                                  }`}
+                                >
+                                  <input
+                                    type="radio"
+                                    name={`q${qi}`}
+                                    checked={chosen}
+                                    onChange={() => {
+                                      setQuizAnswers((s) => ({ ...s, [qi]: oi }));
+                                      setQuizChecked(false);
+                                    }}
+                                    className="w-4 h-4 text-[var(--primary)]"
+                                  />
+                                  {wrongPick && <XCircle className="w-4 h-4 text-red-500 ml-2" />}
+                                  {correct && <CheckCircle className="w-4 h-4 text-green-500 ml-2" />}
+                                  <span className="ml-3">{opt}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {quizChecked && (
+                      <p className={`mt-4 text-sm font-bold ${
+                        quizScore === passage.quiz.length ? "text-green-500" : "text-red-500"
+                      }`}>
+                        {quizScore === passage.quiz.length
+                          ? "Correto! Muito bem!"
+                          : `Acertou ${quizScore} de ${passage.quiz.length}. Tente novamente.`}
+                      </p>
+                    )}
+
+                    <button
+                      onClick={() => setQuizChecked(true)}
+                      disabled={Object.keys(quizAnswers).length < passage.quiz.length}
+                      className={`w-full mt-5 py-3 rounded-xl text-sm font-semibold transition-all ${
+                        Object.keys(quizAnswers).length < passage.quiz.length
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-[var(--primary)] text-white hover:opacity-90"
+                      }`}
+                    >
+                      Verificar Resposta
+                    </button>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            {/* Evolution Chart — full width */}
+            {history.length > 1 && (
+              <section className="mt-6 md:mt-8 pb-8">
+                <h2 className="mb-3 font-display text-lg font-bold">Evolução</h2>
+                <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={history.map((h, i) => ({ i: i + 1, overall: Number(h.overall ?? 0), pronunciation: Number(h.pronunciation ?? 0) }))}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <XAxis dataKey="i" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="overall" stroke="var(--primary)" strokeWidth={2} />
+                      <Line type="monotone" dataKey="pronunciation" stroke="#d946ef" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </section>
             )}
           </div>
-        </section>
+        </main>
+      </div>
 
-        {/* Evolution */}
-        {history.length > 1 && (
-          <section className="mt-8">
-            <h2 className="mb-3 font-display text-lg font-bold">Evolução nesta leitura</h2>
-            <Card>
-              <CardContent className="p-4">
-                <ResponsiveContainer width="100%" height={260}>
-                  <LineChart
-                    data={history.map((h, i) => ({
-                      i: i + 1,
-                      overall: Number(h.overall ?? 0),
-                      pronunciation: Number(h.pronunciation ?? 0),
-                      fluency: Number(h.fluency ?? 0),
-                      wpm: Number(h.wpm ?? 0),
-                    }))}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis dataKey="i" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="overall" stroke="#f97316" strokeWidth={2} />
-                    <Line type="monotone" dataKey="pronunciation" stroke="#d946ef" strokeWidth={2} />
-                    <Line type="monotone" dataKey="fluency" stroke="#8b5cf6" strokeWidth={2} />
-                    <Line type="monotone" dataKey="wpm" stroke="#22c55e" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </section>
-        )}
-      </main>
-      <SiteFooter />
+      {/* Mobile bottom nav */}
+      <VideosMobileNav />
     </div>
   );
 }

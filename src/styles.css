@@ -203,6 +203,24 @@
 @utility shadow-card {
   box-shadow: var(--shadow-card);
 }
+
+@utility shadow-premium-btn {
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+}
+
+@utility shadow-premium-card {
+  box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.08);
+}
+
+@utility orb-glow {
+  filter: blur(20px);
+  opacity: 0.6;
+}
+
+@utility pricing-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 @utility glass {
   background-color: color-mix(in oklab, var(--card) 70%, transparent);
   backdrop-filter: blur(14px);
@@ -425,4 +443,32 @@
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
+}
+
+/* =========================================================
+   Videos Page — Kombai Design Styles
+   ========================================================= */
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.premium-shadow { box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.08); }
+
+.video-card:hover .play-overlay { opacity: 1; }
+.video-card:hover img { transform: scale(1.05); }
+
+/* Dropdown Menu Animation */
+.dropdown-enter {
+  animation: slideIn 0.2s ease-out;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

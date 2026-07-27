@@ -1,27 +1,43 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
-  Trophy, Flame, Coins, Sparkles, Target, Users, Globe, MapPin,
-  Calendar as CalendarIcon, ShoppingBag, UserPlus, Check, Loader2, Star,
+  Trophy,
+  Flame,
+  Coins,
+  Sparkles,
+  Target,
+  Users,
+  Globe,
+  MapPin,
+  Calendar as CalendarIcon,
+  ShoppingBag,
+  UserPlus,
+  Check,
+  Loader2,
+  Star,
+  Zap,
+  HelpCircle,
+  Gift,
+  User,
+  Settings,
+  LogOut,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { celebrate, levelProgress, xpForLevel } from "@/lib/gamification";
+import { useLocale } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 
 export const Route = createFileRoute("/rewards")({
   component: RewardsPage,
   head: () => ({
     meta: [
       { title: "Recompensas — Learning English with Coach" },
-      { name: "description", content: "XP, moedas, missões, loja, rankings e streak — o teu progresso gamificado." },
+      {
+        name: "description",
+        content: "XP, moedas, missões, loja, rankings e streak — o teu progresso gamificado.",
+      },
       { property: "og:title", content: "Recompensas — Coach" },
       { property: "og:description", content: "Ganha XP, moedas e sobe no ranking mundial." },
     ],
@@ -40,21 +56,53 @@ type Profile = {
   avatar_config: Record<string, unknown>;
 };
 type Mission = {
-  id: string; code: string; scope: string; title: string; description: string;
-  action_type: string; target: number; xp_reward: number; coin_reward: number; icon: string;
+  id: string;
+  code: string;
+  scope: string;
+  title: string;
+  description: string;
+  action_type: string;
+  target: number;
+  xp_reward: number;
+  coin_reward: number;
+  icon: string;
 };
 type UserMission = {
-  id: string; mission_id: string; period_key: string;
-  progress: number; completed_at: string | null; claimed_at: string | null;
+  id: string;
+  mission_id: string;
+  period_key: string;
+  progress: number;
+  completed_at: string | null;
+  claimed_at: string | null;
 };
 type ShopItem = {
-  id: string; code: string; category: string; name: string; description: string;
-  cost_coins: number; icon: string;
+  id: string;
+  code: string;
+  category: string;
+  name: string;
+  description: string;
+  cost_coins: number;
+  icon: string;
 };
 type XpEvent = { created_at: string; amount: number; source: string };
-type RankRow = { id: string; full_name: string | null; avatar_url: string | null; xp: number; level: number; country: string | null };
+type RankRow = {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  xp: number;
+  level: number;
+  country: string | null;
+};
+
+type TabId = "missions" | "calendar" | "rankings" | "shop" | "avatar" | "friends";
+type RankScope = "world" | "national" | "friends";
 
 function RewardsPage() {
+  const { locale } = useLocale();
+  const { user, signOut } = useAuth();
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const avatarRef = useRef<HTMLDivElement>(null);
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [missions, setMissions] = useState<Mission[]>([]);
   const [userMissions, setUserMissions] = useState<UserMission[]>([]);
@@ -62,26 +110,56 @@ function RewardsPage() {
   const [inventory, setInventory] = useState<{ item_id: string; equipped: boolean }[]>([]);
   const [events, setEvents] = useState<XpEvent[]>([]);
   const [ranks, setRanks] = useState<{ world: RankRow[]; national: RankRow[]; friends: RankRow[] }>({
-    world: [], national: [], friends: [],
+    world: [],
+    national: [],
+    friends: [],
   });
   const [friendEmail, setFriendEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabId>("missions");
+  const [rankScope, setRankScope] = useState<RankScope>("world");
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
+        setAvatarMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const refresh = async () => {
     const { data: userRes } = await supabase.auth.getUser();
     const uid = userRes.user?.id;
-    if (!uid) { setLoading(false); return; }
+    if (!uid) {
+      setLoading(false);
+      return;
+    }
     await supabase.rpc("ensure_user_missions");
 
     const [p, ms, ums, si, inv, ev, w] = await Promise.all([
-      supabase.from("profiles").select("id,full_name,avatar_url,xp,level,coins,streak,country,avatar_config").eq("id", uid).maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("id,full_name,avatar_url,xp,level,coins,streak,country,avatar_config")
+        .eq("id", uid)
+        .maybeSingle(),
       supabase.from("missions").select("*").eq("is_active", true).order("scope"),
       supabase.from("user_missions").select("*").eq("user_id", uid),
       supabase.from("shop_items").select("*").eq("is_active", true).order("cost_coins"),
       supabase.from("user_inventory").select("item_id,equipped").eq("user_id", uid),
-      supabase.from("xp_events").select("created_at,amount,source").eq("user_id", uid).order("created_at", { ascending: false }).limit(200),
-      supabase.from("profiles").select("id,full_name,avatar_url,xp,level,country").order("xp", { ascending: false }).limit(50),
+      supabase
+        .from("xp_events")
+        .select("created_at,amount,source")
+        .eq("user_id", uid)
+        .order("created_at", { ascending: false })
+        .limit(200),
+      supabase
+        .from("profiles")
+        .select("id,full_name,avatar_url,xp,level,country")
+        .order("xp", { ascending: false })
+        .limit(50),
     ]);
     setProfile((p.data as Profile) ?? null);
     setMissions((ms.data as Mission[]) ?? []);
@@ -92,19 +170,43 @@ function RewardsPage() {
     const world = (w.data as RankRow[]) ?? [];
     const country = (p.data as Profile | null)?.country;
     const national = country
-      ? (await supabase.from("profiles").select("id,full_name,avatar_url,xp,level,country").eq("country", country).order("xp", { ascending: false }).limit(50)).data as RankRow[] ?? []
+      ? (((
+          await supabase
+            .from("profiles")
+            .select("id,full_name,avatar_url,xp,level,country")
+            .eq("country", country)
+            .order("xp", { ascending: false })
+            .limit(50)
+        ).data as RankRow[]) ?? [])
       : [];
-    const friendsList = (await supabase.from("friendships").select("friend_id,user_id").or(`user_id.eq.${uid},friend_id.eq.${uid}`).eq("status","accepted")).data ?? [];
-    const friendIds = Array.from(new Set(friendsList.map((f) => (f.user_id === uid ? f.friend_id : f.user_id))));
+    const friendsList =
+      (
+        await supabase
+          .from("friendships")
+          .select("friend_id,user_id")
+          .or(`user_id.eq.${uid},friend_id.eq.${uid}`)
+          .eq("status", "accepted")
+      ).data ?? [];
+    const friendIds = Array.from(
+      new Set(friendsList.map((f) => (f.user_id === uid ? f.friend_id : f.user_id))),
+    );
     friendIds.push(uid);
     const friends = friendIds.length
-      ? (await supabase.from("profiles").select("id,full_name,avatar_url,xp,level,country").in("id", friendIds).order("xp", { ascending: false })).data as RankRow[] ?? []
+      ? (((
+          await supabase
+            .from("profiles")
+            .select("id,full_name,avatar_url,xp,level,country")
+            .in("id", friendIds)
+            .order("xp", { ascending: false })
+        ).data as RankRow[]) ?? [])
       : [];
     setRanks({ world, national, friends });
     setLoading(false);
   };
 
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => {
+    refresh();
+  }, []);
 
   const ownedIds = useMemo(() => new Set(inventory.map((i) => i.item_id)), [inventory]);
   const userMissionMap = useMemo(
@@ -136,7 +238,11 @@ function RewardsPage() {
     if (category === "avatar") {
       await supabase.from("user_inventory").update({ equipped: false }).eq("user_id", profile.id);
     }
-    await supabase.from("user_inventory").update({ equipped: true }).eq("user_id", profile.id).eq("item_id", itemId);
+    await supabase
+      .from("user_inventory")
+      .update({ equipped: true })
+      .eq("user_id", profile.id)
+      .eq("item_id", itemId);
     toast.success("Equipado!");
     refresh();
   };
@@ -144,223 +250,631 @@ function RewardsPage() {
   const addFriend = async () => {
     if (!profile || !friendEmail.trim()) return;
     const email = friendEmail.trim().toLowerCase();
-    const { data: target } = await supabase.from("profiles").select("id").eq("email", email).maybeSingle();
+    const { data: target } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
     if (!target) return toast.error("Utilizador não encontrado");
     if (target.id === profile.id) return toast.error("Não podes adicionar-te a ti");
-    const { error } = await supabase.from("friendships").insert({ user_id: profile.id, friend_id: target.id, status: "accepted" });
+    const { error } = await supabase
+      .from("friendships")
+      .insert({ user_id: profile.id, friend_id: target.id, status: "accepted" });
     if (error) return toast.error(error.message);
     toast.success("Amigo adicionado!");
     setFriendEmail("");
     refresh();
   };
 
-  if (loading) return <div className="min-h-screen"><SiteHeader /><div className="p-10 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin" /></div></div>;
-  if (!profile) return (
-    <div className="min-h-screen"><SiteHeader />
-      <div className="mx-auto max-w-xl p-10 text-center">
-        <p className="text-muted-foreground">Precisas de iniciar sessão para veres as tuas recompensas.</p>
-        <Button asChild className="mt-4"><Link to="/auth">Entrar</Link></Button>
+  const tabs: { id: TabId; label: string; Icon: typeof Target }[] = [
+    { id: "missions", label: locale === "pt" ? "Missões" : "Missions", Icon: Target },
+    { id: "calendar", label: locale === "pt" ? "Calendário" : "Calendar", Icon: CalendarIcon },
+    { id: "rankings", label: "Rankings", Icon: Trophy },
+    { id: "shop", label: locale === "pt" ? "Loja" : "Shop", Icon: ShoppingBag },
+    { id: "avatar", label: "Avatar", Icon: Star },
+    { id: "friends", label: locale === "pt" ? "Amigos" : "Friends", Icon: Users },
+  ];
+
+  const shell = (content: ReactNode) => (
+    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+      <VideosSidebar />
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white border-b border-gray-100 shrink-0 z-10">
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="font-display text-xl font-bold text-[var(--ink)] truncate">
+              {locale === "pt" ? "Recompensas" : "Rewards"}
+            </h1>
+          </div>
+          <div className="flex items-center gap-2 md:gap-3">
+            <button className="bg-[var(--ink)] text-white px-3 md:px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity">
+              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
+              <span className="hidden sm:inline">Upgrade</span>
+            </button>
+            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex">
+              <HelpCircle className="w-5 h-5" />
+            </button>
+            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex">
+              <Gift className="w-5 h-5" />
+            </button>
+            <div className="relative md:hidden" ref={avatarRef}>
+              {avatarMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
+                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                      <User className="w-4 h-4 text-[var(--violet)]" />
+                      {locale === "pt" ? "Ver perfil" : "View profile"}
+                    </button>
+                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                      <Settings className="w-4 h-4 text-gray-400" />
+                      {locale === "pt" ? "Definições" : "Settings"}
+                    </button>
+                    <div className="mx-3 my-1 h-px bg-gray-50" />
+                    <button
+                      onClick={() => signOut()}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      {locale === "pt" ? "Sair da conta" : "Sign out"}
+                    </button>
+                  </div>
+                </>
+              )}
+              <button
+                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
+                className="relative inline-flex"
+              >
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User className="w-4 h-4 text-gray-600" />
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+              </button>
+            </div>
+            <div className="hidden md:block">
+              <div className="relative inline-flex">
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User className="w-4 h-4 text-gray-600" />
+                </div>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+              </div>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">{content}</main>
       </div>
+      <VideosMobileNav />
     </div>
   );
 
-  const lp = levelProgress(profile.xp, profile.level);
+  if (loading) {
+    return shell(
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--violet)]" />
+      </div>,
+    );
+  }
 
-  return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        {/* Overview */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card className="bg-gradient-sunset text-white">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase opacity-90"><Trophy className="h-4 w-4"/>Nível</div>
-              <div className="mt-1 font-display text-4xl font-bold">{profile.level}</div>
-              <Progress value={lp.pct} className="mt-3 h-1.5 bg-white/30" />
-              <div className="mt-1 text-xs opacity-90">{profile.xp} / {xpForLevel(profile.level + 1)} XP</div>
-            </CardContent>
-          </Card>
-          <Card><CardContent className="p-5">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase text-muted-foreground"><Sparkles className="h-4 w-4"/>XP total</div>
-            <div className="mt-1 font-display text-4xl font-bold">{profile.xp.toLocaleString()}</div>
-          </CardContent></Card>
-          <Card><CardContent className="p-5">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase text-muted-foreground"><Coins className="h-4 w-4 text-yellow-500"/>Moedas</div>
-            <div className="mt-1 font-display text-4xl font-bold text-yellow-600">{profile.coins}</div>
-          </CardContent></Card>
-          <Card><CardContent className="p-5">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase text-muted-foreground"><Flame className="h-4 w-4 text-orange-500"/>Streak</div>
-            <div className="mt-1 font-display text-4xl font-bold">{profile.streak} <span className="text-lg">dias 🔥</span></div>
-          </CardContent></Card>
+  if (!profile) {
+    return shell(
+      <div className="max-w-lg mx-auto px-4 py-16 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--violet)]/10">
+          <Trophy className="h-8 w-8 text-[var(--violet)]" />
+        </div>
+        <h2 className="font-display text-xl font-bold text-[var(--ink)]">
+          {locale === "pt" ? "Inicia sessão para ver as recompensas" : "Sign in to see your rewards"}
+        </h2>
+        <p className="mt-2 text-sm text-gray-500">
+          {locale === "pt"
+            ? "XP, missões, loja e rankings ficam disponíveis com a tua conta."
+            : "XP, missions, shop and rankings unlock with your account."}
+        </p>
+        <Link
+          to="/auth"
+          className="mt-6 inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+        >
+          {locale === "pt" ? "Entrar" : "Sign in"}
+        </Link>
+      </div>,
+    );
+  }
+
+  const lp = levelProgress(profile.xp, profile.level);
+  const displayName =
+    profile.full_name?.trim() ||
+    user?.email?.split("@")[0] ||
+    (locale === "pt" ? "Aluno" : "Learner");
+
+  return shell(
+    <>
+      {/* Hero status strip — same pattern as /games */}
+      <div className="bg-[var(--ink)] text-white">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 flex flex-col lg:flex-row lg:items-center gap-6">
+          <div className="flex items-center gap-4 md:flex-1 md:pr-8 md:border-r md:border-white/10">
+            <div className="relative shrink-0">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-2xl font-bold text-white border-2 border-white/20 shadow-lg">
+                {displayName.slice(0, 1).toUpperCase()}
+              </div>
+              <span className="absolute -bottom-1 -right-1 bg-amber-400 text-[var(--ink)] text-[10px] font-extrabold px-2 py-0.5 rounded-full border-2 border-[var(--ink)]">
+                LVL {profile.level}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/60">
+                {locale === "pt" ? "Hub de recompensas" : "Rewards hub"}
+              </span>
+              <h2 className="mt-1 font-display text-xl md:text-2xl font-bold truncate">
+                {displayName}
+              </h2>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-[11px] font-semibold">
+                  <Flame className="w-3 h-3 text-orange-400" />
+                  {profile.streak}{" "}
+                  {locale === "pt" ? "dias de streak" : "day streak"}
+                </span>
+                <span className="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-[11px] font-semibold">
+                  <Coins className="w-3 h-3 text-yellow-400" />
+                  {profile.coins} {locale === "pt" ? "moedas" : "coins"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full lg:w-80 shrink-0">
+            <div className="flex justify-between text-[11px] font-medium text-white/60 mb-2">
+              <span>
+                {locale === "pt" ? "Nível" : "Level"} {profile.level}
+              </span>
+              <span>
+                {locale === "pt" ? "Nível" : "Level"} {profile.level + 1}
+              </span>
+            </div>
+            <div className="h-2.5 bg-white/15 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-400 transition-all duration-700"
+                style={{ width: `${Math.min(100, Math.max(0, lp.pct))}%` }}
+              />
+            </div>
+            <div className="mt-2 flex justify-between text-sm font-semibold">
+              <span>{profile.xp.toLocaleString()} XP</span>
+              <span className="text-amber-200/90">
+                {xpForLevel(profile.level + 1) - profile.xp} XP{" "}
+                {locale === "pt" ? "para subir" : "to go"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10">
+        {/* Stats row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+          <StatCard
+            label={locale === "pt" ? "Nível" : "Level"}
+            value={String(profile.level)}
+            icon={<Trophy className="w-5 h-5 text-amber-500" />}
+            accent="bg-amber-50"
+          />
+          <StatCard
+            label="XP total"
+            value={profile.xp.toLocaleString()}
+            icon={<Sparkles className="w-5 h-5 text-[var(--violet)]" />}
+            accent="bg-[var(--violet)]/10"
+          />
+          <StatCard
+            label={locale === "pt" ? "Moedas" : "Coins"}
+            value={String(profile.coins)}
+            icon={<Coins className="w-5 h-5 text-yellow-500" />}
+            accent="bg-yellow-50"
+          />
+          <StatCard
+            label="Streak"
+            value={`${profile.streak}d`}
+            icon={<Flame className="w-5 h-5 text-orange-500" />}
+            accent="bg-orange-50"
+          />
         </div>
 
-        <Tabs defaultValue="missions" className="mt-8">
-          <TabsList className="flex flex-wrap">
-            <TabsTrigger value="missions"><Target className="mr-1 h-4 w-4"/>Missões</TabsTrigger>
-            <TabsTrigger value="calendar"><CalendarIcon className="mr-1 h-4 w-4"/>Calendário</TabsTrigger>
-            <TabsTrigger value="rankings"><Trophy className="mr-1 h-4 w-4"/>Rankings</TabsTrigger>
-            <TabsTrigger value="shop"><ShoppingBag className="mr-1 h-4 w-4"/>Loja</TabsTrigger>
-            <TabsTrigger value="avatar"><Star className="mr-1 h-4 w-4"/>Avatar</TabsTrigger>
-            <TabsTrigger value="friends"><Users className="mr-1 h-4 w-4"/>Amigos</TabsTrigger>
-          </TabsList>
+        {/* Pill tabs */}
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide -mx-1 px-1">
+          {tabs.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all ${
+                activeTab === id
+                  ? "bg-[var(--primary)] text-white shadow-md"
+                  : "bg-white border border-gray-200 text-gray-500 hover:bg-gray-50"
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
+        </div>
 
-          {/* Missões */}
-          <TabsContent value="missions" className="mt-6 space-y-6">
+        {/* Tab panels */}
+        {activeTab === "missions" && (
+          <div className="space-y-8">
             {(["daily", "weekly", "monthly"] as const).map((scope) => {
-              const label = scope === "daily" ? "Diárias" : scope === "weekly" ? "Semanais" : "Mensais";
+              const label =
+                scope === "daily"
+                  ? locale === "pt"
+                    ? "Diárias"
+                    : "Daily"
+                  : scope === "weekly"
+                    ? locale === "pt"
+                      ? "Semanais"
+                      : "Weekly"
+                    : locale === "pt"
+                      ? "Mensais"
+                      : "Monthly";
               const list = missions.filter((m) => m.scope === scope);
+              if (list.length === 0) return null;
               return (
                 <section key={scope}>
-                  <h2 className="mb-3 font-display text-lg font-bold">Missões {label}</h2>
-                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="font-display text-lg font-bold text-[var(--ink)]">
+                      {locale === "pt" ? "Missões" : "Missions"} {label}
+                    </h2>
+                    <span className="text-xs font-semibold text-gray-400">
+                      {list.filter((m) => userMissionMap.get(m.id)?.claimed_at).length}/{list.length}
+                    </span>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {list.map((m) => {
                       const um = userMissionMap.get(m.id);
                       const progress = um?.progress ?? 0;
                       const done = !!um?.completed_at;
                       const claimed = !!um?.claimed_at;
+                      const pct = Math.min(100, (progress / m.target) * 100);
                       return (
-                        <Card key={m.id} className={done && !claimed ? "border-sunset shadow-glow" : ""}>
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="text-3xl">{m.icon}</div>
-                              <Badge variant="outline">+{m.xp_reward} XP · +{m.coin_reward}🪙</Badge>
-                            </div>
-                            <div className="mt-2 font-display text-base font-bold">{m.title}</div>
-                            <div className="text-xs text-muted-foreground">{m.description}</div>
-                            <Progress value={(progress / m.target) * 100} className="mt-3 h-1.5" />
-                            <div className="mt-1 text-xs text-muted-foreground">{Math.min(progress, m.target)} / {m.target}</div>
-                            <Button
-                              size="sm" className="mt-3 w-full"
-                              disabled={!done || claimed || claiming === m.id}
-                              onClick={() => claim(m.id)}
-                            >
-                              {claimed ? <><Check className="mr-1 h-4 w-4"/>Reclamado</> : done ? "Reclamar recompensa" : "Em progresso"}
-                            </Button>
-                          </CardContent>
-                        </Card>
+                        <div
+                          key={m.id}
+                          className={`bg-white rounded-2xl border p-5 transition-all ${
+                            done && !claimed
+                              ? "border-[var(--violet)]/40 shadow-md ring-1 ring-[var(--violet)]/10"
+                              : "border-gray-100 hover:shadow-lg"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="text-3xl leading-none">{m.icon}</div>
+                            <span className="inline-flex items-center rounded-full bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-0.5 text-[11px] font-bold">
+                              +{m.xp_reward} XP · +{m.coin_reward}🪙
+                            </span>
+                          </div>
+                          <div className="mt-3 font-display text-base font-bold text-[var(--ink)]">
+                            {m.title}
+                          </div>
+                          <div className="mt-1 text-xs text-gray-500 leading-relaxed">
+                            {m.description}
+                          </div>
+                          <div className="mt-4 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                done ? "bg-emerald-500" : "bg-[var(--primary)]"
+                              }`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <div className="mt-1.5 text-[11px] text-gray-400 font-medium">
+                            {Math.min(progress, m.target)} / {m.target}
+                          </div>
+                          <button
+                            className={`mt-3 w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-opacity ${
+                              claimed
+                                ? "bg-gray-50 text-gray-400 border border-gray-100"
+                                : done
+                                  ? "bg-[var(--primary)] text-white hover:opacity-90"
+                                  : "bg-gray-50 text-gray-500 border border-gray-100 cursor-default"
+                            }`}
+                            disabled={!done || claimed || claiming === m.id}
+                            onClick={() => claim(m.id)}
+                          >
+                            {claiming === m.id ? (
+                              <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                            ) : claimed ? (
+                              <span className="inline-flex items-center justify-center gap-1">
+                                <Check className="h-4 w-4" />
+                                {locale === "pt" ? "Reclamado" : "Claimed"}
+                              </span>
+                            ) : done ? (
+                              locale === "pt" ? (
+                                "Reclamar recompensa"
+                              ) : (
+                                "Claim reward"
+                              )
+                            ) : locale === "pt" ? (
+                              "Em progresso"
+                            ) : (
+                              "In progress"
+                            )}
+                          </button>
+                        </div>
                       );
                     })}
                   </div>
                 </section>
               );
             })}
-          </TabsContent>
+            {missions.length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-12">
+                {locale === "pt" ? "Ainda sem missões ativas." : "No active missions yet."}
+              </p>
+            )}
+          </div>
+        )}
 
-          {/* Calendário */}
-          <TabsContent value="calendar" className="mt-6">
-            <CalendarHeatmap events={events} />
-          </TabsContent>
+        {activeTab === "calendar" && <CalendarHeatmap events={events} locale={locale} />}
 
-          {/* Rankings */}
-          <TabsContent value="rankings" className="mt-6">
-            <Tabs defaultValue="world">
-              <TabsList>
-                <TabsTrigger value="world"><Globe className="mr-1 h-4 w-4"/>Mundial</TabsTrigger>
-                <TabsTrigger value="national"><MapPin className="mr-1 h-4 w-4"/>Nacional</TabsTrigger>
-                <TabsTrigger value="friends"><Users className="mr-1 h-4 w-4"/>Amigos</TabsTrigger>
-              </TabsList>
-              <TabsContent value="world" className="mt-4"><RankList rows={ranks.world} me={profile.id} /></TabsContent>
-              <TabsContent value="national" className="mt-4">
-                {profile.country ? <RankList rows={ranks.national} me={profile.id} /> :
-                  <p className="text-sm text-muted-foreground">Define o teu país no perfil para veres o ranking nacional.</p>}
-              </TabsContent>
-              <TabsContent value="friends" className="mt-4"><RankList rows={ranks.friends} me={profile.id} /></TabsContent>
-            </Tabs>
-          </TabsContent>
-
-          {/* Loja */}
-          <TabsContent value="shop" className="mt-6">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {shop.map((it) => {
-                const owned = ownedIds.has(it.id);
-                const canAfford = profile.coins >= it.cost_coins;
-                return (
-                  <Card key={it.id}>
-                    <CardContent className="p-5">
-                      <div className="text-5xl">{it.icon}</div>
-                      <div className="mt-2 flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs">{it.category}</Badge>
-                      </div>
-                      <div className="mt-1 font-display text-lg font-bold">{it.name}</div>
-                      <div className="text-xs text-muted-foreground">{it.description}</div>
-                      <div className="mt-3 flex items-center justify-between">
-                        <div className="flex items-center gap-1 font-bold text-yellow-600"><Coins className="h-4 w-4"/>{it.cost_coins}</div>
-                        {owned ? (
-                          <Button size="sm" variant="outline" onClick={() => equip(it.id, it.category)}>Equipar</Button>
-                        ) : (
-                          <Button size="sm" disabled={!canAfford} onClick={() => buy(it.id)}>Comprar</Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+        {activeTab === "rankings" && (
+          <div>
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+              {(
+                [
+                  { id: "world" as const, label: locale === "pt" ? "Mundial" : "World", Icon: Globe },
+                  {
+                    id: "national" as const,
+                    label: locale === "pt" ? "Nacional" : "National",
+                    Icon: MapPin,
+                  },
+                  {
+                    id: "friends" as const,
+                    label: locale === "pt" ? "Amigos" : "Friends",
+                    Icon: Users,
+                  },
+                ] as const
+              ).map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setRankScope(id)}
+                  className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                    rankScope === id
+                      ? "bg-[var(--ink)] text-white"
+                      : "bg-white border border-gray-200 text-gray-500 hover:bg-gray-50"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </button>
+              ))}
             </div>
-          </TabsContent>
-
-          {/* Avatar */}
-          <TabsContent value="avatar" className="mt-6">
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full bg-gradient-sunset text-6xl font-bold text-white shadow-glow">
-                  {(profile.full_name ?? "?").slice(0, 1).toUpperCase()}
-                </div>
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  {inventory.filter((i) => i.equipped).map((i) => {
-                    const it = shop.find((s) => s.id === i.item_id);
-                    return it ? <Badge key={i.item_id} variant="outline" className="text-lg">{it.icon} {it.name}</Badge> : null;
-                  })}
-                </div>
-                <p className="mt-4 text-sm text-muted-foreground">Compra acessórios na loja e equipa-os para personalizar o teu avatar.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Amigos */}
-          <TabsContent value="friends" className="mt-6 space-y-4">
-            <Card><CardContent className="p-5">
-              <div className="flex items-center gap-2 font-display text-lg font-bold"><UserPlus className="h-4 w-4"/>Adicionar amigo</div>
-              <div className="mt-3 flex gap-2">
-                <Input placeholder="email@exemplo.com" value={friendEmail} onChange={(e) => setFriendEmail(e.target.value)} />
-                <Button onClick={addFriend}>Adicionar</Button>
+            {rankScope === "national" && !profile.country ? (
+              <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-500">
+                {locale === "pt"
+                  ? "Define o teu país no perfil para veres o ranking nacional."
+                  : "Set your country in your profile to see the national ranking."}
               </div>
-            </CardContent></Card>
-            <RankList rows={ranks.friends} me={profile.id} />
-          </TabsContent>
-        </Tabs>
-      </main>
-      <SiteFooter />
+            ) : (
+              <RankList
+                rows={
+                  rankScope === "world"
+                    ? ranks.world
+                    : rankScope === "national"
+                      ? ranks.national
+                      : ranks.friends
+                }
+                me={profile.id}
+                locale={locale}
+              />
+            )}
+          </div>
+        )}
+
+        {activeTab === "shop" && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {shop.map((it) => {
+              const owned = ownedIds.has(it.id);
+              const canAfford = profile.coins >= it.cost_coins;
+              return (
+                <div
+                  key={it.id}
+                  className="group bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-[var(--violet)]/20 transition-all"
+                >
+                  <div className="h-24 rounded-xl bg-gradient-to-br from-gray-50 to-[var(--violet)]/5 flex items-center justify-center text-5xl group-hover:scale-105 transition-transform">
+                    {it.icon}
+                  </div>
+                  <span className="mt-3 inline-block rounded-full bg-gray-50 border border-gray-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    {it.category}
+                  </span>
+                  <div className="mt-2 font-display text-lg font-bold text-[var(--ink)]">
+                    {it.name}
+                  </div>
+                  <div className="text-xs text-gray-500 leading-relaxed">{it.description}</div>
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-1.5 font-bold text-yellow-600">
+                      <Coins className="h-4 w-4" />
+                      {it.cost_coins}
+                    </div>
+                    {owned ? (
+                      <button
+                        onClick={() => equip(it.id, it.category)}
+                        className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                      >
+                        {locale === "pt" ? "Equipar" : "Equip"}
+                      </button>
+                    ) : (
+                      <button
+                        disabled={!canAfford}
+                        onClick={() => buy(it.id)}
+                        className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {locale === "pt" ? "Comprar" : "Buy"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {shop.length === 0 && (
+              <p className="col-span-full text-sm text-gray-500 text-center py-12">
+                {locale === "pt" ? "Loja vazia por agora." : "Shop is empty for now."}
+              </p>
+            )}
+          </div>
+        )}
+
+        {activeTab === "avatar" && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-10 text-center max-w-xl mx-auto">
+            <div className="mx-auto flex h-36 w-36 md:h-40 md:w-40 items-center justify-center rounded-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] text-5xl md:text-6xl font-bold text-white shadow-lg">
+              {(profile.full_name ?? "?").slice(0, 1).toUpperCase()}
+            </div>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {inventory
+                .filter((i) => i.equipped)
+                .map((i) => {
+                  const it = shop.find((s) => s.id === i.item_id);
+                  return it ? (
+                    <span
+                      key={i.item_id}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold text-[var(--ink)]"
+                    >
+                      <span className="text-lg">{it.icon}</span> {it.name}
+                    </span>
+                  ) : null;
+                })}
+            </div>
+            <p className="mt-5 text-sm text-gray-500 max-w-sm mx-auto">
+              {locale === "pt"
+                ? "Compra acessórios na loja e equipa-os para personalizar o teu avatar."
+                : "Buy accessories in the shop and equip them to customize your avatar."}
+            </p>
+            <button
+              onClick={() => setActiveTab("shop")}
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              {locale === "pt" ? "Ir à loja" : "Go to shop"}
+            </button>
+          </div>
+        )}
+
+        {activeTab === "friends" && (
+          <div className="space-y-4 max-w-2xl">
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-6">
+              <div className="flex items-center gap-2 font-display text-lg font-bold text-[var(--ink)]">
+                <UserPlus className="h-5 w-5 text-[var(--violet)]" />
+                {locale === "pt" ? "Adicionar amigo" : "Add friend"}
+              </div>
+              <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                <input
+                  placeholder="email@exemplo.com"
+                  value={friendEmail}
+                  onChange={(e) => setFriendEmail(e.target.value)}
+                  className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)]"
+                />
+                <button
+                  onClick={addFriend}
+                  className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity shrink-0"
+                >
+                  {locale === "pt" ? "Adicionar" : "Add"}
+                </button>
+              </div>
+            </div>
+            <RankList rows={ranks.friends} me={profile.id} locale={locale} />
+          </div>
+        )}
+      </div>
+    </>,
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  icon,
+  accent,
+}: {
+  label: string;
+  value: string;
+  icon: ReactNode;
+  accent: string;
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-4 md:p-5 hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-400">
+            {label}
+          </p>
+          <p className="mt-1 font-display text-2xl md:text-3xl font-bold text-[var(--ink)] truncate">
+            {value}
+          </p>
+        </div>
+        <div className={`w-10 h-10 rounded-xl ${accent} flex items-center justify-center shrink-0`}>
+          {icon}
+        </div>
+      </div>
     </div>
   );
 }
 
-function RankList({ rows, me }: { rows: RankRow[]; me: string }) {
+function RankList({
+  rows,
+  me,
+  locale,
+}: {
+  rows: RankRow[];
+  me: string;
+  locale: string;
+}) {
   return (
     <div className="space-y-2">
-      {rows.length === 0 && <p className="text-sm text-muted-foreground">Sem dados ainda.</p>}
+      {rows.length === 0 && (
+        <p className="text-sm text-gray-500 text-center py-10">
+          {locale === "pt" ? "Sem dados ainda." : "No data yet."}
+        </p>
+      )}
       {rows.map((r, i) => (
-        <Card key={r.id} className={r.id === me ? "border-sunset" : ""}>
-          <CardContent className="flex items-center gap-4 p-3">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-full font-bold ${i < 3 ? "bg-gradient-sunset text-white" : "bg-muted"}`}>
-              {i + 1}
+        <div
+          key={r.id}
+          className={`flex items-center gap-3 md:gap-4 rounded-2xl border p-3 md:p-3.5 transition-all ${
+            r.id === me
+              ? "border-[var(--violet)]/30 bg-[var(--violet)]/5"
+              : "border-gray-100 bg-white hover:shadow-sm"
+          }`}
+        >
+          <div
+            className={`flex h-10 w-10 items-center justify-center rounded-full font-bold text-sm shrink-0 ${
+              i === 0
+                ? "bg-gradient-to-br from-amber-400 to-orange-500 text-white"
+                : i === 1
+                  ? "bg-gradient-to-br from-slate-300 to-slate-400 text-white"
+                  : i === 2
+                    ? "bg-gradient-to-br from-amber-600 to-amber-800 text-white"
+                    : "bg-gray-100 text-gray-500"
+            }`}
+          >
+            {i + 1}
+          </div>
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-white text-xs font-bold shrink-0">
+            {(r.full_name ?? "?").slice(0, 1).toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-sm text-[var(--ink)] truncate">
+              {r.full_name ?? "—"}
+              {r.id === me && (
+                <span className="ml-1.5 inline-flex rounded-full bg-[var(--violet)]/10 text-[var(--violet)] px-1.5 py-0.5 text-[10px] font-bold">
+                  {locale === "pt" ? "Tu" : "You"}
+                </span>
+              )}
             </div>
-            <div className="flex-1">
-              <div className="font-semibold">{r.full_name ?? "—"} {r.id === me && <Badge variant="outline" className="ml-1 text-xs">Tu</Badge>}</div>
-              <div className="text-xs text-muted-foreground">Nível {r.level} · {r.country ?? "🌍"}</div>
+            <div className="text-xs text-gray-400">
+              {locale === "pt" ? "Nível" : "Level"} {r.level} · {r.country ?? "🌍"}
             </div>
-            <div className="text-right">
-              <div className="font-display text-lg font-bold">{r.xp.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground">XP</div>
+          </div>
+          <div className="text-right shrink-0">
+            <div className="font-display text-base md:text-lg font-bold text-[var(--ink)]">
+              {r.xp.toLocaleString()}
             </div>
-          </CardContent>
-        </Card>
+            <div className="text-[10px] uppercase tracking-wider text-gray-400">XP</div>
+          </div>
+        </div>
       ))}
     </div>
   );
 }
 
-function CalendarHeatmap({ events }: { events: XpEvent[] }) {
-  // Aggregate XP per day for last 90 days
+function CalendarHeatmap({ events, locale }: { events: XpEvent[]; locale: string }) {
   const map = new Map<string, number>();
   for (const e of events) {
     const k = e.created_at.slice(0, 10);
@@ -369,33 +883,51 @@ function CalendarHeatmap({ events }: { events: XpEvent[] }) {
   const days: { date: string; xp: number }[] = [];
   const now = new Date();
   for (let i = 89; i >= 0; i--) {
-    const d = new Date(now); d.setDate(now.getDate() - i);
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
     const k = d.toISOString().slice(0, 10);
     days.push({ date: k, xp: map.get(k) ?? 0 });
   }
   const max = Math.max(1, ...days.map((d) => d.xp));
   const color = (xp: number) => {
-    if (xp === 0) return "bg-muted";
+    if (xp === 0) return "bg-gray-100";
     const t = xp / max;
-    if (t < 0.25) return "bg-sunset/20";
-    if (t < 0.5) return "bg-sunset/40";
-    if (t < 0.75) return "bg-sunset/70";
-    return "bg-sunset";
+    if (t < 0.25) return "bg-[var(--violet)]/20";
+    if (t < 0.5) return "bg-[var(--violet)]/40";
+    if (t < 0.75) return "bg-[var(--violet)]/70";
+    return "bg-[var(--violet)]";
   };
   const totalXp = days.reduce((s, d) => s + d.xp, 0);
   const activeDays = days.filter((d) => d.xp > 0).length;
 
   return (
-    <Card><CardContent className="p-5">
-      <div className="mb-3 flex items-center justify-between">
-        <div className="font-display text-lg font-bold">Últimos 90 dias</div>
-        <div className="text-sm text-muted-foreground">{activeDays} dias ativos · {totalXp} XP</div>
+    <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-6">
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="font-display text-lg font-bold text-[var(--ink)]">
+          {locale === "pt" ? "Últimos 90 dias" : "Last 90 days"}
+        </div>
+        <div className="text-sm text-gray-500">
+          {activeDays} {locale === "pt" ? "dias ativos" : "active days"} · {totalXp} XP
+        </div>
       </div>
       <div className="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1 sm:grid-cols-[repeat(30,minmax(0,1fr))]">
         {days.map((d) => (
-          <div key={d.date} title={`${d.date}: ${d.xp} XP`} className={`aspect-square rounded ${color(d.xp)}`} />
+          <div
+            key={d.date}
+            title={`${d.date}: ${d.xp} XP`}
+            className={`aspect-square rounded-sm ${color(d.xp)}`}
+          />
         ))}
       </div>
-    </CardContent></Card>
+      <div className="mt-4 flex items-center gap-2 text-[11px] text-gray-400">
+        <span>{locale === "pt" ? "Menos" : "Less"}</span>
+        <span className="w-3 h-3 rounded-sm bg-gray-100" />
+        <span className="w-3 h-3 rounded-sm bg-[var(--violet)]/20" />
+        <span className="w-3 h-3 rounded-sm bg-[var(--violet)]/40" />
+        <span className="w-3 h-3 rounded-sm bg-[var(--violet)]/70" />
+        <span className="w-3 h-3 rounded-sm bg-[var(--violet)]" />
+        <span>{locale === "pt" ? "Mais" : "More"}</span>
+      </div>
+    </div>
   );
 }

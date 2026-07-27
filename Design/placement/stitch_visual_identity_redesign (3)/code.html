@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LingoFlow - Diagnóstico</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#c7c4d7",
+                    "surface-bright": "#f7f9fb",
+                    "inverse-on-surface": "#eff1f3",
+                    "surface-container-high": "#e6e8ea",
+                    "secondary": "#565e74",
+                    "on-primary-container": "#fffbff",
+                    "tertiary-container": "#b55d00",
+                    "tertiary-fixed": "#ffdcc5",
+                    "surface": "#f7f9fb",
+                    "tertiary": "#904900",
+                    "secondary-fixed": "#dae2fd",
+                    "error-container": "#ffdad6",
+                    "primary-fixed": "#e1e0ff",
+                    "error": "#ba1a1a",
+                    "background": "#f7f9fb",
+                    "on-error": "#ffffff",
+                    "primary": "#4648d4",
+                    "on-tertiary-fixed-variant": "#703700",
+                    "on-secondary": "#ffffff",
+                    "on-surface": "#191c1e",
+                    "surface-variant": "#e0e3e5",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "on-secondary-container": "#5c647a",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#dae2fd",
+                    "on-primary-fixed": "#07006c",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#6063ee",
+                    "on-surface-variant": "#464554",
+                    "on-primary": "#ffffff",
+                    "on-background": "#191c1e",
+                    "surface-container-low": "#f2f4f6",
+                    "on-tertiary-fixed": "#301400",
+                    "inverse-primary": "#c0c1ff",
+                    "on-tertiary-container": "#fffbff",
+                    "surface-container-highest": "#e0e3e5",
+                    "tertiary-fixed-dim": "#ffb783",
+                    "surface-tint": "#494bd6",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "outline": "#767586",
+                    "on-secondary-fixed": "#131b2e",
+                    "inverse-surface": "#2d3133",
+                    "surface-dim": "#d8dadc",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#eceef0",
+                    "on-secondary-fixed-variant": "#3f465c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-page": "1rem",
+                    "stack-md": "1.5rem",
+                    "gutter": "1.5rem",
+                    "stack-xl": "4rem",
+                    "container-max": "1200px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["JetBrains Mono"],
+                    "button": ["Inter"],
+                    "display-lg-mobile": ["Hanken Grotesk"],
+                    "display-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "button": ["14px", {"lineHeight": "1", "fontWeight": "600"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f7f9fb;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-nav {
+            backdrop-filter: blur(12px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        .card-shadow {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+        .skill-grid-item {
+            aspect-ratio: 1 / 1;
+        }
+        /* Mobile height fix for app-like feel */
+        .app-container {
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            flex-col: column;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<div class="app-container flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 glass-nav w-full">
+<div class="flex justify-between items-center px-4 py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-3">
+<span class="font-headline-md text-headline-md font-black text-primary">LingoFlow</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a student for a modern educational app profile, set against a clean, minimal white background with soft, high-key lighting. The style is crisp and modern, featuring a corporate modern aesthetic that aligns with a bright, light-mode interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwFj1iHtmjxiU7onfF76PKSMeomymFZRfH9dINAkrMuK3zPtPeHPm6qQ-vnfmtDkDtAwR1MohekmnbEXznc3_KFDjjrAIENLL1gBgEIDVF8r0555LSCQMLe4ZN-em_ZeyXgOYqlAl8idtSxsnkDNyOx0CXk_WI8xy4ta0ibd8uwUNIgfJbXRvwH0SRVjDfS9F9tdspZvYw2tvn020b2SWwUUKP_k9S2gwaddTkVxtH2-2fLEbbbp1MXA"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area (Scrollable) -->
+<main class="flex-1 overflow-y-auto px-4 pb-32">
+<!-- Hero Section -->
+<section class="flex flex-col items-center text-center mt-8 mb-10">
+<div class="w-24 h-24 mb-6 relative">
+<div class="absolute inset-0 bg-primary/10 rounded-full blur-2xl animate-pulse"></div>
+<div class="relative bg-surface-container-lowest rounded-3xl p-6 shadow-sm flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-primary text-5xl" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+</div>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-on-surface mb-2 tracking-tight">Diagnóstico Completo</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[280px]">Mapeie suas habilidades linguísticas em minutos e crie seu plano personalizado.</p>
+</section>
+<!-- Skills Bento Grid -->
+<section class="mb-10">
+<div class="grid grid-cols-2 gap-3">
+<!-- Skill Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 flex flex-col gap-3 hover:border-primary/50 transition-all card-shadow">
+<span class="material-symbols-outlined text-tertiary" data-icon="record_voice_over">record_voice_over</span>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Fala</span>
+</div>
+<!-- Skill Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 flex flex-col gap-3 hover:border-primary/50 transition-all card-shadow">
+<span class="material-symbols-outlined text-primary" data-icon="menu_book">menu_book</span>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Leitura</span>
+</div>
+<!-- Skill Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 flex flex-col gap-3 hover:border-primary/50 transition-all card-shadow">
+<span class="material-symbols-outlined text-secondary" data-icon="hearing">hearing</span>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Audição</span>
+</div>
+<!-- Skill Card 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 flex flex-col gap-3 hover:border-primary/50 transition-all card-shadow">
+<span class="material-symbols-outlined text-tertiary-container" data-icon="edit_note">edit_note</span>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Escrita</span>
+</div>
+<!-- Skill Card 5 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 flex flex-col gap-3 hover:border-primary/50 transition-all card-shadow">
+<span class="material-symbols-outlined text-primary-container" data-icon="translate">translate</span>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Gramática</span>
+</div>
+<!-- Skill Card 6 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 flex flex-col gap-3 hover:border-primary/50 transition-all card-shadow">
+<span class="material-symbols-outlined text-error" data-icon="psychology">psychology</span>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Fluência</span>
+</div>
+<!-- Skill Card 7 - Span 2 -->
+<div class="col-span-2 bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 flex items-center justify-between hover:border-primary/50 transition-all card-shadow">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface" data-icon="history_edu">history_edu</span>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Contexto Cultural</span>
+</div>
+<span class="text-xs text-on-surface-variant font-label-sm">+ 12m</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Fixed Action Area -->
+<div class="fixed bottom-20 left-0 right-0 px-4 py-4 z-40">
+<button class="w-full bg-primary text-on-primary py-4 rounded-2xl font-button text-button shadow-lg shadow-primary/20 active:scale-95 transition-transform flex items-center justify-center gap-2">
+                Começar
+                <span class="material-symbols-outlined text-lg" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<!-- Bottom Navigation Bar (Shell) -->
+<nav class="fixed bottom-0 left-0 right-0 glass-nav h-20 flex items-center justify-around px-6 z-50 md:hidden">
+<!-- Home/Dashboard -->
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-sm text-label-sm">Início</span>
+</button>
+<!-- Diagnostics (ACTIVE) -->
+<button class="flex flex-col items-center gap-1 text-primary relative">
+<span class="material-symbols-outlined" data-icon="analytics" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-sm text-label-sm font-bold">Diagnóstico</span>
+<div class="absolute -bottom-2 w-1 h-1 bg-primary rounded-full"></div>
+</button>
+<!-- Learning Plan -->
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="auto_stories">auto_stories</span>
+<span class="font-label-sm text-label-sm">Plano</span>
+</button>
+<!-- Settings -->
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm">Ajustes</span>
+</button>
+</nav>
+</div>
+<script>
+        // Micro-interactions
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('touchstart', function() {
+                this.classList.add('opacity-80');
+            });
+            button.addEventListener('touchend', function() {
+                this.classList.remove('opacity-80');
+            });
+        });
+
+        // Add subtle animation to skill cards on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card-shadow');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(10px)';
+                card.style.transition = 'all 0.4s ease-out';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 + (index * 50));
+            });
+        });
+    </script>
+</body></html>

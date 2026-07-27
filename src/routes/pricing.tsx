@@ -1,7 +1,21 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, Clock, Shield, Sparkles, ArrowRight, ArrowLeft, CheckCircle2, Loader2, Smartphone, Crown, Zap, Star } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Clock,
+  Shield,
+  Sparkles,
+  ArrowRight,
+  ArrowLeft,
+  CheckCircle2,
+  Loader2,
+  Smartphone,
+  Crown,
+  Zap,
+  Star,
+} from "lucide-react";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -64,10 +78,42 @@ interface Plan {
   features: string[];
 }
 
-const TIER_META: Record<Tier, { icon: typeof Zap; color: string; label: { pt: string; en: string } }> = {
-  essential: { icon: Zap, color: "from-sky-500 to-cyan-500", label: { pt: "Essencial", en: "Essential" } },
-  premium: { icon: Star, color: "from-magenta to-sunset", label: { pt: "Premium", en: "Premium" } },
-  vip: { icon: Crown, color: "from-amber to-orange-500", label: { pt: "VIP", en: "VIP" } },
+const TIER_META: Record<
+  Tier,
+  {
+    icon: typeof Zap;
+    color: string;
+    label: { pt: string; en: string };
+    desc: { pt: string; en: string };
+  }
+> = {
+  essential: { 
+    icon: Sparkles, 
+    color: "bg-white ring-slate-100", 
+    label: { pt: "Essencial", en: "Essential" },
+    desc: {
+      pt: "Base sólida de inglês para iniciantes.",
+      en: "Foundational English for beginners.",
+    },
+  },
+  premium: { 
+    icon: Star, 
+    color: "bg-white/40 ring-white/60 backdrop-blur-sm", 
+    label: { pt: "Premium", en: "Premium" },
+    desc: {
+      pt: "Ferramentas avançadas para falantes intermediários.",
+      en: "Advanced tools for intermediate speakers.",
+    },
+  },
+  vip: { 
+    icon: Crown, 
+    color: "bg-white ring-slate-100", 
+    label: { pt: "VIP Elite", en: "VIP Elite" },
+    desc: {
+      pt: "Mestria sem limites para utilizadores exigentes.",
+      en: "Unrestricted mastery for power users.",
+    },
+  },
 };
 
 const CYCLE_LABEL: Record<Cycle, { pt: string; en: string }> = {
@@ -81,7 +127,12 @@ function PricingPage() {
   const [cycle, setCycle] = useState<Cycle>("monthly");
   const [step, setStep] = useState<"choose" | "reference" | "verifying">("choose");
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [payment, setPayment] = useState<{ reference: string; entity: string; amount: number; id: string } | null>(null);
+  const [payment, setPayment] = useState<{
+    reference: string;
+    entity: string;
+    amount: number;
+    id: string;
+  } | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -95,7 +146,10 @@ function PricingPage() {
         .eq("is_active", true)
         .order("price_kz");
       if (error) throw error;
-      return (data as unknown as Plan[]).map((p) => ({ ...p, features: (p.features as unknown as string[]) ?? [] }));
+      return (data as unknown as Plan[]).map((p) => ({
+        ...p,
+        features: (p.features as unknown as string[]) ?? [],
+      }));
     },
   });
 
@@ -160,17 +214,13 @@ function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="mt-16 min-h-screen bg-background">
       <SiteHeader />
-      <div className="mx-auto max-w-7xl px-6 py-12">
+      <div className="mx-auto max-w-[1440px] px-4 py-12">
         {step === "choose" && (
           <>
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-semibold shadow-card backdrop-blur">
-                <Sparkles className="h-3.5 w-3.5 text-magenta" />
-                {locale === "pt" ? "Escolha o seu plano" : "Pick your plan"}
-              </div>
-              <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl">
+            <div className="mb-12 text-center">
+              <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl text-[#0F172A]">
                 {locale === "pt" ? "Aprenda inglês " : "Learn English "}
                 <span className="text-gradient-sunset">
                   {locale === "pt" ? "no seu ritmo" : "your way"}
@@ -183,14 +233,17 @@ function PricingPage() {
               </p>
             </div>
 
-            <div className="mt-8 flex justify-center">
-              <div className="inline-flex rounded-full border border-border bg-card p-1 shadow-card">
+            <div className="mt-8 flex justify-center px-2">
+              {/* Refined toggle to match image-1.png - Made responsive for small screens */}
+              <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/60 bg-slate-50/50 p-1.5 shadow-sm backdrop-blur-sm max-w-full overflow-x-auto no-scrollbar">
                 {(["monthly", "quarterly", "semiannual"] as Cycle[]).map((c) => (
                   <button
                     key={c}
                     onClick={() => setCycle(c)}
-                    className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
-                      cycle === c ? "bg-gradient-sunset text-white shadow-soft" : "text-muted-foreground"
+                    className={`rounded-full px-4 sm:px-7 py-2.5 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
+                      cycle === c 
+                        ? "bg-white text-[#0F172A] shadow-[0_2px_8px_rgba(15,23,42,0.08)] ring-1 ring-slate-100" 
+                        : "text-slate-400 hover:text-slate-600"
                     }`}
                   >
                     {CYCLE_LABEL[c][locale]}
@@ -199,61 +252,113 @@ function PricingPage() {
               </div>
             </div>
 
-            <div className="mt-10 grid gap-6 lg:grid-cols-3">
-              {filtered.map((plan) => {
-                const meta = TIER_META[plan.tier];
-                const Icon = meta.icon;
-                const featured = plan.tier === "premium";
-                return (
-                  <div
-                    key={plan.id}
-                    className={`relative rounded-3xl border bg-card p-8 shadow-card transition-all hover:-translate-y-1 hover:shadow-glow ${
-                      featured ? "border-magenta ring-2 ring-magenta/30" : "border-border"
-                    }`}
-                  >
-                    {featured && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-sunset px-3 py-1 text-xs font-bold text-white shadow-soft">
-                        {locale === "pt" ? "MAIS POPULAR" : "MOST POPULAR"}
+            <div className="mt-20 relative px-4">
+              <div className="mx-auto max-w-[1440px]">
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 justify-items-center items-stretch overflow-visible">
+                  {filtered.map((plan) => {
+                    const meta = TIER_META[plan.tier];
+                    const Icon = meta.icon;
+                    const featured = plan.tier === "premium";
+                    
+                    const orbColor = plan.tier === "essential" ? "bg-teal-400" : plan.tier === "premium" ? "bg-pink-400" : "bg-indigo-400";
+                    const ringColor = plan.tier === "premium" ? "ring-pink-400/20" : "ring-slate-200/20";
+
+                    return (
+                      <div 
+                        key={plan.id} 
+                        className={`relative h-full w-full flex justify-center transition-all duration-300 ${
+                          featured ? "z-[5]" : "z-[1]"
+                        }`}
+                      >
+                        {/* Glassmorphic Orb Backdrop - Absolute positioned but pointer-events-none */}
+                        <div className={`orb absolute -inset-6 ${orbColor} rounded-full z-0 opacity-15 blur-[100px] pointer-events-none transition-opacity duration-700`} />
+                        
+                        {/* Glass Card - Unified elegant styles for all, elevation for featured */}
+                        <div className={`glass-card relative z-10 flex h-full flex-col p-8 w-full md:max-w-[420px] rounded-[2.5rem] bg-white/80 backdrop-blur-2xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-500 lg:min-h-[600px] ${
+                          featured 
+                            ? `lg:-translate-y-10 ring-2 ${ringColor} shadow-[0_40px_80px_-20px_rgba(15,23,42,0.1)]` 
+                            : ""
+                        }`}>
+                          
+                          {featured && (
+                            <div className="absolute top-8 right-8 inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-slate-100 shadow-sm z-20">
+                              <Star className="h-3 w-3 fill-pink-500 text-pink-500" />
+                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">
+                                {locale === "pt" ? "MAIS POPULAR" : "MOST POPULAR"}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-10 ring-1 ring-slate-100 relative overflow-hidden">
+                            {featured && <div className="absolute inset-0 bg-gradient-to-br from-pink-400/20 to-orange-400/20" />}
+                            <Icon className={`h-8 w-8 relative z-10 ${plan.tier === "essential" ? "text-[#0EA5A4]" : plan.tier === "premium" ? "text-pink-500" : "text-indigo-600"}`} />
+                          </div>
+
+                          <h3 className="font-display text-3xl font-bold mb-2 text-[#0F172A]">{meta.label[locale]}</h3>
+                          <p className="text-sm text-slate-500 mb-10 leading-relaxed max-w-[280px]">{meta.desc[locale]}</p>
+
+                          <div className="flex items-baseline gap-1 mb-1">
+                            <span className="text-5xl sm:text-6xl font-black tracking-tighter text-[#0F172A]">
+                              {plan.price_kz.toLocaleString("pt-AO")}
+                            </span>
+                            <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                              Kz
+                            </span>
+                          </div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-10">
+                            {plan.duration_days} {locale === "pt" ? "DIAS" : "DAYS"}
+                          </div>
+
+                          <div className="w-full h-px bg-slate-200/80 mb-10" />
+
+                          <div className="flex-grow">
+                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6">
+                              {locale === "pt" ? "O que está incluído:" : "What's included:"}
+                            </p>
+                            <ul className="space-y-4">
+                              {plan.features.map((f, i) => (
+                                <li key={i} className="flex items-start gap-4 text-sm font-medium text-slate-600">
+                                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+                                  <span>{f}</span>
+                                </li>
+                              ))}
+                              {plan.call_minutes > 0 && (
+                                <li className="flex items-start gap-4 text-sm font-bold text-[#0F172A]">
+                                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+                                  <span>
+                                    {plan.call_minutes} min {locale === "pt" ? "com o professor" : "with the teacher"}
+                                  </span>
+                                </li>
+                              )}
+                            </ul>
+                          </div>
+
+                          <Button
+                            onClick={() => handleSubscribe(plan)}
+                            disabled={createPayment.isPending}
+                            className="mt-12 w-full py-8 px-6 bg-[#0F172A] text-white text-xs font-bold uppercase tracking-[0.25em] rounded-full shadow-[0_20px_45px_-5px_rgba(15,23,42,0.35)] transition-all hover:bg-slate-900 active:scale-95 overflow-hidden group/btn"
+                            variant="default"
+                          >
+                            {createPayment.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
+                                {locale === "pt" ? "Assinar Agora" : "Subscribe Now"}
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
-                    )}
-                    <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${meta.color} text-white shadow-soft`}>
-                      <Icon className="h-6 w-6" />
-                    </div>
-                    <h3 className="mt-4 font-display text-2xl font-bold">{meta.label[locale]}</h3>
-                    <div className="mt-3 flex items-baseline gap-2">
-                      <span className="font-display text-4xl font-bold">{plan.price_kz.toLocaleString("pt-AO")}</span>
-                      <span className="text-sm text-muted-foreground">Kz</span>
-                    </div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      {plan.duration_days} {locale === "pt" ? "dias" : "days"}
-                    </div>
-                    <ul className="mt-6 space-y-2.5 text-sm">
-                      {plan.features.map((f, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                      {plan.call_minutes > 0 && (
-                        <li className="flex items-start gap-2 font-semibold">
-                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                          {plan.call_minutes} min {locale === "pt" ? "com o professor" : "with the teacher"}
-                        </li>
-                      )}
-                    </ul>
-                    <Button
-                      onClick={() => handleSubscribe(plan)}
-                      disabled={createPayment.isPending}
-                      className={`mt-6 w-full ${featured ? "bg-gradient-sunset text-white shadow-soft" : ""}`}
-                      variant={featured ? "default" : "outline"}
-                      size="lg"
-                    >
-                      {createPayment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : locale === "pt" ? "Assinar Agora" : "Subscribe Now"}
-                    </Button>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              </div>
             </div>
+            
+            <p className="text-center mt-12 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+              {locale === "pt" ? "Pagamento Seguro via Multicaixa Express" : "Secure Payment via Multicaixa Express"}
+            </p>
           </>
         )}
 
