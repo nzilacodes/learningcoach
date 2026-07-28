@@ -1,5 +1,5 @@
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Award, Medal, Trophy, Target, Calendar, User, Sparkles, ExternalLink, Crown } from "lucide-react";
@@ -8,28 +8,13 @@ import { Button } from "@/components/ui/button";
 /* -------- Profile header -------- */
 export function ProfileHeader() {
   const { user } = useAuth();
-  const { data: profile } = useQuery({
-    queryKey: ["profile_full", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("full_name,email,avatar_url,cefr_level,country,native_language,learning_goal,interests")
-        .eq("id", user!.id)
-        .maybeSingle();
-      return data;
-    },
-  });
   const { data: rank } = useQuery({
     queryKey: ["my_rank", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase.rpc("my_rank").single();
-      return data as { rank: number; total: number; xp: number } | null;
-    },
+    queryFn: () => apiFetch<{ rank: number; total: number; xp: number } | null>("/v1/me/rank"),
   });
 
-  const initials = (profile?.full_name ?? profile?.email ?? "?")
+  const initials = (user?.fullName ?? user?.email ?? "?")
     .split(" ")
     .map((s) => s[0])
     .slice(0, 2)
@@ -40,10 +25,10 @@ export function ProfileHeader() {
     <div className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-card">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
         <div className="relative">
-          {profile?.avatar_url ? (
+          {user?.avatarUrl ? (
             <img
-              src={profile.avatar_url}
-              alt={profile.full_name ?? "avatar"}
+              src={user.avatarUrl}
+              alt={user.fullName ?? "avatar"}
               className="h-20 w-20 rounded-2xl object-cover ring-2 ring-magenta/40"
             />
           ) : (
@@ -51,18 +36,18 @@ export function ProfileHeader() {
               {initials || <User className="h-8 w-8" />}
             </div>
           )}
-          {profile?.cefr_level && (
+          {user?.cefrLevel && (
             <span className="absolute -bottom-2 -right-2 rounded-full bg-magenta px-2 py-0.5 text-xs font-bold text-white shadow-soft">
-              {profile.cefr_level}
+              {user.cefrLevel}
             </span>
           )}
         </div>
         <div className="flex-1">
           <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Perfil</div>
-          <h2 className="font-display text-2xl font-bold">{profile?.full_name || "Aluno"}</h2>
+          <h2 className="font-display text-2xl font-bold">{user?.fullName || "Aluno"}</h2>
           <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            {profile?.country && <span>🌍 {profile.country}</span>}
-            {profile?.native_language && <span>🗣️ {profile.native_language}</span>}
+            {user?.country && <span>🌍 {user.country}</span>}
+            {user?.nativeLanguage && <span>🗣️ {user.nativeLanguage}</span>}
             {rank && (
               <span className="inline-flex items-center gap-1 font-semibold text-magenta">
                 <Crown className="h-3 w-3" /> #{rank.rank} / {rank.total}
@@ -80,17 +65,10 @@ export function LeaderboardCard() {
   const { user } = useAuth();
   const { data = [] } = useQuery({
     queryKey: ["leaderboard"],
-    queryFn: async () => {
-      const { data } = await supabase.rpc("leaderboard", { _limit: 8 });
-      return (data ?? []) as Array<{
-        rank: number;
-        user_id: string;
-        display_name: string;
-        xp: number;
-        streak: number;
-        cefr_level: string | null;
-      }>;
-    },
+    queryFn: () =>
+      apiFetch<
+        Array<{ rank: number; user_id: string; display_name: string; xp: number; streak: number; cefr_level: string | null }>
+      >("/v1/leaderboard?limit=8"),
   });
 
   return (
@@ -136,14 +114,7 @@ export function CertificatesCard() {
   const { data = [] } = useQuery({
     queryKey: ["my_certificates", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("certificates")
-        .select("id,level,issued_at,verification_code,score,pdf_url")
-        .eq("user_id", user!.id)
-        .order("issued_at", { ascending: false });
-      return data ?? [];
-    },
+    queryFn: () => apiFetch<any[]>("/v1/me/certificates"),
   });
 
   return (
@@ -181,21 +152,15 @@ export function CertificatesCard() {
   );
 }
 
-/* -------- Achievements from user_achievements + achievements -------- */
+/* -------- Achievements -------- */
 export function AchievementsCard() {
   const { user } = useAuth();
   const { data = [] } = useQuery({
     queryKey: ["my_achievements", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("user_achievements")
-        .select("earned_at, achievements(title,description,icon,xp_reward)")
-        .eq("user_id", user!.id)
-        .order("earned_at", { ascending: false })
-        .limit(6);
-      return (data ?? []) as any[];
-    },
+    queryFn: () => apiFetch<{ earned_at: string; achievements: { title: string; icon: string; xp_reward: number } }[]>(
+      "/v1/me/achievements",
+    ),
   });
 
   return (
@@ -210,7 +175,7 @@ export function AchievementsCard() {
         </p>
       ) : (
         <ul className="space-y-2">
-          {data.map((a: any, i: number) => (
+          {data.slice(0, 6).map((a, i) => (
             <li key={i} className="flex items-center gap-3 rounded-xl border border-border bg-background p-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber/15 text-lg">
                 {a.achievements?.icon ?? "🏅"}
@@ -236,19 +201,11 @@ export function ActivityCalendar() {
   const { data = [] } = useQuery({
     queryKey: ["activity_calendar", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const since = new Date(Date.now() - 84 * 86400000).toISOString().slice(0, 10);
-      const { data } = await supabase
-        .from("study_sessions")
-        .select("day,seconds")
-        .eq("user_id", user!.id)
-        .gte("day", since);
-      return data ?? [];
-    },
+    queryFn: () => apiFetch<{ day: string; seconds: number }[]>("/v1/me/study-sessions?days=84"),
   });
 
   const map = new Map<string, number>();
-  for (const d of data) map.set(d.day, d.seconds);
+  for (const d of data) map.set(d.day.slice(0, 10), d.seconds);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -294,18 +251,6 @@ export function ActivityCalendar() {
 /* -------- Goals -------- */
 export function GoalsCard() {
   const { user } = useAuth();
-  const { data: profile } = useQuery({
-    queryKey: ["profile_goals", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("learning_goal,interests,cefr_level")
-        .eq("id", user!.id)
-        .maybeSingle();
-      return data;
-    },
-  });
 
   return (
     <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
@@ -313,12 +258,12 @@ export function GoalsCard() {
         <h3 className="font-display font-bold">Objetivos</h3>
         <Target className="h-4 w-4 text-sunset" />
       </div>
-      {profile?.learning_goal ? (
+      {user?.learningGoal ? (
         <div className="rounded-xl border border-border bg-background p-3">
           <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Meta principal</div>
           <div className="mt-1 flex items-start gap-2 text-sm font-semibold">
             <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-magenta" />
-            <span>{profile.learning_goal}</span>
+            <span>{user.learningGoal}</span>
           </div>
         </div>
       ) : (
@@ -326,11 +271,11 @@ export function GoalsCard() {
           Defina um objetivo no seu perfil para receber recomendações personalizadas.
         </p>
       )}
-      {profile?.interests && profile.interests.length > 0 && (
+      {user?.interests && user.interests.length > 0 && (
         <div className="mt-3">
           <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Interesses</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {profile.interests.map((i: string) => (
+            {user.interests.map((i: string) => (
               <span key={i} className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">
                 {i}
               </span>

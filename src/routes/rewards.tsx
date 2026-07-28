@@ -22,7 +22,7 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { toast } from "sonner";
 import { celebrate, levelProgress, xpForLevel } from "@/lib/gamification";
 import { useLocale } from "@/lib/i18n";
@@ -66,11 +66,6 @@ type Mission = {
   xp_reward: number;
   coin_reward: number;
   icon: string;
-};
-type UserMission = {
-  id: string;
-  mission_id: string;
-  period_key: string;
   progress: number;
   completed_at: string | null;
   claimed_at: string | null;
@@ -85,14 +80,10 @@ type ShopItem = {
   icon: string;
 };
 type XpEvent = { created_at: string; amount: number; source: string };
-type RankRow = {
-  id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  xp: number;
-  level: number;
-  country: string | null;
-};
+/** Normalized row for both the privacy-filtered world/national leaderboard
+ * (display_name + streak/cefr_level) and the full-profile friends list
+ * (full_name + level/country) — same visual shape, different underlying fields. */
+type RankRow = { id: string; name: string; avatar_url: string | null; xp: number; sublabel: string };
 
 type TabId = "missions" | "calendar" | "rankings" | "shop" | "avatar" | "friends";
 type RankScope = "world" | "national" | "friends";
@@ -105,7 +96,6 @@ function RewardsPage() {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [missions, setMissions] = useState<Mission[]>([]);
-  const [userMissions, setUserMissions] = useState<UserMission[]>([]);
   const [shop, setShop] = useState<ShopItem[]>([]);
   const [inventory, setInventory] = useState<{ item_id: string; equipped: boolean }[]>([]);
   const [events, setEvents] = useState<XpEvent[]>([]);
@@ -131,139 +121,125 @@ function RewardsPage() {
   }, []);
 
   const refresh = async () => {
-    const { data: userRes } = await supabase.auth.getUser();
-    const uid = userRes.user?.id;
-    if (!uid) {
+    if (!user) {
       setLoading(false);
       return;
     }
-    await supabase.rpc("ensure_user_missions");
 
-    const [p, ms, ums, si, inv, ev, w] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("id,full_name,avatar_url,xp,level,coins,streak,country,avatar_config")
-        .eq("id", uid)
-        .maybeSingle(),
-      supabase.from("missions").select("*").eq("is_active", true).order("scope"),
-      supabase.from("user_missions").select("*").eq("user_id", uid),
-      supabase.from("shop_items").select("*").eq("is_active", true).order("cost_coins"),
-      supabase.from("user_inventory").select("item_id,equipped").eq("user_id", uid),
-      supabase
-        .from("xp_events")
-        .select("created_at,amount,source")
-        .eq("user_id", uid)
-        .order("created_at", { ascending: false })
-        .limit(200),
-      supabase
-        .from("profiles")
-        .select("id,full_name,avatar_url,xp,level,country")
-        .order("xp", { ascending: false })
-        .limit(50),
+    const [stats, ms, si, inv, ev, world] = await Promise.all([
+      apiFetch<{ xp: number; level: number; coins: number; streak: number; avatar_url: string | null; avatar_config: Record<string, unknown> }>(
+        "/v1/me/gamification-stats",
+      ),
+      apiFetch<Mission[]>("/v1/me/missions"),
+      apiFetch<ShopItem[]>("/v1/shop-items"),
+      apiFetch<{ item_id: string; equipped: boolean }[]>("/v1/me/inventory"),
+      apiFetch<XpEvent[]>("/v1/me/xp-events?days=90"),
+      apiFetch<{ user_id: string; display_name: string; xp: number; streak: number; cefr_level: string | null }[]>(
+        "/v1/leaderboard?limit=50",
+      ),
     ]);
-    setProfile((p.data as Profile) ?? null);
-    setMissions((ms.data as Mission[]) ?? []);
-    setUserMissions((ums.data as UserMission[]) ?? []);
-    setShop((si.data as ShopItem[]) ?? []);
-    setInventory((inv.data as { item_id: string; equipped: boolean }[]) ?? []);
-    setEvents((ev.data as XpEvent[]) ?? []);
-    const world = (w.data as RankRow[]) ?? [];
-    const country = (p.data as Profile | null)?.country;
-    const national = country
-      ? (((
-          await supabase
-            .from("profiles")
-            .select("id,full_name,avatar_url,xp,level,country")
-            .eq("country", country)
-            .order("xp", { ascending: false })
-            .limit(50)
-        ).data as RankRow[]) ?? [])
+
+    setProfile({
+      id: user.id,
+      full_name: user.fullName,
+      country: user.country,
+      avatar_url: stats.avatar_url,
+      avatar_config: stats.avatar_config,
+      xp: stats.xp,
+      level: stats.level,
+      coins: stats.coins,
+      streak: stats.streak,
+    });
+    setMissions(ms);
+    setShop(si);
+    setInventory(inv);
+    setEvents(ev);
+
+    const worldRows: RankRow[] = world.map((r) => ({
+      id: r.user_id,
+      name: r.display_name,
+      avatar_url: null,
+      xp: r.xp,
+      sublabel: `${r.cefr_level ?? "—"} · 🔥${r.streak}`,
+    }));
+    const national = user.country
+      ? await apiFetch<typeof world>(`/v1/leaderboard?limit=50&country=${encodeURIComponent(user.country)}`)
       : [];
-    const friendsList =
-      (
-        await supabase
-          .from("friendships")
-          .select("friend_id,user_id")
-          .or(`user_id.eq.${uid},friend_id.eq.${uid}`)
-          .eq("status", "accepted")
-      ).data ?? [];
-    const friendIds = Array.from(
-      new Set(friendsList.map((f) => (f.user_id === uid ? f.friend_id : f.user_id))),
+    const nationalRows: RankRow[] = national.map((r) => ({
+      id: r.user_id,
+      name: r.display_name,
+      avatar_url: null,
+      xp: r.xp,
+      sublabel: `${r.cefr_level ?? "—"} · 🔥${r.streak}`,
+    }));
+    const friendsList = await apiFetch<{ id: string; full_name: string | null; avatar_url: string | null; xp: number; level: number; country: string | null }[]>(
+      "/v1/me/friends",
     );
-    friendIds.push(uid);
-    const friends = friendIds.length
-      ? (((
-          await supabase
-            .from("profiles")
-            .select("id,full_name,avatar_url,xp,level,country")
-            .in("id", friendIds)
-            .order("xp", { ascending: false })
-        ).data as RankRow[]) ?? [])
-      : [];
-    setRanks({ world, national, friends });
+    const friendsRows: RankRow[] = [...friendsList, { id: user.id, full_name: user.fullName, avatar_url: stats.avatar_url, xp: stats.xp, level: stats.level, country: user.country }]
+      .sort((a, b) => b.xp - a.xp)
+      .map((f) => ({
+        id: f.id,
+        name: f.full_name ?? "—",
+        avatar_url: f.avatar_url,
+        xp: f.xp,
+        sublabel: `${locale === "pt" ? "Nível" : "Level"} ${f.level} · ${f.country ?? "🌍"}`,
+      }));
+
+    setRanks({ world: worldRows, national: nationalRows, friends: friendsRows });
     setLoading(false);
   };
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [user?.id]);
 
   const ownedIds = useMemo(() => new Set(inventory.map((i) => i.item_id)), [inventory]);
-  const userMissionMap = useMemo(
-    () => new Map(userMissions.map((um) => [um.mission_id, um])),
-    [userMissions],
-  );
 
   const claim = async (missionId: string) => {
     setClaiming(missionId);
-    const { data, error } = await supabase.rpc("claim_mission", { _mission_id: missionId });
-    setClaiming(null);
-    if (error) return toast.error(error.message);
-    const r = data as { xp: number; coins: number };
-    toast.success(`Recompensa: +${r.xp} XP · +${r.coins} 🪙`);
-    celebrate();
-    refresh();
+    try {
+      const r = await apiFetch<{ xp: number; coins: number }>(`/v1/me/missions/${missionId}/claim`, { method: "POST" });
+      toast.success(`Recompensa: +${r.xp} XP · +${r.coins} 🪙`);
+      celebrate();
+      await refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro");
+    } finally {
+      setClaiming(null);
+    }
   };
 
   const buy = async (itemId: string) => {
-    const { error } = await supabase.rpc("buy_shop_item", { _item_id: itemId });
-    if (error) return toast.error(error.message);
-    toast.success("Item comprado!");
-    celebrate();
-    refresh();
+    try {
+      await apiFetch(`/v1/shop-items/${itemId}/purchase`, { method: "POST" });
+      toast.success("Item comprado!");
+      celebrate();
+      await refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro");
+    }
   };
 
-  const equip = async (itemId: string, category: string) => {
-    if (!profile) return;
-    if (category === "avatar") {
-      await supabase.from("user_inventory").update({ equipped: false }).eq("user_id", profile.id);
+  const equip = async (itemId: string) => {
+    try {
+      await apiFetch(`/v1/me/inventory/${itemId}/equip`, { method: "PUT", body: JSON.stringify({ equipped: true }) });
+      toast.success("Equipado!");
+      await refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro");
     }
-    await supabase
-      .from("user_inventory")
-      .update({ equipped: true })
-      .eq("user_id", profile.id)
-      .eq("item_id", itemId);
-    toast.success("Equipado!");
-    refresh();
   };
 
   const addFriend = async () => {
-    if (!profile || !friendEmail.trim()) return;
-    const email = friendEmail.trim().toLowerCase();
-    const { data: target } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", email)
-      .maybeSingle();
-    if (!target) return toast.error("Utilizador não encontrado");
-    if (target.id === profile.id) return toast.error("Não podes adicionar-te a ti");
-    const { error } = await supabase
-      .from("friendships")
-      .insert({ user_id: profile.id, friend_id: target.id, status: "accepted" });
-    if (error) return toast.error(error.message);
-    toast.success("Amigo adicionado!");
-    setFriendEmail("");
-    refresh();
+    if (!friendEmail.trim()) return;
+    try {
+      await apiFetch("/v1/me/friends", { method: "POST", body: JSON.stringify({ email: friendEmail.trim() }) });
+      toast.success("Amigo adicionado!");
+      setFriendEmail("");
+      await refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro");
+    }
   };
 
   const tabs: { id: TabId; label: string; Icon: typeof Target }[] = [
@@ -517,15 +493,14 @@ function RewardsPage() {
                       {locale === "pt" ? "Missões" : "Missions"} {label}
                     </h2>
                     <span className="text-xs font-semibold text-gray-400">
-                      {list.filter((m) => userMissionMap.get(m.id)?.claimed_at).length}/{list.length}
+                      {list.filter((m) => m.claimed_at).length}/{list.length}
                     </span>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {list.map((m) => {
-                      const um = userMissionMap.get(m.id);
-                      const progress = um?.progress ?? 0;
-                      const done = !!um?.completed_at;
-                      const claimed = !!um?.claimed_at;
+                      const progress = m.progress ?? 0;
+                      const done = !!m.completed_at;
+                      const claimed = !!m.claimed_at;
                       const pct = Math.min(100, (progress / m.target) * 100);
                       return (
                         <div
@@ -687,7 +662,7 @@ function RewardsPage() {
                     </div>
                     {owned ? (
                       <button
-                        onClick={() => equip(it.id, it.category)}
+                        onClick={() => equip(it.id)}
                         className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
                       >
                         {locale === "pt" ? "Equipar" : "Equip"}
@@ -847,20 +822,18 @@ function RankList({
             {i + 1}
           </div>
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-white text-xs font-bold shrink-0">
-            {(r.full_name ?? "?").slice(0, 1).toUpperCase()}
+            {(r.name ?? "?").slice(0, 1).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-sm text-[var(--ink)] truncate">
-              {r.full_name ?? "—"}
+              {r.name ?? "—"}
               {r.id === me && (
                 <span className="ml-1.5 inline-flex rounded-full bg-[var(--violet)]/10 text-[var(--violet)] px-1.5 py-0.5 text-[10px] font-bold">
                   {locale === "pt" ? "Tu" : "You"}
                 </span>
               )}
             </div>
-            <div className="text-xs text-gray-400">
-              {locale === "pt" ? "Nível" : "Level"} {r.level} · {r.country ?? "🌍"}
-            </div>
+            <div className="text-xs text-gray-400">{r.sublabel}</div>
           </div>
           <div className="text-right shrink-0">
             <div className="font-display text-base md:text-lg font-bold text-[var(--ink)]">
