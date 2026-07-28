@@ -10,6 +10,14 @@ export type AuthUser = {
   fullName: string | null;
   age: number | null;
   onboardingStatus: string | null;
+  cefrLevel: string | null;
+  country: string | null;
+  nativeLanguage: string | null;
+  learningGoal: string | null;
+  interests: string[] | null;
+  avatarUrl: string | null;
+  demoCompleted: boolean | null;
+  selectedPlan: string | null;
 };
 
 interface AuthCtx {
