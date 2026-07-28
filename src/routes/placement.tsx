@@ -30,7 +30,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { awardActivity } from "@/lib/gamification";
-import { supabase } from "@/integrations/supabase/client";
 import { apiFetch, apiFetchFormData } from "@/lib/api/client";
 import { toast } from "sonner";
 import {
@@ -115,32 +114,8 @@ function DiagnosticPage() {
   useEffect(() => {
     if (!user) return;
     void (async () => {
-      const { data } = await supabase
-        .from("diagnostic_results")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (data) {
-        setReport({
-          scores: {
-            grammar: Number(data.grammar_score),
-            vocabulary: Number(data.vocabulary_score),
-            reading: Number(data.reading_score),
-            listening: Number(data.listening_score),
-            writing: Number(data.writing_score),
-            speaking: Number(data.speaking_score),
-            pronunciation: Number(data.pronunciation_score),
-            overall: Number(data.overall_score),
-          },
-          cefr_level: data.cefr_level as Cefr,
-          strengths: (data.strengths as string[]) ?? [],
-          weaknesses: (data.weaknesses as string[]) ?? [],
-          feedback: data.feedback ?? "",
-          learning_plan: (data.learning_plan as Report["learning_plan"]) ?? [],
-        });
-      }
+      const data = await apiFetch<Report | null>("/v1/me/diagnostic-result");
+      if (data) setReport(data);
     })();
   }, [user]);
 
@@ -165,12 +140,14 @@ function DiagnosticPage() {
     console.log("[placement] submitting evaluation…");
 
 
-    // Get profile context for personalization (grading itself happens server-side).
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("age,native_language,learning_goal,interests")
-      .eq("id", user.id)
-      .maybeSingle();
+    // Profile context for personalization (grading itself happens server-side) —
+    // already available from the session, no extra fetch needed.
+    const profile = {
+      age: user.age ?? undefined,
+      native_language: user.nativeLanguage ?? undefined,
+      learning_goal: user.learningGoal ?? undefined,
+      interests: user.interests ?? undefined,
+    };
 
     try {
       // Server recomputes grammar/vocab/reading/listening from raw answers

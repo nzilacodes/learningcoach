@@ -25,10 +25,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLocale } from "@/lib/i18n";
-import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth, type AuthUser } from "@/lib/auth";
+import { apiFetch } from "@/lib/api/client";
 import { useAgeTheme } from "@/lib/age-theme";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/onboarding")({
   component: OnboardingWizard,
@@ -59,43 +58,23 @@ function ageToRoom(age: number): "kids" | "teens" | "adults" {
 
 function OnboardingWizard() {
   const { locale } = useLocale();
-  const { user, loading } = useAuth();
+  const { user, loading, refresh: refreshAuth } = useAuth();
   const navigate = useNavigate();
-  const qc = useQueryClient();
-
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ["onboarding-profile", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(
-          "full_name,age,country,native_language,learning_goal,interests,cefr_level,onboarding_status,demo_completed,selected_plan",
-        )
-        .eq("id", user!.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
   }, [loading, user, navigate]);
 
-  const status: Status = (profile?.onboarding_status as Status) ?? "profile";
+  const status: Status = (user?.onboardingStatus as Status) ?? "profile";
   const activeIdx = STEPS.findIndex((s) => s.key === status);
 
   useEffect(() => {
     if (status === "complete") navigate({ to: "/dashboard" });
   }, [status, navigate]);
 
-  const refresh = async () => {
-    await qc.invalidateQueries({ queryKey: ["onboarding-profile", user?.id] });
-    await qc.invalidateQueries({ queryKey: ["profile-gate", user?.id] });
-  };
+  const refresh = refreshAuth;
 
-  if (loading || isLoading || !profile) {
+  if (loading || !user) {
     return (
       <div className="min-h-screen">
         <SiteHeader />
@@ -144,11 +123,11 @@ function OnboardingWizard() {
             </div>
           </div>
 
-          {status === "profile" && <ProfileStep profile={profile} userId={user!.id} onDone={refresh} />}
-          {status === "placement" && <PlacementStep userId={user!.id} onDone={refresh} />}
-          {status === "plan" && <PlanStep profile={profile} userId={user!.id} onDone={refresh} />}
-          {status === "demo" && <DemoStep userId={user!.id} onDone={refresh} />}
-          {status === "checkout" && <CheckoutStep userId={user!.id} onDone={refresh} />}
+          {status === "profile" && <ProfileStep user={user} onDone={refresh} />}
+          {status === "placement" && <PlacementStep onDone={refresh} />}
+          {status === "plan" && <PlanStep user={user} onDone={refresh} />}
+          {status === "demo" && <DemoStep onDone={refresh} />}
+          {status === "checkout" && <CheckoutStep onDone={refresh} />}
         </div>
       </div>
     </div>
@@ -177,22 +156,20 @@ const GOAL_OPTIONS = [
 ];
 
 function ProfileStep({
-  profile,
-  userId,
+  user,
   onDone,
 }: {
-  profile: any;
-  userId: string;
+  user: AuthUser;
   onDone: () => Promise<void>;
 }) {
   const { locale } = useLocale();
   const { setTheme } = useAgeTheme();
-  const [fullName, setFullName] = useState(profile.full_name ?? "");
-  const [age, setAge] = useState<string>(profile.age?.toString() ?? "");
-  const [country, setCountry] = useState(profile.country ?? "");
-  const [nativeLang, setNativeLang] = useState(profile.native_language ?? "");
-  const [goal, setGoal] = useState<string>(profile.learning_goal ?? "");
-  const [interests, setInterests] = useState<string[]>(profile.interests ?? []);
+  const [fullName, setFullName] = useState(user.fullName ?? "");
+  const [age, setAge] = useState<string>(user.age?.toString() ?? "");
+  const [country, setCountry] = useState(user.country ?? "");
+  const [nativeLang, setNativeLang] = useState(user.nativeLanguage ?? "");
+  const [goal, setGoal] = useState<string>(user.learningGoal ?? "");
+  const [interests, setInterests] = useState<string[]>(user.interests ?? []);
   const [saving, setSaving] = useState(false);
 
   const toggleInterest = (id: string) =>
@@ -211,20 +188,24 @@ function ProfileStep({
       return toast.error(locale === "pt" ? "Escolha pelo menos 1 interesse" : "Pick at least 1 interest");
 
     setSaving(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        full_name: fullName.trim(),
-        age: ageNum,
-        country: country.trim(),
-        native_language: nativeLang.trim(),
-        learning_goal: goal,
-        interests,
-        onboarding_status: "placement",
-      })
-      .eq("id", userId);
+    try {
+      await apiFetch("/v1/me", {
+        method: "PATCH",
+        body: JSON.stringify({
+          fullName: fullName.trim(),
+          age: ageNum,
+          country: country.trim(),
+          nativeLanguage: nativeLang.trim(),
+          learningGoal: goal,
+          interests,
+          onboardingStatus: "placement",
+        }),
+      });
+    } catch (e) {
+      setSaving(false);
+      return toast.error(e instanceof Error ? e.message : "Erro");
+    }
     setSaving(false);
-    if (error) return toast.error(error.message);
     setTheme(ageToRoom(ageNum));
     await onDone();
   };
@@ -313,7 +294,7 @@ function ProfileStep({
 
 
 
-function PlacementStep({ userId }: { userId: string; onDone: () => Promise<void> }) {
+function PlacementStep({}: { onDone: () => Promise<void> }) {
   const { locale } = useLocale();
   const navigate = useNavigate();
   return (
@@ -344,7 +325,7 @@ function PlacementStep({ userId }: { userId: string; onDone: () => Promise<void>
         className="mt-6 bg-gradient-sunset text-white shadow-soft hover:opacity-90"
         onClick={() => {
           // Ensure onboarding state is 'placement' so /placement can advance it to 'plan' on completion.
-          void supabase.from("profiles").update({ onboarding_status: "placement" }).eq("id", userId);
+          void apiFetch("/v1/me", { method: "PATCH", body: JSON.stringify({ onboardingStatus: "placement" }) });
           navigate({ to: "/placement" });
         }}
       >
@@ -384,17 +365,21 @@ const PLAN_BY_LEVEL: Record<string, { pt: string[]; en: string[] }> = {
   },
 };
 
-function PlanStep({ profile, userId, onDone }: { profile: any; userId: string; onDone: () => Promise<void> }) {
+function PlanStep({ user, onDone }: { user: AuthUser; onDone: () => Promise<void> }) {
   const { locale } = useLocale();
   const [advancing, setAdvancing] = useState(false);
-  const level = (profile.cefr_level as keyof typeof PLAN_BY_LEVEL) ?? "A1";
+  const level = (user.cefrLevel as keyof typeof PLAN_BY_LEVEL) ?? "A1";
   const plan = PLAN_BY_LEVEL[level] ?? PLAN_BY_LEVEL.A1;
 
   const advance = async () => {
     setAdvancing(true);
-    const { error } = await supabase.from("profiles").update({ onboarding_status: "demo" }).eq("id", userId);
+    try {
+      await apiFetch("/v1/me", { method: "PATCH", body: JSON.stringify({ onboardingStatus: "demo" }) });
+    } catch (e) {
+      setAdvancing(false);
+      return toast.error(e instanceof Error ? e.message : "Erro");
+    }
     setAdvancing(false);
-    if (error) return toast.error(error.message);
     await onDone();
   };
 
@@ -440,7 +425,7 @@ const DEMO_CARDS = [
   { en: "I would like to learn English.", pt: "Gostaria de aprender inglês." },
 ];
 
-function DemoStep({ userId, onDone }: { userId: string; onDone: () => Promise<void> }) {
+function DemoStep({ onDone }: { onDone: () => Promise<void> }) {
   const { locale } = useLocale();
   const [i, setI] = useState(0);
   const [revealed, setRevealed] = useState(false);
@@ -459,12 +444,16 @@ function DemoStep({ userId, onDone }: { userId: string; onDone: () => Promise<vo
 
   const finish = async () => {
     setSaving(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ demo_completed: true, onboarding_status: "checkout" })
-      .eq("id", userId);
+    try {
+      await apiFetch("/v1/me", {
+        method: "PATCH",
+        body: JSON.stringify({ demoCompleted: true, onboardingStatus: "checkout" }),
+      });
+    } catch (e) {
+      setSaving(false);
+      return toast.error(e instanceof Error ? e.message : "Erro");
+    }
     setSaving(false);
-    if (error) return toast.error(error.message);
     await onDone();
   };
 
@@ -551,7 +540,7 @@ const PLANS: { key: PlanKey; icon: typeof Rocket; pt: { name: string; price: str
   },
 ];
 
-function CheckoutStep({ userId, onDone }: { userId: string; onDone: () => Promise<void> }) {
+function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
   const { locale } = useLocale();
   const [selected, setSelected] = useState<PlanKey>("pro");
   const [processing, setProcessing] = useState(false);
@@ -562,12 +551,16 @@ function CheckoutStep({ userId, onDone }: { userId: string; onDone: () => Promis
     setProcessing(true);
     // Payment provider not yet integrated: mark selected plan and complete onboarding.
     // Real Stripe/Paddle checkout will replace this in a future step.
-    const { error } = await supabase
-      .from("profiles")
-      .update({ selected_plan: selected, onboarding_status: "complete" })
-      .eq("id", userId);
+    try {
+      await apiFetch("/v1/me", {
+        method: "PATCH",
+        body: JSON.stringify({ selectedPlan: selected, onboardingStatus: "complete" }),
+      });
+    } catch (e) {
+      setProcessing(false);
+      return toast.error(e instanceof Error ? e.message : "Erro");
+    }
     setProcessing(false);
-    if (error) return toast.error(error.message);
     toast.success(locale === "pt" ? "Bem-vindo à plataforma!" : "Welcome to the platform!");
     await onDone();
   };
