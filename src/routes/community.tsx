@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Users, Send, Baby, GraduationCap, User, Shield, Mic, MicOff, Lock, LogIn, Play, AlertTriangle } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SITE_URL } from "@/lib/site-url";
@@ -50,13 +50,7 @@ function ageToRoom(age: number | null | undefined): Room {
   return "adults";
 }
 
-const bannedWords = ["stupid", "hate", "idiot", "shut up", "burro", "idiota", "cala", "fuck", "shit", "damn"];
-function moderate(text: string) {
-  const lower = text.toLowerCase();
-  const flagged = bannedWords.some((w) => lower.includes(w));
-  const clean = flagged ? bannedWords.reduce((acc, w) => acc.replace(new RegExp(w, "gi"), "***"), text) : text;
-  return { clean, flagged };
-}
+type Message = { id: string; user_id: string; display_name: string; content: string; kind: string; created_at: string };
 
 function CommunityPage() {
   const { locale } = useLocale();
@@ -74,47 +68,18 @@ function CommunityPage() {
     if (!loading && !user) navigate({ to: "/auth" });
   }, [loading, user, navigate]);
 
-  const { data: profile } = useQuery({
-    queryKey: ["profile", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("full_name,age").eq("id", user!.id).maybeSingle();
-      return data;
-    },
-  });
+  // Client-side preview only — the backend computes the real room from the
+  // caller's own age server-side and never trusts this for enforcement.
+  const room: Room | null = user ? ageToRoom(user.age) : null;
+  const displayName = user?.fullName || (user?.email?.split("@")[0] ?? "You");
 
-  const room: Room | null = useMemo(() => (profile ? ageToRoom(profile.age) : null), [profile]);
-  const displayName = profile?.full_name || (user?.email?.split("@")[0] ?? "You");
-
-  const { data: messages = [] } = useQuery({
+  const { data } = useQuery({
     queryKey: ["community_messages", room],
     enabled: !!room && started,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("community_messages")
-        .select("id,user_id,display_name,content,kind,created_at")
-        .eq("room", room!)
-        .order("created_at", { ascending: true })
-        .limit(200);
-      return data ?? [];
-    },
+    refetchInterval: 3000,
+    queryFn: () => apiFetch<{ room: Room; messages: Message[] }>("/v1/community/messages"),
   });
-
-  // Realtime subscription
-  useEffect(() => {
-    if (!room || !started) return;
-    const ch = supabase
-      .channel(`community-${room}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "community_messages", filter: `room=eq.${room}` },
-        () => qc.invalidateQueries({ queryKey: ["community_messages", room] }),
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
-  }, [room, started, qc]);
+  const messages = data?.messages ?? [];
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -129,20 +94,17 @@ function CommunityPage() {
     if (!user || !room) return;
     const raw = contentOverride ?? input.trim();
     if (!raw) return;
-    const { clean, flagged } = moderate(raw);
-    if (flagged) showToast(locale === "pt" ? "Mensagem filtrada pela IA 💛" : "Message filtered by AI 💛");
-    const { error } = await supabase.from("community_messages").insert({
-      user_id: user.id,
-      room,
-      display_name: displayName,
-      content: clean,
-      kind,
-    });
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      const sent = await apiFetch<Message>("/v1/community/messages", {
+        method: "POST",
+        body: JSON.stringify({ content: raw, kind }),
+      });
+      if (sent.content !== raw) showToast(locale === "pt" ? "Mensagem filtrada pela IA 💛" : "Message filtered by AI 💛");
+      setInput("");
+      await qc.invalidateQueries({ queryKey: ["community_messages", room] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro");
     }
-    setInput("");
   };
 
   const sendVoice = () => {
@@ -150,7 +112,7 @@ function CommunityPage() {
     send("voice", locale === "pt" ? "🎙️ Mensagem de voz (0:07)" : "🎙️ Voice message (0:07)");
   };
 
-  if (loading || !user || !profile) {
+  if (loading || !user) {
     return (
       <div className="min-h-screen">
         <SiteHeader />
@@ -201,7 +163,7 @@ function CommunityPage() {
               })}
             </div>
 
-            {profile.age == null && (
+            {user.age == null && (
               <div className="mt-5 flex items-start gap-2 rounded-xl bg-amber/10 p-3 text-left text-xs text-amber-900 dark:text-amber-200">
                 <AlertTriangle className="mt-0.5 h-3.5 w-3.5" />
                 <span>
