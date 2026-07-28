@@ -1,27 +1,13 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Check,
-  Copy,
-  Clock,
-  Shield,
-  Sparkles,
-  ArrowRight,
-  ArrowLeft,
-  CheckCircle2,
-  Loader2,
-  Smartphone,
-  Crown,
-  Zap,
-  Star,
-} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Sparkles, CheckCircle2, Crown, Zap, Star } from "lucide-react";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { SITE_URL } from "@/lib/site-url";
 
@@ -126,77 +112,18 @@ const CYCLE_LABEL: Record<Cycle, { pt: string; en: string }> = {
 function PricingPage() {
   const { locale } = useLocale();
   const [cycle, setCycle] = useState<Cycle>("monthly");
-  const [step, setStep] = useState<"choose" | "reference" | "verifying">("choose");
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [payment, setPayment] = useState<{
-    reference: string;
-    entity: string;
-    amount: number;
-    id: string;
-  } | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const qc = useQueryClient();
 
   const { data: plans = [] } = useQuery({
     queryKey: ["subscription_plans"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("subscription_plans")
-        .select("*")
-        .eq("is_active", true)
-        .order("price_kz");
-      if (error) throw error;
-      return (data as unknown as Plan[]).map((p) => ({
-        ...p,
-        features: (p.features as unknown as string[]) ?? [],
-      }));
+      const data = await apiFetch<Plan[]>("/v1/plans");
+      return data.map((p) => ({ ...p, features: p.features ?? [] }));
     },
   });
 
   const filtered = useMemo(() => plans.filter((p) => p.billing_cycle === cycle), [plans, cycle]);
-
-  const createPayment = useMutation({
-    mutationFn: async (plan: Plan) => {
-      if (!user) throw new Error("auth");
-      const reference = `MCX${Date.now().toString().slice(-9)}`;
-      const { data: sub, error: se } = await supabase
-        .from("subscriptions")
-        .insert({ user_id: user.id, plan_id: plan.id, status: "pending" })
-        .select()
-        .single();
-      if (se) throw se;
-      const { data: pay, error: pe } = await supabase
-        .from("payments")
-        .insert({
-          user_id: user.id,
-          subscription_id: sub.id,
-          plan_id: plan.id,
-          amount_kz: plan.price_kz,
-          reference,
-          entity: "11473",
-          status: "pending",
-        })
-        .select()
-        .single();
-      if (pe) throw pe;
-      return { pay, plan };
-    },
-    onSuccess: ({ pay, plan }) => {
-      setPayment({ reference: pay.reference, entity: pay.entity, amount: plan.price_kz, id: pay.id });
-      setSelectedPlan(plan);
-      setStep("reference");
-      qc.invalidateQueries({ queryKey: ["my_payments"] });
-    },
-    onError: (e: Error) => {
-      if (e.message === "auth") {
-        toast.error(locale === "pt" ? "Faça login primeiro" : "Please sign in first");
-        navigate({ to: "/auth" });
-      } else {
-        toast.error(e.message);
-      }
-    },
-  });
 
   const handleSubscribe = (plan: Plan) => {
     if (!user) {
@@ -207,19 +134,11 @@ function PricingPage() {
     navigate({ to: "/checkout/$planId", params: { planId: plan.id } });
   };
 
-  const copyRef = () => {
-    if (payment) {
-      navigator.clipboard.writeText(payment.reference);
-      toast.success(locale === "pt" ? "Referência copiada" : "Reference copied");
-    }
-  };
-
   return (
     <div className="mt-16 min-h-screen bg-background">
       <SiteHeader />
       <div className="mx-auto max-w-[1440px] px-4 py-12">
-        {step === "choose" && (
-          <>
+        <>
             <div className="mb-12 text-center">
               <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl text-[#0F172A]">
                 {locale === "pt" ? "Aprenda inglês " : "Learn English "}
@@ -336,18 +255,11 @@ function PricingPage() {
 
                           <Button
                             onClick={() => handleSubscribe(plan)}
-                            disabled={createPayment.isPending}
                             className="mt-12 w-full py-8 px-6 bg-[#0F172A] text-white text-xs font-bold uppercase tracking-[0.25em] rounded-full shadow-[0_20px_45px_-5px_rgba(15,23,42,0.35)] transition-all hover:bg-slate-900 active:scale-95 overflow-hidden group/btn"
                             variant="default"
                           >
-                            {createPayment.isPending ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
-                                {locale === "pt" ? "Assinar Agora" : "Subscribe Now"}
-                              </>
-                            )}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
+                            {locale === "pt" ? "Assinar Agora" : "Subscribe Now"}
                           </Button>
                         </div>
                       </div>
@@ -360,115 +272,9 @@ function PricingPage() {
             <p className="text-center mt-12 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
               {locale === "pt" ? "Pagamento Seguro via Multicaixa Express" : "Secure Payment via Multicaixa Express"}
             </p>
-          </>
-        )}
-
-        {step === "reference" && selectedPlan && payment && (
-          <div className="mx-auto max-w-2xl">
-            <button
-              onClick={() => setStep("choose")}
-              className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4" /> {locale === "pt" ? "Voltar" : "Back"}
-            </button>
-            <div className="glass rounded-3xl p-8 shadow-glow">
-              <div className="flex items-center gap-3">
-                <Smartphone className="h-6 w-6 text-magenta" />
-                <h2 className="font-display text-2xl font-bold">
-                  {locale === "pt" ? "Pagamento por Multicaixa Express" : "Multicaixa Express Payment"}
-                </h2>
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {locale === "pt"
-                  ? "Efetue o pagamento com a referência abaixo. Após a confirmação, o administrador ativará a sua assinatura."
-                  : "Complete the payment using the reference below. After verification, the admin will activate your subscription."}
-              </p>
-
-              <div className="mt-6 grid gap-4 rounded-2xl border border-border bg-background/50 p-6">
-                <Row label={locale === "pt" ? "Plano" : "Plan"} value={`${TIER_META[selectedPlan.tier].label[locale]} · ${CYCLE_LABEL[selectedPlan.billing_cycle][locale]}`} />
-                <Row label={locale === "pt" ? "Valor" : "Amount"} value={`${payment.amount.toLocaleString("pt-AO")} Kz`} bold />
-                <Row label={locale === "pt" ? "Entidade" : "Entity"} value={payment.entity} />
-                <div className="flex items-center justify-between border-t border-border pt-4">
-                  <span className="text-xs uppercase tracking-widest text-muted-foreground">
-                    {locale === "pt" ? "Referência" : "Reference"}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <code className="rounded-lg bg-muted px-3 py-1.5 font-mono text-lg font-bold text-magenta">
-                      {payment.reference}
-                    </code>
-                    <Button variant="outline" size="icon" onClick={copyRef}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 flex items-start gap-3 rounded-2xl bg-amber/10 p-4 text-xs">
-                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-amber" />
-                <p>
-                  {locale === "pt"
-                    ? "Esta referência expira em 72 horas. Após pagar, notifique o administrador via WhatsApp."
-                    : "This reference expires in 72 hours. After payment, notify the admin via WhatsApp."}
-                </p>
-              </div>
-
-              <div className="mt-6 grid gap-2 sm:grid-cols-2">
-                <Button
-                  size="lg"
-                  onClick={() => {
-                    const msg = encodeURIComponent(
-                      `Olá! Efetuei o pagamento.%0AReferência: ${payment.reference}%0AValor: ${payment.amount} Kz%0APlano: ${TIER_META[selectedPlan.tier].label.pt} ${CYCLE_LABEL[selectedPlan.billing_cycle].pt}`
-                    );
-                    window.open(`https://wa.me/244929193415?text=${msg}`, "_blank");
-                    setStep("verifying");
-                  }}
-                  className="bg-gradient-sunset text-white shadow-soft"
-                >
-                  {locale === "pt" ? "Já paguei — notificar" : "I've paid — notify"}
-                  <ArrowRight className="ml-1.5 h-4 w-4" />
-                </Button>
-                <Button asChild variant="outline" size="lg">
-                  <Link to="/dashboard">{locale === "pt" ? "Ir para o painel" : "Go to dashboard"}</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === "verifying" && (
-          <div className="mx-auto max-w-lg text-center">
-            <div className="glass rounded-3xl p-10 shadow-glow">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
-                <CheckCircle2 className="h-8 w-8" />
-              </div>
-              <h2 className="mt-4 font-display text-2xl font-bold">
-                {locale === "pt" ? "Aguardando verificação" : "Awaiting verification"}
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {locale === "pt"
-                  ? "O administrador irá confirmar o pagamento e ativar a sua assinatura em breve. Pode acompanhar o estado no seu painel."
-                  : "The admin will confirm your payment and activate your subscription soon. Track the status in your dashboard."}
-              </p>
-              <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <Shield className="h-3.5 w-3.5" /> {locale === "pt" ? "Pagamento seguro" : "Secure payment"}
-              </div>
-              <Button asChild className="mt-6 bg-gradient-sunset text-white">
-                <Link to="/dashboard">{locale === "pt" ? "Ver painel" : "View dashboard"}</Link>
-              </Button>
-            </div>
-          </div>
-        )}
+        </>
       </div>
       <SiteFooter />
-    </div>
-  );
-}
-
-function Row({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-xs uppercase tracking-widest text-muted-foreground">{label}</span>
-      <span className={bold ? "font-display text-lg font-bold" : "font-medium"}>{value}</span>
     </div>
   );
 }

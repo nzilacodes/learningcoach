@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { SubscriptionsSection, AnalyticsSection, ReportsSection } from "@/components/admin/sections";
 
 export const Route = createFileRoute("/admin")({
@@ -37,21 +37,13 @@ function AdminPage() {
     queryKey: ["admin_stats", isAdmin],
     enabled: !!user && isAdmin,
     queryFn: async () => {
-      const [users, subs, payments] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("subscriptions").select("status"),
-        supabase.from("payments").select("status,amount_kz,paid_at"),
-      ]);
-      const activeSubs = subs.data?.filter((s) => s.status === "active").length ?? 0;
-      const pendingPay = payments.data?.filter((p) => p.status === "pending").length ?? 0;
-      const monthStart = new Date();
-      monthStart.setDate(1);
-      monthStart.setHours(0, 0, 0, 0);
-      const revenue =
-        payments.data
-          ?.filter((p) => p.status === "paid" && p.paid_at && new Date(p.paid_at) >= monthStart)
-          .reduce((a, b) => a + (b.amount_kz ?? 0), 0) ?? 0;
-      return { total: users.count ?? 0, active: activeSubs, pending: pendingPay, revenue };
+      const s = await apiFetch<{
+        totalUsers: number;
+        activeSubscriptions: number;
+        pendingPayments: number;
+        monthRevenue: number;
+      }>("/v1/admin/stats");
+      return { total: s.totalUsers, active: s.activeSubscriptions, pending: s.pendingPayments, revenue: s.monthRevenue };
     },
   });
 
@@ -59,13 +51,8 @@ function AdminPage() {
     queryKey: ["admin_users"],
     enabled: !!user && isAdmin,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id,full_name,email,phone,country,age,cefr_level,created_at")
-        .order("created_at", { ascending: false })
-        .limit(200);
-      if (error) throw error;
-      return data ?? [];
+      const res = await apiFetch<{ items: any[] }>("/v1/admin/users?limit=200");
+      return res.items;
     },
   });
 
@@ -73,54 +60,24 @@ function AdminPage() {
     queryKey: ["admin_payments"],
     enabled: !!user && isAdmin,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("payments")
-        .select("*, subscription_plans(tier,billing_cycle,duration_days), subscriptions(activation_code,expires_at,status)")
-        .order("created_at", { ascending: false })
-        .limit(100);
-      if (error) throw error;
-      // Attach profile info via a separate query since payments.user_id → auth.users (not profiles).
-      const ids = Array.from(new Set((data ?? []).map((p: any) => p.user_id).filter(Boolean)));
-      let profilesById: Record<string, { full_name: string | null; email: string | null }> = {};
-      if (ids.length) {
-        const { data: profs } = await supabase
-          .from("profiles")
-          .select("id,full_name,email")
-          .in("id", ids);
-        for (const p of profs ?? []) profilesById[p.id] = { full_name: p.full_name, email: p.email };
-      }
-      return (data ?? []).map((p: any) => ({ ...p, profiles: profilesById[p.user_id] ?? null }));
+      const res = await apiFetch<{ items: any[] }>("/v1/admin/payments?limit=100");
+      return res.items;
     },
   });
 
   const activate = useMutation({
-    mutationFn: async (payment: any) => {
-      const days = payment.subscription_plans?.duration_days ?? 30;
-      const now = new Date();
-      const expires = new Date(now.getTime() + days * 24 * 3600 * 1000);
-      const code = `LEC-${Math.random().toString(36).slice(2, 6).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-
-      const { error: pe } = await supabase
-        .from("payments")
-        .update({ status: "paid", paid_at: now.toISOString(), activated_by: user!.id })
-        .eq("id", payment.id);
-      if (pe) throw pe;
-
-      if (payment.subscription_id) {
-        const { error: se } = await supabase
-          .from("subscriptions")
-          .update({ status: "active", starts_at: now.toISOString(), expires_at: expires.toISOString(), activation_code: code })
-          .eq("id", payment.subscription_id);
-        if (se) throw se;
+    mutationFn: async (payment: any) =>
+      apiFetch<{ activationCode: string | null }>(`/v1/admin/payments/${payment.id}/activate`, { method: "POST" }),
+    onSuccess: ({ activationCode }) => {
+      if (activationCode) {
+        navigator.clipboard?.writeText(activationCode).catch(() => {});
+        toast.success(
+          locale === "pt" ? `Ativada. Código: ${activationCode} (copiado)` : `Activated. Code: ${activationCode} (copied)`,
+          { duration: 8000 },
+        );
+      } else {
+        toast.success(locale === "pt" ? "Pagamento ativado" : "Payment activated");
       }
-      return code;
-    },
-    onSuccess: (code) => {
-      navigator.clipboard?.writeText(code).catch(() => {});
-      toast.success(
-        locale === "pt" ? `Ativada. Código: ${code} (copiado)` : `Activated. Code: ${code} (copied)`,
-        { duration: 8000 },
-      );
       qc.invalidateQueries({ queryKey: ["admin_payments"] });
       qc.invalidateQueries({ queryKey: ["admin_stats"] });
     },
@@ -128,13 +85,7 @@ function AdminPage() {
   });
 
   const cancel = useMutation({
-    mutationFn: async (payment: any) => {
-      const { error } = await supabase.from("payments").update({ status: "cancelled" }).eq("id", payment.id);
-      if (error) throw error;
-      if (payment.subscription_id) {
-        await supabase.from("subscriptions").update({ status: "cancelled" }).eq("id", payment.subscription_id);
-      }
-    },
+    mutationFn: async (payment: any) => apiFetch(`/v1/admin/payments/${payment.id}/cancel`, { method: "POST" }),
     onSuccess: () => {
       toast.success(locale === "pt" ? "Pagamento cancelado" : "Payment cancelled");
       qc.invalidateQueries({ queryKey: ["admin_payments"] });

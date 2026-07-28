@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,23 +29,13 @@ export function SubscriptionsSection() {
   const { data = [], refetch } = useQuery({
     queryKey: ["admin_subscriptions"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("subscriptions")
-        .select("id,user_id,status,starts_at,expires_at,activation_code,subscription_plans(tier,billing_cycle,duration_days)")
-        .order("created_at", { ascending: false })
-        .limit(200);
-      const ids = Array.from(new Set((data ?? []).map((s: any) => s.user_id)));
-      const profiles: Record<string, any> = {};
-      if (ids.length) {
-        const { data: profs } = await supabase.from("profiles").select("id,full_name,email").in("id", ids);
-        for (const p of profs ?? []) profiles[p.id] = p;
-      }
-      return (data ?? []).map((s: any) => ({ ...s, profile: profiles[s.user_id] }));
+      const res = await apiFetch<{ items: any[] }>("/v1/admin/subscriptions?limit=200");
+      return res.items;
     },
   });
 
   const cancelSub = async (id: string) => {
-    await supabase.from("subscriptions").update({ status: "cancelled" }).eq("id", id);
+    await apiFetch(`/v1/admin/subscriptions/${id}/cancel`, { method: "POST" });
     refetch();
   };
 
@@ -55,7 +46,7 @@ export function SubscriptionsSection() {
           <CreditCard className="h-5 w-5 text-magenta" /> Assinaturas
         </h2>
         <Button size="sm" variant="outline" onClick={() => csvDownload("subscriptions", data.map((s: any) => ({
-          learner: s.profile?.full_name, email: s.profile?.email,
+          learner: s.profiles?.full_name, email: s.profiles?.email,
           tier: s.subscription_plans?.tier, cycle: s.subscription_plans?.billing_cycle,
           status: s.status, starts_at: s.starts_at, expires_at: s.expires_at, code: s.activation_code,
         })))}>
@@ -84,8 +75,8 @@ export function SubscriptionsSection() {
             {data.map((s: any) => (
               <TableRow key={s.id}>
                 <TableCell>
-                  <div className="font-medium">{s.profile?.full_name ?? "—"}</div>
-                  <div className="text-xs text-muted-foreground">{s.profile?.email}</div>
+                  <div className="font-medium">{s.profiles?.full_name ?? "—"}</div>
+                  <div className="text-xs text-muted-foreground">{s.profiles?.email}</div>
                 </TableCell>
                 <TableCell className="capitalize">{s.subscription_plans?.tier} · {s.subscription_plans?.billing_cycle}</TableCell>
                 <TableCell><Badge variant={s.status === "active" ? "default" : "outline"} className="capitalize">{s.status}</Badge></TableCell>
