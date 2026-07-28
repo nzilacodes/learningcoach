@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { apiFetch } from "@/lib/api/client";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,23 @@ import {
   Users, DollarSign, Calendar, TrendingUp, Clock, Target,
   UserCheck, UserX, Download, FileSpreadsheet, FileText, Loader2,
 } from "lucide-react";
-import { getAdminAnalytics, type AnalyticsData } from "@/lib/analytics.functions";
+export type AnalyticsData = {
+  students: number;
+  active_7: number;
+  active_30: number;
+  revenue_total: number;
+  revenue_month: number;
+  revenue_year: number;
+  avg_study_min: number;
+  completion_rate: number;
+  dropout_rate: number;
+  retention_rate: number;
+  revenue_series: { month: string; amount: number }[];
+  students_series: { month: string; count: number }[];
+  activity_series: { day: string; seconds: number; users: number }[];
+  plans: { name: string; tier: string; orders: number; revenue: number }[];
+  methods: { method: string; count: number; revenue: number }[];
+};
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -36,16 +52,15 @@ function fmtKz(n: number) {
 }
 
 function AnalyticsPage() {
-  const fetchAnalytics = useServerFn(getAdminAnalytics);
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAnalytics({ data: { days: 30 } })
+    apiFetch<AnalyticsData>("/v1/admin/analytics?days=30")
       .then((d) => setData(d))
       .catch((e) => toast.error(e?.message ?? "Erro ao carregar analytics"))
       .finally(() => setLoading(false));
-  }, [fetchAnalytics]);
+  }, []);
 
   function exportExcel() {
     if (!data) return;

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { apiFetch } from "@/lib/api/client";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,11 +9,51 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ShieldCheck, ShieldAlert, Lock, AlertTriangle, Activity, Ban, Search } from "lucide-react";
-import {
-  listAuditLogs, listLoginAttempts, listLockouts, getSecuritySummary,
-  type AuditLog, type LoginAttempt, type Lockout,
-} from "@/lib/audit.functions";
 import { toast } from "sonner";
+
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+
+export type AuditLog = {
+  id: string;
+  user_id: string | null;
+  actor_email: string | null;
+  action: string;
+  entity: string | null;
+  entity_id: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  severity: string;
+  metadata: JsonValue;
+  created_at: string;
+};
+
+export type LoginAttempt = {
+  id: string;
+  email: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  success: boolean;
+  reason: string | null;
+  created_at: string;
+};
+
+export type Lockout = {
+  id: string;
+  email: string;
+  ip_address: string | null;
+  reason: string;
+  locked_until: string;
+  created_at: string;
+};
+
+type SecuritySummary = {
+  total_events_24h: number;
+  failed_logins_24h: number;
+  active_lockouts: number;
+  critical_events_7d: number;
+  suspicious_ips: { ip_address: string; attempts: number }[];
+  recent_lockouts: Lockout[];
+};
 
 export const Route = createFileRoute("/audit")({
   component: AuditPage,
@@ -25,19 +65,12 @@ export const Route = createFileRoute("/audit")({
   }),
 });
 
-type Summary = Awaited<ReturnType<typeof getSecuritySummary>>;
-
 function fmtDate(s: string) {
   return new Date(s).toLocaleString("pt-PT");
 }
 
 function AuditPage() {
-  const fetchSummary = useServerFn(getSecuritySummary);
-  const fetchLogs = useServerFn(listAuditLogs);
-  const fetchAttempts = useServerFn(listLoginAttempts);
-  const fetchLockouts = useServerFn(listLockouts);
-
-  const [summary, setSummary] = useState<Summary | null>(null);
+  const [summary, setSummary] = useState<SecuritySummary | null>(null);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [attempts, setAttempts] = useState<LoginAttempt[]>([]);
   const [lockouts, setLockouts] = useState<Lockout[]>([]);
@@ -45,17 +78,17 @@ function AuditPage() {
 
   useEffect(() => {
     Promise.all([
-      fetchSummary().catch(() => null),
-      fetchLogs({ data: {} }).catch(() => []),
-      fetchAttempts().catch(() => []),
-      fetchLockouts().catch(() => []),
+      apiFetch<SecuritySummary>("/v1/admin/security-summary").catch(() => null),
+      apiFetch<AuditLog[]>("/v1/admin/audit-logs").catch(() => []),
+      apiFetch<LoginAttempt[]>("/v1/admin/login-attempts").catch(() => []),
+      apiFetch<Lockout[]>("/v1/admin/lockouts").catch(() => []),
     ]).then(([s, l, a, k]) => {
-      if (s) setSummary(s as Summary);
-      setLogs(l as AuditLog[]);
-      setAttempts(a as LoginAttempt[]);
-      setLockouts(k as Lockout[]);
+      if (s) setSummary(s);
+      setLogs(l);
+      setAttempts(a);
+      setLockouts(k);
     }).catch((e) => toast.error(e?.message ?? "Falha ao carregar auditoria"));
-  }, [fetchSummary, fetchLogs, fetchAttempts, fetchLockouts]);
+  }, []);
 
   const filteredLogs = logs.filter((l) =>
     !query || `${l.action} ${l.actor_email ?? ""} ${l.entity ?? ""}`.toLowerCase().includes(query.toLowerCase())

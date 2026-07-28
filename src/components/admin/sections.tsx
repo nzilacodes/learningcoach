@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { apiFetch } from "@/lib/api/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -103,22 +102,24 @@ export function AnalyticsSection() {
     queryKey: ["admin_analytics_30d"],
     queryFn: async () => {
       const since = new Date(Date.now() - 30 * 86400000);
-      const [{ data: profs }, { data: pays }] = await Promise.all([
-        supabase.from("profiles").select("created_at").gte("created_at", since.toISOString()),
-        supabase.from("payments").select("paid_at,amount_kz,status").eq("status", "paid").gte("paid_at", since.toISOString()),
+      const [profs, pays] = await Promise.all([
+        apiFetch<{ created_at: string }[]>("/v1/admin/reports/users"),
+        apiFetch<{ paid_at: string | null; amount_kz: number; status: string }[]>("/v1/admin/reports/payments"),
       ]);
       const days: Record<string, { signups: number; revenue: number }> = {};
       for (let i = 29; i >= 0; i--) {
         const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
         days[d] = { signups: 0, revenue: 0 };
       }
-      for (const p of profs ?? []) {
+      for (const p of profs) {
+        if (new Date(p.created_at) < since) continue;
         const k = new Date(p.created_at).toISOString().slice(0, 10);
         if (days[k]) days[k].signups++;
       }
-      for (const p of pays ?? []) {
-        const k = p.paid_at ? new Date(p.paid_at).toISOString().slice(0, 10) : null;
-        if (k && days[k]) days[k].revenue += p.amount_kz ?? 0;
+      for (const p of pays) {
+        if (p.status !== "paid" || !p.paid_at || new Date(p.paid_at) < since) continue;
+        const k = new Date(p.paid_at).toISOString().slice(0, 10);
+        if (days[k]) days[k].revenue += p.amount_kz ?? 0;
       }
       return Object.entries(days).map(([day, v]) => ({ day, ...v }));
     },
@@ -177,16 +178,13 @@ export function AnalyticsSection() {
 /* -------- Reports (CSV exports) -------- */
 export function ReportsSection() {
   const exportUsers = async () => {
-    const { data } = await supabase.from("profiles").select("full_name,email,phone,country,age,cefr_level,onboarding_status,created_at").limit(5000);
-    csvDownload("users", data ?? []);
+    csvDownload("users", await apiFetch<Record<string, any>[]>("/v1/admin/reports/users"));
   };
   const exportPayments = async () => {
-    const { data } = await supabase.from("payments").select("user_id,amount_kz,status,reference,paid_at,created_at").limit(5000);
-    csvDownload("payments", data ?? []);
+    csvDownload("payments", await apiFetch<Record<string, any>[]>("/v1/admin/reports/payments"));
   };
   const exportDiagnostics = async () => {
-    const { data } = await supabase.from("diagnostic_results").select("user_id,cefr_level,grammar_score,vocabulary_score,reading_score,listening_score,writing_score,speaking_score,pronunciation_score,created_at").limit(5000);
-    csvDownload("diagnostics", data ?? []);
+    csvDownload("diagnostics", await apiFetch<Record<string, any>[]>("/v1/admin/reports/diagnostics"));
   };
 
   return (
