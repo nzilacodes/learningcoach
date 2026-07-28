@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { useLocale } from "@/lib/i18n";
 import {
@@ -83,29 +83,7 @@ type LessonRow = {
 function useCurriculum() {
   return useQuery({
     queryKey: ["curriculum"],
-    queryFn: async () => {
-      const [{ data: courses }, { data: units }, { data: lessons }] = await Promise.all([
-        supabase
-          .from("courses")
-          .select("id,slug,title,description,level,order_index")
-          .eq("is_published", true)
-          .order("order_index"),
-        supabase
-          .from("units")
-          .select("id,course_id,title,description,theme,order_index")
-          .order("order_index"),
-        supabase
-          .from("lessons")
-          .select("id,unit_id,slug,title,summary,duration_min,xp_reward,order_index,lesson_type")
-          .eq("is_published", true)
-          .order("order_index"),
-      ]);
-      return {
-        courses: (courses ?? []) as CourseRow[],
-        units: (units ?? []) as UnitRow[],
-        lessons: (lessons ?? []) as LessonRow[],
-      };
-    },
+    queryFn: () => apiFetch<{ courses: CourseRow[]; units: UnitRow[]; lessons: LessonRow[] }>("/v1/courses"),
     staleTime: 60_000,
   });
 }
@@ -116,13 +94,12 @@ function useProgress() {
     queryKey: ["lesson_progress_all", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("lesson_progress")
-        .select("lesson_id,progress_pct,completed_at")
-        .eq("user_id", user!.id);
+      const data = await apiFetch<{ lesson_id: string; progress_pct: number; completed_at: string | null }[]>(
+        "/v1/me/progress",
+      );
       const map = new Map<string, { pct: number; done: boolean }>();
-      (data ?? []).forEach((p) => {
-        map.set(p.lesson_id as string, {
+      data.forEach((p) => {
+        map.set(p.lesson_id, {
           pct: p.progress_pct ?? 0,
           done: !!p.completed_at || (p.progress_pct ?? 0) >= 100,
         });

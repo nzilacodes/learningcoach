@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { useAgeGroup } from "@/lib/use-age-group";
 import { buildEmbedUrl, youtubeThumb } from "@/lib/youtube";
@@ -75,15 +75,7 @@ function WatchPage() {
   const { data: history } = useQuery({
     queryKey: ["video_history", user?.id, videoId],
     enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("video_history")
-        .select("video_id,position_seconds,duration_seconds,completed")
-        .eq("user_id", user!.id)
-        .eq("video_id", videoId)
-        .maybeSingle();
-      return (data ?? null) as HistoryRow | null;
-    },
+    queryFn: () => apiFetch<HistoryRow | null>(`/v1/me/video-history/${encodeURIComponent(videoId)}`),
   });
 
   const resumeAt = history?.position_seconds ?? 0;
@@ -129,20 +121,17 @@ function WatchPage() {
   const upsertHistory = useMutation({
     mutationFn: async (payload: { position: number; completed?: boolean }) => {
       if (!user) return;
-      await supabase.from("video_history").upsert(
-        {
-          user_id: user.id,
-          video_id: videoId,
-          video_url: videoUrl,
+      await apiFetch(`/v1/me/video-history/${encodeURIComponent(videoId)}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          videoUrl,
           title,
           channel,
-          lesson_id: search.lesson ?? null,
-          position_seconds: Math.floor(payload.position),
+          lessonId: search.lesson ?? undefined,
+          positionSeconds: Math.floor(payload.position),
           completed: !!payload.completed,
-          last_watched_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,video_id" },
-      );
+        }),
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["video_history"] }),
   });

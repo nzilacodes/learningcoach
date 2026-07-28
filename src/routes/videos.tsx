@@ -15,7 +15,7 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { useAgeGroup } from "@/lib/use-age-group";
 import { useLocale } from "@/lib/i18n";
@@ -140,17 +140,7 @@ function VideosPage() {
   const { data: recent } = useQuery({
     queryKey: ["video_history_list", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("video_history")
-        .select(
-          "video_id,video_url,title,channel,position_seconds,duration_seconds,completed,last_watched_at",
-        )
-        .eq("user_id", user!.id)
-        .order("last_watched_at", { ascending: false })
-        .limit(8);
-      return (data ?? []) as Recent[];
-    },
+    queryFn: () => apiFetch<Recent[]>("/v1/me/video-history"),
   });
 
   const recs = AGE_TRACKS[group].videos;

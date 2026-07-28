@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
@@ -51,16 +50,10 @@ export function useLevelAttempts(level?: CefrLevel) {
   return useQuery({
     queryKey: ["level_attempts", user?.id, level ?? "all"],
     enabled: !!user,
-    queryFn: async () => {
-      let q = supabase
-        .from("level_exam_attempts")
-        .select("level,score,passed,created_at")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false });
-      if (level) q = q.eq("level", level);
-      const { data } = await q;
-      return data ?? [];
-    },
+    queryFn: () =>
+      apiFetch<{ level: CefrLevel; score: number; passed: boolean; created_at: string }[]>(
+        `/v1/me/level-exam-attempts${level ? `?level=${level}` : ""}`,
+      ),
   });
 }
 

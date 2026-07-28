@@ -32,7 +32,7 @@ import { Button } from "@/components/ui/button";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { toast } from "sonner";
 import {
   useUserStats,
@@ -93,18 +93,6 @@ function DashboardPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const { data: profile } = useQuery({
-    queryKey: ["profile", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("full_name,cefr_level")
-        .eq("id", user!.id)
-        .maybeSingle();
-      return data;
-    },
-  });
   const { data: userStats } = useUserStats();
   const { data: progress = [] } = useLessonProgress();
   const { data: week } = useWeeklyStudy();
@@ -114,15 +102,8 @@ function DashboardPage() {
     queryKey: ["my_subscription", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("subscriptions")
-        .select("status,expires_at,starts_at,activation_code,subscription_plans(tier,billing_cycle,duration_days)")
-        .eq("user_id", user!.id)
-        .in("status", ["active", "pending"])
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data as any;
+      const subs = await apiFetch<any[]>("/v1/me/subscriptions");
+      return subs.find((s) => s.status === "active" || s.status === "pending") ?? null;
     },
   });
 
@@ -171,7 +152,7 @@ function DashboardPage() {
     };
   });
 
-  const displayName = profile?.full_name?.split(" ")[0] ?? (locale === "pt" ? "Aluno" : "Learner");
+  const displayName = user?.fullName?.split(" ")[0] ?? (locale === "pt" ? "Aluno" : "Learner");
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
@@ -260,7 +241,7 @@ function DashboardPage() {
                   <div className="flex items-center gap-3">
                     <span className="bg-[var(--violet)]/10 text-[var(--violet)] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5" />
-                      {profile?.cefr_level ?? "A1"}
+                      {user?.cefrLevel ?? "A1"}
                     </span>
                     <button className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-semibold hover:bg-gray-50 transition-colors">
                       <MessageCircle className="w-4 h-4" />
@@ -509,7 +490,7 @@ function DashboardPage() {
                 </div>
                 <span className="bg-[var(--violet)]/10 text-[var(--violet)] px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
-                  {profile?.cefr_level ?? "A1"}
+                  {user?.cefrLevel ?? "A1"}
                 </span>
               </div>
 
