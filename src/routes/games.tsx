@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { useAgeGroup } from "@/lib/use-age-group";
 import { AGE_TRACKS, AGE_GROUP_LABEL, type AgeTrack } from "@/lib/age-tracks";
 import { AgeThemeSwitcher } from "@/components/age-theme-switcher";
@@ -89,14 +89,8 @@ function GamesPage() {
   const { data: profileStats } = useQuery({
     queryKey: ["games-profile-stats", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("xp,coins,level,streak")
-        .eq("id", user!.id)
-        .maybeSingle();
-      return data as { xp: number; coins: number; level: number; streak: number } | null;
-    },
+    queryFn: () =>
+      apiFetch<{ xp: number; coins: number; level: number; streak: number }>("/v1/me/gamification-stats"),
     staleTime: 30_000,
   });
 
