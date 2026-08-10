@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import {
   Volume2,
   Gauge,
@@ -21,17 +20,37 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
 import { apiFetch } from "@/lib/api/client";
-import {
-  assessPronunciation,
-  type WordEntry,
-  type PronScore,
-} from "@/lib/pronunciation.functions";
 import { toast } from "sonner";
 
 type Props = {
   word: string;
   lessonId?: string | null;
   showTranslation?: boolean;
+};
+
+type WordEntry = {
+  word: string;
+  ipa_uk: string;
+  ipa_us: string;
+  part_of_speech: string;
+  example: string;
+  translation_pt: string;
+  synonyms: string[];
+  antonyms: string[];
+  collocations: string[];
+  phrasal_verbs: string[];
+  expressions: string[];
+};
+
+type PronScore = {
+  pronunciation: number;
+  fluency: number;
+  intonation: number;
+  rhythm: number;
+  clarity: number;
+  overall: number;
+  phoneme_issues: Array<{ sound: string; tip: string }>;
+  feedback: string;
 };
 
 export function WordCard({ word, lessonId = null, showTranslation = true }: Props) {
@@ -165,7 +184,6 @@ function PracticeDialog({
   const [recorder, setRecorder] = useState<Recorder | null>(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<PronScore | null>(null);
-  const assess = useServerFn(assessPronunciation);
 
   useEffect(() => {
     if (!open) {
@@ -192,14 +210,15 @@ function PracticeDialog({
       const blob = await recorder.stop();
       setRecorder(null);
       const transcribed = await transcribe(blob);
-      const score = await assess({
-        data: { word, transcribed, ipa, lessonId },
+      const score = await apiFetch<PronScore>("/v1/pronunciation/assess", {
+        method: "POST",
+        body: JSON.stringify({ word, transcribed, ipa, lessonId }),
       });
       setResult({
         ...score,
         phoneme_issues: score.phoneme_issues ?? [],
         feedback: score.feedback ?? "",
-      } as PronScore);
+      });
     } catch (e) {
       toast.error(`Falha: ${(e as Error).message}`);
     } finally {

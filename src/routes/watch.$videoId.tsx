@@ -2,7 +2,6 @@ import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,6 @@ import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { useAgeGroup } from "@/lib/use-age-group";
 import { buildEmbedUrl, youtubeThumb } from "@/lib/youtube";
-import { generateVideoStudyPack, type StudyPack } from "@/lib/videos.functions";
 import {
   Loader2,
   PlayCircle,
@@ -58,6 +56,16 @@ type HistoryRow = {
   completed: boolean;
 };
 
+type StudyPack = {
+  transcript_excerpt: string;
+  summary: string;
+  key_vocabulary: { word: string; pt: string; example: string }[];
+  quiz: { q: string; opts: string[]; a: number }[];
+  listening_activities: string[];
+  speaking_activities: string[];
+  vocabulary_activities: string[];
+};
+
 function WatchPage() {
   const { videoId } = Route.useParams();
   const search = useSearch({ from: "/watch/$videoId" });
@@ -88,7 +96,6 @@ function WatchPage() {
   }, [history, resumeAt]);
 
   // Study pack (AI-generated + cached)
-  const generateFn = useServerFn(generateVideoStudyPack);
   const {
     data: pack,
     isLoading: packLoading,
@@ -98,18 +105,10 @@ function WatchPage() {
     queryKey: ["video_study_pack", videoId],
     enabled: !!user,
     staleTime: 60 * 60 * 1000,
-    queryFn: async () =>
-      (await generateFn({
-        data: {
-          videoId,
-          videoUrl,
-          title,
-          channel,
-          level,
-          topic,
-          ageGroup: group,
-        },
-      })) as StudyPack,
+    queryFn: () => {
+      const params = new URLSearchParams({ videoUrl, title, channel, level, topic, ageGroup: group });
+      return apiFetch<StudyPack>(`/v1/videos/${encodeURIComponent(videoId)}/study-pack?${params}`);
+    },
   });
 
   // Progress ticker (fake progress, since YT iframe API adds ~40KB. We save every 15s a bumped position.)

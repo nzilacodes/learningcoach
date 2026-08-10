@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import {
   Volume2,
   Mic,
@@ -20,7 +19,7 @@ import {
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
-import { assessReading, getReadingHistory } from "@/lib/reading.functions";
+import { apiFetch } from "@/lib/api/client";
 import { awardActivity } from "@/lib/gamification";
 import { toast } from "sonner";
 import {
@@ -115,6 +114,20 @@ const PASSAGES: Passage[] = [
   },
 ];
 
+type ReadingReport = {
+  pronunciation: number;
+  fluency: number;
+  intonation: number;
+  rhythm: number;
+  clarity: number;
+  pauses: number;
+  overall: number;
+  mispronounced: Array<{ word: string; expected_ipa: string; heard: string; tip: string }>;
+  feedback: string;
+  wpm: number;
+  missing: string[];
+};
+
 function ReadingPage() {
   const { locale } = useLocale();
   const { user, signOut } = useAuth();
@@ -124,7 +137,7 @@ function ReadingPage() {
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [report, setReport] = useState<Awaited<ReturnType<typeof assessReading>> | null>(null);
+  const [report, setReport] = useState<ReadingReport | null>(null);
   const [transcript, setTranscript] = useState("");
   const [attempts, setAttempts] = useState(0);
   const [quizChecked, setQuizChecked] = useState(false);
@@ -134,8 +147,6 @@ function ReadingPage() {
   const avatarRef = useRef<HTMLDivElement>(null);
 
   const [history, setHistory] = useState<Array<Record<string, number | string | null>>>([]);
-  const fetchHistory = useServerFn(getReadingHistory);
-  const runAssess = useServerFn(assessReading);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -148,10 +159,12 @@ function ReadingPage() {
   }, []);
 
   useEffect(() => {
-    fetchHistory({ data: { passageKey: passage.key } })
-      .then((r) => setHistory(r as never))
+    apiFetch<Array<Record<string, number | string | null>>>(
+      `/v1/me/reading-history?passageKey=${encodeURIComponent(passage.key)}`,
+    )
+      .then((r) => setHistory(r))
       .catch(() => setHistory([]));
-  }, [passage.key, fetchHistory, attempts]);
+  }, [passage.key, attempts]);
 
   const vocabWords = useMemo(() => passage.vocab.map((v) => v.word.split(" ")[0]), [passage]);
 
@@ -188,13 +201,14 @@ function ReadingPage() {
       const durationSeconds = Math.max(1, Math.round((Date.now() - startRef.current) / 1000));
       const text = await transcribe(blob);
       setTranscript(text);
-      const r = await runAssess({
-        data: {
+      const r = await apiFetch<ReadingReport>("/v1/reading/assess", {
+        method: "POST",
+        body: JSON.stringify({
           passageKey: passage.key,
           passage: passage.text,
           transcript: text,
           durationSeconds,
-        },
+        }),
       });
       setReport(r);
       setAttempts((n) => n + 1);

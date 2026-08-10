@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import {
   LineChart,
@@ -15,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { WordCard } from "@/components/word-card";
-import { getPronunciationHistory } from "@/lib/pronunciation.functions";
+import { apiFetch } from "@/lib/api/client";
 
 export const Route = createFileRoute("/pronunciation")({
   component: PronunciationPage,
@@ -52,11 +51,12 @@ function PronunciationPage() {
   const [word, setWord] = useState("hello");
   const [current, setCurrent] = useState("hello");
   const [history, setHistory] = useState<Row[]>([]);
-  const load = useServerFn(getPronunciationHistory);
 
   useEffect(() => {
-    load().then((r) => setHistory((r as unknown as Row[]) ?? []));
-  }, [load]);
+    apiFetch<Row[]>("/v1/me/pronunciation-history")
+      .then((r) => setHistory(r ?? []))
+      .catch(() => setHistory([]));
+  }, []);
 
   const chartData = useMemo(
     () =>
