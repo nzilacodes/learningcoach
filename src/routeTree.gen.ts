@@ -21,14 +21,12 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PlacementRouteImport } from './routes/placement'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MaintenanceRouteImport } from './routes/maintenance'
-import { Route as LessonRouteImport } from './routes/lesson'
 import { Route as GamesRouteImport } from './routes/games'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CurriculumRouteImport } from './routes/curriculum'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CommunityRouteImport } from './routes/community'
 import { Route as CertificatesRouteImport } from './routes/certificates'
-import { Route as CertificateRouteImport } from './routes/certificate'
 import { Route as CefrLevelsRouteImport } from './routes/cefr-levels'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuditRouteImport } from './routes/audit'
@@ -40,6 +38,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as WatchVideoIdRouteImport } from './routes/watch.$videoId'
 import { Route as VerifyCodeRouteImport } from './routes/verify.$code'
 import { Route as LevelExamLevelRouteImport } from './routes/level-exam.$level'
+import { Route as LessonLessonIdRouteImport } from './routes/lesson.$lessonId'
 import { Route as CheckoutPlanIdRouteImport } from './routes/checkout.$planId'
 
 const VideosRoute = VideosRouteImport.update({
@@ -102,11 +101,6 @@ const MaintenanceRoute = MaintenanceRouteImport.update({
   path: '/maintenance',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LessonRoute = LessonRouteImport.update({
-  id: '/lesson',
-  path: '/lesson',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const GamesRoute = GamesRouteImport.update({
   id: '/games',
   path: '/games',
@@ -135,11 +129,6 @@ const CommunityRoute = CommunityRouteImport.update({
 const CertificatesRoute = CertificatesRouteImport.update({
   id: '/certificates',
   path: '/certificates',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CertificateRoute = CertificateRouteImport.update({
-  id: '/certificate',
-  path: '/certificate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CefrLevelsRoute = CefrLevelsRouteImport.update({
@@ -197,6 +186,11 @@ const LevelExamLevelRoute = LevelExamLevelRouteImport.update({
   path: '/level-exam/$level',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LessonLessonIdRoute = LessonLessonIdRouteImport.update({
+  id: '/lesson/$lessonId',
+  path: '/lesson/$lessonId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutPlanIdRoute = CheckoutPlanIdRouteImport.update({
   id: '/checkout/$planId',
   path: '/checkout/$planId',
@@ -212,14 +206,12 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/cefr-levels': typeof CefrLevelsRoute
-  '/certificate': typeof CertificateRoute
   '/certificates': typeof CertificatesRoute
   '/community': typeof CommunityRoute
   '/contact': typeof ContactRoute
   '/curriculum': typeof CurriculumRoute
   '/dashboard': typeof DashboardRoute
   '/games': typeof GamesRoute
-  '/lesson': typeof LessonRoute
   '/maintenance': typeof MaintenanceRoute
   '/onboarding': typeof OnboardingRoute
   '/placement': typeof PlacementRoute
@@ -233,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/track': typeof TrackRoute
   '/videos': typeof VideosRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
+  '/lesson/$lessonId': typeof LessonLessonIdRoute
   '/level-exam/$level': typeof LevelExamLevelRoute
   '/verify/$code': typeof VerifyCodeRoute
   '/watch/$videoId': typeof WatchVideoIdRoute
@@ -246,14 +239,12 @@ export interface FileRoutesByTo {
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/cefr-levels': typeof CefrLevelsRoute
-  '/certificate': typeof CertificateRoute
   '/certificates': typeof CertificatesRoute
   '/community': typeof CommunityRoute
   '/contact': typeof ContactRoute
   '/curriculum': typeof CurriculumRoute
   '/dashboard': typeof DashboardRoute
   '/games': typeof GamesRoute
-  '/lesson': typeof LessonRoute
   '/maintenance': typeof MaintenanceRoute
   '/onboarding': typeof OnboardingRoute
   '/placement': typeof PlacementRoute
@@ -267,6 +258,7 @@ export interface FileRoutesByTo {
   '/track': typeof TrackRoute
   '/videos': typeof VideosRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
+  '/lesson/$lessonId': typeof LessonLessonIdRoute
   '/level-exam/$level': typeof LevelExamLevelRoute
   '/verify/$code': typeof VerifyCodeRoute
   '/watch/$videoId': typeof WatchVideoIdRoute
@@ -281,14 +273,12 @@ export interface FileRoutesById {
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/cefr-levels': typeof CefrLevelsRoute
-  '/certificate': typeof CertificateRoute
   '/certificates': typeof CertificatesRoute
   '/community': typeof CommunityRoute
   '/contact': typeof ContactRoute
   '/curriculum': typeof CurriculumRoute
   '/dashboard': typeof DashboardRoute
   '/games': typeof GamesRoute
-  '/lesson': typeof LessonRoute
   '/maintenance': typeof MaintenanceRoute
   '/onboarding': typeof OnboardingRoute
   '/placement': typeof PlacementRoute
@@ -302,6 +292,7 @@ export interface FileRoutesById {
   '/track': typeof TrackRoute
   '/videos': typeof VideosRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
+  '/lesson/$lessonId': typeof LessonLessonIdRoute
   '/level-exam/$level': typeof LevelExamLevelRoute
   '/verify/$code': typeof VerifyCodeRoute
   '/watch/$videoId': typeof WatchVideoIdRoute
@@ -317,14 +308,12 @@ export interface FileRouteTypes {
     | '/audit'
     | '/auth'
     | '/cefr-levels'
-    | '/certificate'
     | '/certificates'
     | '/community'
     | '/contact'
     | '/curriculum'
     | '/dashboard'
     | '/games'
-    | '/lesson'
     | '/maintenance'
     | '/onboarding'
     | '/placement'
@@ -338,6 +327,7 @@ export interface FileRouteTypes {
     | '/track'
     | '/videos'
     | '/checkout/$planId'
+    | '/lesson/$lessonId'
     | '/level-exam/$level'
     | '/verify/$code'
     | '/watch/$videoId'
@@ -351,14 +341,12 @@ export interface FileRouteTypes {
     | '/audit'
     | '/auth'
     | '/cefr-levels'
-    | '/certificate'
     | '/certificates'
     | '/community'
     | '/contact'
     | '/curriculum'
     | '/dashboard'
     | '/games'
-    | '/lesson'
     | '/maintenance'
     | '/onboarding'
     | '/placement'
@@ -372,6 +360,7 @@ export interface FileRouteTypes {
     | '/track'
     | '/videos'
     | '/checkout/$planId'
+    | '/lesson/$lessonId'
     | '/level-exam/$level'
     | '/verify/$code'
     | '/watch/$videoId'
@@ -385,14 +374,12 @@ export interface FileRouteTypes {
     | '/audit'
     | '/auth'
     | '/cefr-levels'
-    | '/certificate'
     | '/certificates'
     | '/community'
     | '/contact'
     | '/curriculum'
     | '/dashboard'
     | '/games'
-    | '/lesson'
     | '/maintenance'
     | '/onboarding'
     | '/placement'
@@ -406,6 +393,7 @@ export interface FileRouteTypes {
     | '/track'
     | '/videos'
     | '/checkout/$planId'
+    | '/lesson/$lessonId'
     | '/level-exam/$level'
     | '/verify/$code'
     | '/watch/$videoId'
@@ -420,14 +408,12 @@ export interface RootRouteChildren {
   AuditRoute: typeof AuditRoute
   AuthRoute: typeof AuthRoute
   CefrLevelsRoute: typeof CefrLevelsRoute
-  CertificateRoute: typeof CertificateRoute
   CertificatesRoute: typeof CertificatesRoute
   CommunityRoute: typeof CommunityRoute
   ContactRoute: typeof ContactRoute
   CurriculumRoute: typeof CurriculumRoute
   DashboardRoute: typeof DashboardRoute
   GamesRoute: typeof GamesRoute
-  LessonRoute: typeof LessonRoute
   MaintenanceRoute: typeof MaintenanceRoute
   OnboardingRoute: typeof OnboardingRoute
   PlacementRoute: typeof PlacementRoute
@@ -441,6 +427,7 @@ export interface RootRouteChildren {
   TrackRoute: typeof TrackRoute
   VideosRoute: typeof VideosRoute
   CheckoutPlanIdRoute: typeof CheckoutPlanIdRoute
+  LessonLessonIdRoute: typeof LessonLessonIdRoute
   LevelExamLevelRoute: typeof LevelExamLevelRoute
   VerifyCodeRoute: typeof VerifyCodeRoute
   WatchVideoIdRoute: typeof WatchVideoIdRoute
@@ -532,13 +519,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MaintenanceRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lesson': {
-      id: '/lesson'
-      path: '/lesson'
-      fullPath: '/lesson'
-      preLoaderRoute: typeof LessonRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/games': {
       id: '/games'
       path: '/games'
@@ -579,13 +559,6 @@ declare module '@tanstack/react-router' {
       path: '/certificates'
       fullPath: '/certificates'
       preLoaderRoute: typeof CertificatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/certificate': {
-      id: '/certificate'
-      path: '/certificate'
-      fullPath: '/certificate'
-      preLoaderRoute: typeof CertificateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cefr-levels': {
@@ -665,6 +638,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LevelExamLevelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lesson/$lessonId': {
+      id: '/lesson/$lessonId'
+      path: '/lesson/$lessonId'
+      fullPath: '/lesson/$lessonId'
+      preLoaderRoute: typeof LessonLessonIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout/$planId': {
       id: '/checkout/$planId'
       path: '/checkout/$planId'
@@ -684,14 +664,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuditRoute: AuditRoute,
   AuthRoute: AuthRoute,
   CefrLevelsRoute: CefrLevelsRoute,
-  CertificateRoute: CertificateRoute,
   CertificatesRoute: CertificatesRoute,
   CommunityRoute: CommunityRoute,
   ContactRoute: ContactRoute,
   CurriculumRoute: CurriculumRoute,
   DashboardRoute: DashboardRoute,
   GamesRoute: GamesRoute,
-  LessonRoute: LessonRoute,
   MaintenanceRoute: MaintenanceRoute,
   OnboardingRoute: OnboardingRoute,
   PlacementRoute: PlacementRoute,
@@ -705,6 +683,7 @@ const rootRouteChildren: RootRouteChildren = {
   TrackRoute: TrackRoute,
   VideosRoute: VideosRoute,
   CheckoutPlanIdRoute: CheckoutPlanIdRoute,
+  LessonLessonIdRoute: LessonLessonIdRoute,
   LevelExamLevelRoute: LevelExamLevelRoute,
   VerifyCodeRoute: VerifyCodeRoute,
   WatchVideoIdRoute: WatchVideoIdRoute,

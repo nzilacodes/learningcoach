@@ -23,6 +23,7 @@ export interface AgeTrack {
   vocabulary: Array<{ word: string; pt: string; emoji: string }>;
   examples: Array<{ en: string; pt: string }>;
   games: Array<{
+    id: string;
     pt: string;
     en: string;
     emoji: string;
@@ -31,7 +32,6 @@ export interface AgeTrack {
     level: string;
     dur: string;
     rating: number;
-    plays: number;
     locked?: boolean;
     unlockPt?: string;
     unlockEn?: string;
@@ -77,6 +77,7 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
     ],
     games: [
       {
+        id: "kids-memory-match",
         pt: "Jogo da Memória",
         en: "Memory Match",
         emoji: "🧠",
@@ -85,9 +86,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "A1",
         dur: "2–4 min",
         rating: 4.9,
-        plays: 15200,
       },
       {
+        id: "kids-drag-animals",
         pt: "Arrastar Animais",
         en: "Drag the Animals",
         emoji: "🐾",
@@ -96,9 +97,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "A1",
         dur: "2–4 min",
         rating: 4.8,
-        plays: 11800,
       },
       {
+        id: "kids-color-word",
         pt: "Colorir com Palavras",
         en: "Color the Word",
         emoji: "🎨",
@@ -107,9 +108,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "A1",
         dur: "3–5 min",
         rating: 4.7,
-        plays: 8600,
       },
       {
+        id: "kids-abc-karaoke",
         pt: "Karaokê ABC",
         en: "ABC Karaoke",
         emoji: "🎤",
@@ -118,9 +119,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "A1",
         dur: "2–3 min",
         rating: 4.9,
-        plays: 9700,
       },
       {
+        id: "kids-find-picture",
         pt: "Encontra a Figura",
         en: "Find the Picture",
         emoji: "🔎",
@@ -129,9 +130,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "A1",
         dur: "2–4 min",
         rating: 4.6,
-        plays: 7300,
       },
       {
+        id: "kids-fruit-puzzle",
         pt: "Puzzle das Frutas",
         en: "Fruit Puzzle",
         emoji: "🍓",
@@ -140,7 +141,6 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "A1",
         dur: "3–5 min",
         rating: 4.7,
-        plays: 6400,
         locked: true,
         unlockPt: "Completa 3 jogos de vocabulário",
         unlockEn: "Complete 3 vocabulary games",
@@ -210,6 +210,7 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
     ],
     games: [
       {
+        id: "teens-lyric-challenge",
         pt: "Lyric Challenge",
         en: "Lyric Challenge",
         emoji: "🎤",
@@ -218,9 +219,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "A2–B1",
         dur: "3–5 min",
         rating: 4.8,
-        plays: 9200,
       },
       {
+        id: "teens-school-escape",
         pt: "Escape da Escola",
         en: "School Escape",
         emoji: "🏫",
@@ -229,9 +230,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "B1",
         dur: "4–6 min",
         rating: 4.7,
-        plays: 7100,
       },
       {
+        id: "teens-slang-duel",
         pt: "Slang Duel",
         en: "Slang Duel",
         emoji: "⚔️",
@@ -240,9 +241,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "A2",
         dur: "2–4 min",
         rating: 4.9,
-        plays: 12300,
       },
       {
+        id: "teens-chat-simulator",
         pt: "Chat Simulator",
         en: "Chat Simulator",
         emoji: "💬",
@@ -251,9 +252,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "B1",
         dur: "3–5 min",
         rating: 4.6,
-        plays: 6800,
       },
       {
+        id: "teens-speed-quiz",
         pt: "Quiz Relâmpago",
         en: "Speed Quiz",
         emoji: "⚡",
@@ -262,9 +263,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "A2–B1",
         dur: "2–3 min",
         rating: 4.7,
-        plays: 8400,
       },
       {
+        id: "teens-caption-reel",
         pt: "Reels Legendados",
         en: "Caption the Reel",
         emoji: "📱",
@@ -273,7 +274,6 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "B1",
         dur: "2–4 min",
         rating: 4.5,
-        plays: 5200,
         locked: true,
         unlockPt: "Completa a Unidade 2",
         unlockEn: "Complete Unit 2",
@@ -349,6 +349,7 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
     ],
     games: [
       {
+        id: "adults-interview-simulator",
         pt: "Simulador de Entrevista",
         en: "Interview Simulator",
         emoji: "🧑‍💻",
@@ -357,9 +358,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "B2",
         dur: "2–5 min",
         rating: 4.8,
-        plays: 3200,
       },
       {
+        id: "adults-contract-negotiation",
         pt: "Negociação de Contrato",
         en: "Contract Negotiation",
         emoji: "📝",
@@ -368,9 +369,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "C1",
         dur: "2–5 min",
         rating: 4.7,
-        plays: 2100,
       },
       {
+        id: "adults-60s-pitch",
         pt: "Pitch de 60 segundos",
         en: "60-second Pitch",
         emoji: "🎤",
@@ -379,9 +380,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "B2",
         dur: "2–5 min",
         rating: 4.6,
-        plays: 1900,
       },
       {
+        id: "adults-professional-email",
         pt: "E-mail Profissional",
         en: "Professional Email",
         emoji: "📧",
@@ -390,9 +391,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "B1",
         dur: "2–5 min",
         rating: 4.5,
-        plays: 4400,
       },
       {
+        id: "adults-global-meeting",
         pt: "Reunião Global",
         en: "Global Meeting",
         emoji: "🌍",
@@ -401,9 +402,9 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "B2",
         dur: "2–5 min",
         rating: 4.7,
-        plays: 2700,
       },
       {
+        id: "adults-ielts-speaking",
         pt: "IELTS Speaking Drills",
         en: "IELTS Speaking Drills",
         emoji: "🎓",
@@ -412,7 +413,6 @@ export const AGE_TRACKS: Record<AgeGroup, AgeTrack> = {
         level: "C1",
         dur: "2–5 min",
         rating: 4.9,
-        plays: 3800,
         locked: true,
         unlockPt: "Completa a Unidade 3",
         unlockEn: "Complete Unit 3",

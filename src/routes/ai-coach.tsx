@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Send,
-  Sparkles,
   Mic,
   BookOpen,
   Pencil,
@@ -14,15 +14,17 @@ import {
   Settings,
   LogOut,
   Plus,
-  ArrowRight,
   ChevronRight,
   Paperclip,
   Compass,
+  Loader2,
 } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
+import { apiFetch } from "@/lib/api/client";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { SITE_URL } from "@/lib/site-url";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/ai-coach")({
   component: AICoachPage,
@@ -46,54 +48,40 @@ export const Route = createFileRoute("/ai-coach")({
   }),
 });
 
-type Msg = { role: "user" | "coach"; text: string };
+type Conversation = { id: string; title: string | null; created_at: string; updated_at: string };
+type CoachMessage = { id: string; role: "user" | "assistant"; content: string; created_at: string };
 
-const MOCK_PROJECTS = [
-  {
-    id: "1",
-    title: "Learning From 100 Years o...",
-    desc: "For athletes, high altitude prod...",
-    active: true,
-  },
-  { id: "2", title: "Research officiants", desc: "Maxwell's equations—the foun...", active: true },
-  {
-    id: "3",
-    title: "What does a senior lead de...",
-    desc: "Physiological respiration involv...",
-    active: true,
-  },
-  {
-    id: "4",
-    title: "Write a sweet note to your...",
-    desc: "In the eighteenth century the G...",
-    active: true,
-  },
-  {
-    id: "5",
-    title: "Meet with cake bakers",
-    desc: "Physical space is often conceiv...",
-    active: true,
-  },
-  { id: "6", title: "Archive Project Alpha", desc: "Completed marketing assets...", active: false },
-];
+function useConversations(userId: string | undefined) {
+  return useQuery({
+    queryKey: ["ai_conversations", userId],
+    enabled: !!userId,
+    queryFn: () => apiFetch<Conversation[]>("/v1/ai/conversations"),
+  });
+}
+
+function useCoachMessages(conversationId: string | null) {
+  return useQuery({
+    queryKey: ["ai_messages", conversationId],
+    enabled: !!conversationId,
+    queryFn: () => apiFetch<CoachMessage[]>(`/v1/ai/conversations/${conversationId}/messages`),
+  });
+}
 
 function AICoachPage() {
   const { locale } = useLocale();
   const { user, signOut } = useAuth();
+  const qc = useQueryClient();
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Msg[]>([
-    {
-      role: "coach",
-      text:
-        locale === "pt"
-          ? "Olá! 👋 Sou seu Coach. Sobre o que quer praticar hoje?"
-          : "Hi! 👋 I'm your Coach. What would you like to practice today?",
-    },
-  ]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const [projectsSidebarOpen, setProjectsSidebarOpen] = useState(true);
   const avatarRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const transcriptEndRef = useRef<HTMLDivElement>(null);
+
+  const { data: conversations = [] } = useConversations(user?.id);
+  const { data: transcript = [], isLoading: transcriptLoading } = useCoachMessages(activeId);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -105,24 +93,40 @@ function AICoachPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const send = () => {
-    if (!input.trim()) return;
-    const userMsg = input.trim();
-    setMessages((m) => [...m, { role: "user", text: userMsg }]);
+  useEffect(() => {
+    transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [transcript.length, sending]);
+
+  const send = async () => {
+    const content = input.trim();
+    if (!content || sending) return;
     setInput("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
-    setTimeout(() => {
-      setMessages((m) => [
-        ...m,
-        {
-          role: "coach",
-          text:
-            locale === "pt"
-              ? "Ótima pergunta! Vou explicar com um exemplo simples. Em inglês, usamos o Present Perfect para conectar o passado com o agora. Quer praticar com 3 frases?"
-              : "Great question! Let me explain with a simple example. We use the Present Perfect to connect past and present. Want to practice with 3 sentences?",
-        },
-      ]);
-    }, 700);
+    setSending(true);
+    try {
+      let conversationId = activeId;
+      if (!conversationId) {
+        const conversation = await apiFetch<Conversation>("/v1/ai/conversations", {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
+        conversationId = conversation.id;
+        setActiveId(conversationId);
+      }
+      await apiFetch(`/v1/ai/conversations/${conversationId}/messages`, {
+        method: "POST",
+        body: JSON.stringify({ content }),
+      });
+      qc.invalidateQueries({ queryKey: ["ai_messages", conversationId] });
+      qc.invalidateQueries({ queryKey: ["ai_conversations", user?.id] });
+    } catch (e) {
+      setInput(content);
+      toast.error(
+        e instanceof Error ? e.message : locale === "pt" ? "Falha ao enviar mensagem" : "Failed to send message",
+      );
+    } finally {
+      setSending(false);
+    }
   };
 
   const suggestions = [
@@ -216,30 +220,64 @@ function AICoachPage() {
         <div className="flex-1 flex overflow-hidden">
           {/* Main Content */}
           <main className="flex-1 overflow-y-auto px-6 py-12 flex flex-col items-center scrollbar-hide pb-20 md:pb-6">
-            <div className="w-full max-w-[800px]">
-              {/* Welcome Header */}
-              <div className="text-center mb-12">
-                <h2 className="font-display text-4xl md:text-5xl font-bold text-[var(--ink)] mb-4 leading-tight">
-                  {locale === "pt" ? "O que vamos aprender hoje?" : "What shall we learn today?"}
-                </h2>
-              </div>
+            {!activeId ? (
+              <div className="w-full max-w-[800px]">
+                {/* Welcome Header */}
+                <div className="text-center mb-12">
+                  <h2 className="font-display text-4xl md:text-5xl font-bold text-[var(--ink)] mb-4 leading-tight">
+                    {locale === "pt" ? "O que vamos aprender hoje?" : "What shall we learn today?"}
+                  </h2>
+                </div>
 
-              {/* Quick Action Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
-                {suggestions.map((s) => (
-                  <button
-                    key={s.text}
-                    onClick={() => setInput(s.text)}
-                    className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-2xl hover:border-[var(--primary)]/40 cursor-pointer transition-all shadow-sm text-left group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center shrink-0 group-hover:bg-[var(--primary)]/5 transition-colors">
-                      <s.icon className="w-5 h-5 text-[var(--primary)]" />
-                    </div>
-                    <span className="text-sm font-semibold text-[var(--ink)]">{s.text}</span>
-                  </button>
-                ))}
+                {/* Quick Action Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+                  {suggestions.map((s) => (
+                    <button
+                      key={s.text}
+                      onClick={() => setInput(s.text)}
+                      className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-2xl hover:border-[var(--primary)]/40 cursor-pointer transition-all shadow-sm text-left group"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center shrink-0 group-hover:bg-[var(--primary)]/5 transition-colors">
+                        <s.icon className="w-5 h-5 text-[var(--primary)]" />
+                      </div>
+                      <span className="text-sm font-semibold text-[var(--ink)]">{s.text}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="w-full max-w-[800px] flex-1 space-y-5 mb-8">
+                {transcriptLoading ? (
+                  <div className="flex items-center justify-center gap-2 py-12 text-gray-400">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span className="text-sm">{locale === "pt" ? "Carregando conversa…" : "Loading conversation…"}</span>
+                  </div>
+                ) : (
+                  transcript.map((m) => (
+                    <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                      <div
+                        className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
+                          m.role === "user"
+                            ? "bg-[var(--primary)] text-white"
+                            : "bg-gray-50 border border-gray-100 text-[var(--ink)]"
+                        }`}
+                      >
+                        {m.content}
+                      </div>
+                    </div>
+                  ))
+                )}
+                {sending && (
+                  <div className="flex justify-start">
+                    <div className="rounded-2xl px-4 py-2.5 bg-gray-50 border border-gray-100 flex items-center gap-2 text-gray-400">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span className="text-xs">Coach</span>
+                    </div>
+                  </div>
+                )}
+                <div ref={transcriptEndRef} />
+              </div>
+            )}
 
             {/* Chat Input */}
             <div className="w-full max-w-[800px] mx-auto">
@@ -265,9 +303,10 @@ function AICoachPage() {
                   />
                   <button
                     onClick={send}
-                    className="ml-2 p-2 text-gray-400 hover:text-[var(--primary)] transition-colors shrink-0"
+                    disabled={sending || !input.trim()}
+                    className="ml-2 p-2 text-gray-400 hover:text-[var(--primary)] transition-colors shrink-0 disabled:opacity-40"
                   >
-                    <Send className="w-5 h-5" />
+                    {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                   </button>
                 </div>
                 <div className="flex items-center justify-between px-4 py-3 bg-gray-50/30 border-t border-gray-100/50">
@@ -311,55 +350,58 @@ function AICoachPage() {
                 </button>
                 <div className="flex items-center gap-2 flex-1">
                   <span className="font-display text-lg font-semibold text-[var(--ink)]">
-                    Projects
+                    {locale === "pt" ? "Conversas" : "Conversations"}
                   </span>
-                  <span className="text-gray-400 text-sm">({MOCK_PROJECTS.length})</span>
+                  <span className="text-gray-400 text-sm">({conversations.length})</span>
                 </div>
-                <button className="p-1 hover:bg-gray-50 rounded-md transition-colors text-gray-500">
-                  <span className="text-lg">⋯</span>
-                </button>
               </div>
 
-              {/* Projects List */}
+              {/* Conversations List */}
               <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-3 scrollbar-hide">
-                {/* New Project Button */}
-                <button className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all text-left">
+                {/* New Conversation Button */}
+                <button
+                  onClick={() => setActiveId(null)}
+                  className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all text-left"
+                >
                   <Plus className="w-5 h-5 text-[var(--primary)]" />
-                  <div>
-                    <div className="text-sm font-bold text-[var(--ink)]">New Project</div>
-                    <div className="text-[12px] text-gray-400">—</div>
+                  <div className="text-sm font-bold text-[var(--ink)]">
+                    {locale === "pt" ? "Nova conversa" : "New conversation"}
                   </div>
                 </button>
 
-                {/* Project Cards */}
-                {MOCK_PROJECTS.map((project) => (
-                  <div
-                    key={project.id}
-                    className={`p-4 rounded-xl bg-white border border-gray-200 hover:border-[var(--primary)]/40 cursor-pointer transition-all shadow-sm ${
-                      !project.active ? "opacity-60" : ""
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-1">
-                      <h4 className="text-sm font-bold text-[var(--ink)] truncate pr-4">
-                        {project.title}
-                      </h4>
-                      <div
-                        className={`w-2 h-2 rounded-full shrink-0 mt-1 ${
-                          project.active ? "bg-[var(--primary)]/20" : "bg-gray-200"
-                        }`}
-                      />
-                    </div>
-                    <p className="text-[12px] text-gray-500 line-clamp-1">{project.desc}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Ver Todos */}
-              <div className="p-6 border-t border-gray-100 bg-gray-50/50">
-                <button className="w-full flex items-center justify-center gap-2 text-sm font-semibold text-[var(--primary)] hover:underline">
-                  {locale === "pt" ? "Ver Todos os Projectos" : "View All Projects"}
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                {/* Conversation Cards */}
+                {conversations.map((conversation) => {
+                  const active = conversation.id === activeId;
+                  return (
+                    <button
+                      key={conversation.id}
+                      onClick={() => setActiveId(conversation.id)}
+                      className={`w-full text-left p-4 rounded-xl bg-white border hover:border-[var(--primary)]/40 cursor-pointer transition-all shadow-sm ${
+                        active ? "border-[var(--primary)]" : "border-gray-200"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="text-sm font-bold text-[var(--ink)] truncate pr-4">
+                          {conversation.title || (locale === "pt" ? "Nova conversa" : "New conversation")}
+                        </h4>
+                        <div className={`w-2 h-2 rounded-full shrink-0 mt-1 ${active ? "bg-[var(--primary)]" : "bg-gray-200"}`} />
+                      </div>
+                      <p className="text-[12px] text-gray-500">
+                        {new Date(conversation.updated_at).toLocaleDateString(locale === "pt" ? "pt-PT" : "en-US", {
+                          day: "2-digit",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </button>
+                  );
+                })}
+                {conversations.length === 0 && (
+                  <p className="text-center text-xs text-gray-400 py-6">
+                    {locale === "pt" ? "Nenhuma conversa ainda." : "No conversations yet."}
+                  </p>
+                )}
               </div>
             </aside>
           )}

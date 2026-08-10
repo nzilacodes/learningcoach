@@ -68,5 +68,5 @@ export function getAnimConfig() {
   if (isMobile()) {
     return { duration: 0.5, stagger: 0.03, scrub: false as const };
   }
-  return { duration: 1, stagger: 0.08, scrub: 1.5 as const | number };
+  return { duration: 1, stagger: 0.08, scrub: 1.5 };
 }

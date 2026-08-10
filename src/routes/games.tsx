@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Star,
   Play,
@@ -20,6 +20,7 @@ import { useAgeGroup } from "@/lib/use-age-group";
 import { AGE_TRACKS, AGE_GROUP_LABEL, type AgeTrack } from "@/lib/age-tracks";
 import { AgeThemeSwitcher } from "@/components/age-theme-switcher";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { GamePlayModal } from "@/components/games/game-play-modal";
 import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/games")({
@@ -65,11 +66,13 @@ function GamesPage() {
   const { group } = useAgeGroup();
   const track = AGE_TRACKS[group];
   const ageLabel = AGE_GROUP_LABEL[group];
+  const qc = useQueryClient();
 
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
   const [activeCat, setActiveCat] = useState<"all" | GameEntry["cat"]>("all");
+  const [activeGame, setActiveGame] = useState<GameEntry | null>(null);
 
   useEffect(() => {
     setActiveCat("all");
@@ -93,6 +96,17 @@ function GamesPage() {
       apiFetch<{ xp: number; coins: number; level: number; streak: number }>("/v1/me/gamification-stats"),
     staleTime: 30_000,
   });
+
+  const { data: playCounts = {} } = useQuery({
+    queryKey: ["games_plays"],
+    queryFn: () => apiFetch<Record<string, number>>("/v1/games/plays"),
+    staleTime: 30_000,
+  });
+
+  const onGameCompleted = () => {
+    qc.invalidateQueries({ queryKey: ["games-profile-stats", user?.id] });
+    qc.invalidateQueries({ queryKey: ["games_plays"] });
+  };
 
   const stats = [
     {
@@ -120,7 +134,7 @@ function GamesPage() {
 
   const mostPlayed = [...track.games]
     .filter((g) => !g.locked)
-    .sort((a, b) => b.plays - a.plays)
+    .sort((a, b) => (playCounts[b.id] ?? 0) - (playCounts[a.id] ?? 0))
     .slice(0, 5);
 
   return (
@@ -287,7 +301,7 @@ function GamesPage() {
             {filteredGames.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
                 {filteredGames.map((game) => (
-                  <GameCard key={game.en} game={game} locale={locale} />
+                  <GameCard key={game.id} game={game} locale={locale} onPlay={() => setActiveGame(game)} />
                 ))}
               </div>
             ) : (
@@ -305,7 +319,7 @@ function GamesPage() {
               </h3>
               <div className="divide-y divide-gray-100">
                 {mostPlayed.map((g, i) => (
-                  <div key={g.en} className="flex items-center gap-4 md:gap-5 py-3 md:py-4">
+                  <div key={g.id} className="flex items-center gap-4 md:gap-5 py-3 md:py-4">
                     <span className="font-display text-xl md:text-2xl font-bold text-orange-600 w-8 shrink-0">
                       {String(i + 1).padStart(2, "0")}
                     </span>
@@ -316,7 +330,7 @@ function GamesPage() {
                       {locale === "pt" ? CAT_LABELS[g.cat].pt : CAT_LABELS[g.cat].en}
                     </span>
                     <span className="text-xs md:text-sm text-gray-400 font-semibold w-16 md:w-20 text-right shrink-0">
-                      {formatPlays(g.plays)} {locale === "pt" ? "jogadas" : "plays"}
+                      {formatPlays(playCounts[g.id] ?? 0)} {locale === "pt" ? "jogadas" : "plays"}
                     </span>
                   </div>
                 ))}
@@ -328,7 +342,13 @@ function GamesPage() {
               <h2 className="font-display text-2xl md:text-4xl font-bold text-center md:text-left max-w-md">
                 {locale === "pt" ? "Aprenda inglês jogando." : "Learn English by playing."}
               </h2>
-              <button className="px-6 py-3 rounded-xl bg-white text-primary text-sm md:text-base font-semibold hover:opacity-90 transition-opacity shrink-0">
+              <button
+                onClick={() => {
+                  const unlocked = track.games.filter((g) => !g.locked);
+                  if (unlocked.length) setActiveGame(unlocked[Math.floor(Math.random() * unlocked.length)]);
+                }}
+                className="px-6 py-3 rounded-xl bg-white text-primary text-sm md:text-base font-semibold hover:opacity-90 transition-opacity shrink-0"
+              >
                 {locale === "pt" ? "Começar um jogo →" : "Start a game →"}
               </button>
             </div>
@@ -336,13 +356,21 @@ function GamesPage() {
         </main>
       </div>
 
+      <GamePlayModal
+        game={activeGame}
+        track={track}
+        locale={locale}
+        onOpenChange={(open) => !open && setActiveGame(null)}
+        onCompleted={onGameCompleted}
+      />
+
       {/* Mobile bottom nav */}
       <VideosMobileNav />
     </div>
   );
 }
 
-function GameCard({ game, locale }: { game: GameEntry; locale: string }) {
+function GameCard({ game, locale, onPlay }: { game: GameEntry; locale: string; onPlay: () => void }) {
   const title = locale === "pt" ? game.pt : game.en;
   const catLabel = CAT_LABELS[game.cat];
 
@@ -379,7 +407,10 @@ function GameCard({ game, locale }: { game: GameEntry; locale: string }) {
               {locale === "pt" ? game.unlockPt : game.unlockEn}
             </div>
           ) : (
-            <button className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+            <button
+              onClick={onPlay}
+              className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+            >
               {locale === "pt" ? "Jogar" : "Play"}
               <Play className="w-4 h-4" fill="currentColor" />
             </button>

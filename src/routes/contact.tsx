@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useLocale } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/site-url";
+import { apiFetch, ApiError } from "@/lib/api/client";
 
 export const Route = createFileRoute("/contact")({
   component: ContactPage,
@@ -45,14 +46,31 @@ function ContactPage() {
       return;
     }
     setSubmitting(true);
-    const mailto = `mailto:silvinogomes1992@gmail.com?subject=${encodeURIComponent(
-      form.subject || `LEWC — ${form.name}`,
-    )}&body=${encodeURIComponent(`${form.message}\n\n— ${form.name} (${form.email})`)}`;
-    window.location.href = mailto;
-    setTimeout(() => {
+    try {
+      await apiFetch("/v1/contact", {
+        method: "POST",
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          subject: form.subject || undefined,
+          message: form.message,
+        }),
+      });
+      setForm({ name: "", email: "", subject: "", message: "" });
+      toast.success(pt ? "Mensagem enviada! Respondemos em breve." : "Message sent! We'll reply soon.");
+    } catch (err) {
+      const msg =
+        err instanceof ApiError && err.status === 429
+          ? pt
+            ? "Muitas tentativas. Tente novamente em alguns minutos."
+            : "Too many attempts. Please try again in a few minutes."
+          : pt
+            ? "Não foi possível enviar. Tente novamente."
+            : "Couldn't send your message. Please try again.";
+      toast.error(msg);
+    } finally {
       setSubmitting(false);
-      toast.success(pt ? "Abrimos o seu cliente de e-mail." : "Opened your email client.");
-    }, 400);
+    }
   };
 
   const channels = [

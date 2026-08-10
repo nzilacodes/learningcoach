@@ -276,13 +276,13 @@ function AuditPage() {
           </CardHeader>
           <CardContent>
             <ul className="grid gap-2 text-sm sm:grid-cols-2">
-              <li>✅ <b>JWT</b> — sessões assinadas por Supabase Auth</li>
+              <li>✅ <b>JWT</b> — sessões assinadas pelo backend (jose), em cookies HttpOnly</li>
               <li>✅ <b>HTTPS</b> — TLS forçado em todas as ligações</li>
-              <li>✅ <b>Row-Level Security</b> — políticas em todas as tabelas</li>
-              <li>✅ <b>Proteção SQL Injection</b> — queries parametrizadas via PostgREST</li>
+              <li>✅ <b>Autorização no backend</b> — cada rota admin exige papel verificado no servidor</li>
+              <li>✅ <b>Proteção SQL Injection</b> — queries parametrizadas via postgres.js</li>
               <li>✅ <b>Proteção XSS</b> — escaping automático React + CSP</li>
-              <li>✅ <b>Proteção CSRF</b> — tokens Bearer + SameSite cookies</li>
-              <li>✅ <b>Password HIBP</b> — bloqueio de senhas vazadas</li>
+              <li>✅ <b>Proteção CSRF</b> — token de dupla submissão (cookie + header) + SameSite cookies</li>
+              <li>✅ <b>Password hashing</b> — bcrypt (custo 12) + regras mínimas de complexidade</li>
               <li>✅ <b>Backups automáticos</b> — snapshots diários da BD</li>
               <li>✅ <b>Auto-lock</b> — 5 tentativas em 15 min → 15 min bloqueado</li>
               <li>✅ <b>Auditoria</b> — todos os eventos críticos registados</li>

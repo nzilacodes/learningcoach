@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Flame,
   Trophy,
@@ -40,7 +40,10 @@ import {
   useWeeklyStudy,
   useStudyHeartbeat,
   useStudyReminder,
+  useCurriculum,
+  type LessonRow,
 } from "@/lib/learning";
+import { useMaxUnlockedLevel } from "@/lib/level-access";
 import {
   ProfileHeader,
   LeaderboardCard,
@@ -67,14 +70,9 @@ export const Route = createFileRoute("/dashboard")({
   }),
 });
 
-const UNIT_DEFS = [
-  { id: "1", pt: "Apresentações", en: "Introductions", image: unitIntroductions },
-  { id: "2", pt: "Rotina Diária", en: "Daily Routine", image: unitRoutine },
-  { id: "3", pt: "Comida e Bebida", en: "Food & Drink", image: unitFood },
-  { id: "4", pt: "Viagens", en: "Travel", image: unitTravel },
-  { id: "5", pt: "Trabalho", en: "At Work", image: unitWork },
-  { id: "6", pt: "Cultura", en: "Culture", image: unitCulture },
-];
+// Decorative art for the first units of the active level — the backend has no
+// per-unit imagery, so these are matched positionally, same idea as before.
+const UNIT_IMAGES = [unitIntroductions, unitRoutine, unitFood, unitTravel, unitWork, unitCulture];
 
 function DashboardPage() {
   const { locale } = useLocale();
@@ -123,34 +121,66 @@ function DashboardPage() {
   const goalDays = 5;
   const weekPct = Math.min(1, (week?.days ?? 0) / goalDays);
 
-  const progressByUnit = new Map(progress.map((p: any) => [p.unit_id, p.progress_pct]));
-  const completedCount = progress.filter((p: any) => p.progress_pct >= 100).length;
-  const currentUnit = UNIT_DEFS.find((u) => {
-    const pct = progressByUnit.get(u.id) ?? 0;
-    return pct > 0 && pct < 100;
-  }) ?? UNIT_DEFS[completedCount] ?? UNIT_DEFS[0];
-  const currentPct = progressByUnit.get(currentUnit.id) ?? 0;
+  const { data: unlockedLevel } = useMaxUnlockedLevel();
+  const { data: curriculum } = useCurriculum();
+
+  const activeCourse = curriculum?.courses.find((c) => c.level === (unlockedLevel ?? "A1"));
+  const previewUnits = useMemo(() => {
+    if (!activeCourse || !curriculum) return [];
+    return curriculum.units
+      .filter((u) => u.course_id === activeCourse.id)
+      .sort((a, b) => a.order_index - b.order_index)
+      .slice(0, UNIT_IMAGES.length);
+  }, [activeCourse, curriculum]);
+  const lessonsByUnit = useMemo(() => {
+    const m = new Map<string, LessonRow[]>();
+    (curriculum?.lessons ?? []).forEach((l) => {
+      const arr = m.get(l.unit_id) ?? [];
+      arr.push(l);
+      m.set(l.unit_id, arr);
+    });
+    return m;
+  }, [curriculum]);
+  const doneLessonIds = useMemo(
+    () => new Set(progress.filter((p: any) => p.completed_at || p.progress_pct >= 100).map((p: any) => p.lesson_id)),
+    [progress],
+  );
+
+  const baseUnits = previewUnits.map((u, i) => {
+    const lessons = lessonsByUnit.get(u.id) ?? [];
+    const total = lessons.length;
+    const done = lessons.filter((l) => doneLessonIds.has(l.id)).length;
+    const p = total ? Math.round((done / total) * 100) : 0;
+    const prevLessons = i === 0 ? [] : (lessonsByUnit.get(previewUnits[i - 1].id) ?? []);
+    const prevDone = i === 0 || (prevLessons.length > 0 && prevLessons.every((l) => doneLessonIds.has(l.id)));
+    return {
+      id: u.id,
+      index: i + 1,
+      title: u.title,
+      image: UNIT_IMAGES[i],
+      progress: p,
+      done: p >= 100 && total > 0,
+      locked: !prevDone && p === 0,
+    };
+  });
+  // Exactly one "current" unit: the first unlocked one that isn't finished yet
+  // (falls back to the last unit once everything in the preview is done).
+  const currentIndex = baseUnits.findIndex((u) => !u.done && !u.locked);
+  const units = baseUnits.map((u, i) => ({ ...u, current: currentIndex === -1 ? i === baseUnits.length - 1 : i === currentIndex }));
+  const currentUnit = units[currentIndex === -1 ? units.length - 1 : currentIndex] ?? {
+    id: "", index: 1, title: "", image: UNIT_IMAGES[0], progress: 0, done: false, locked: false, current: true,
+  };
+  const currentPct = currentUnit.progress;
+  const completedLessonCount = doneLessonIds.size;
+  const currentUnitLessons = currentUnit.id ? (lessonsByUnit.get(currentUnit.id) ?? []) : [];
+  const nextLessonId = (currentUnitLessons.find((l) => !doneLessonIds.has(l.id)) ?? currentUnitLessons[0])?.id;
 
   const stats = [
     { icon: Flame, label: locale === "pt" ? "Sequência" : "Streak", value: String(userStats?.streak_days ?? 0), unit: locale === "pt" ? "dias" : "days", color: "text-orange-500 bg-orange-100" },
     { icon: Star, label: "XP", value: (userStats?.xp ?? 0).toLocaleString(), unit: "", color: "text-amber-500 bg-amber-100" },
-    { icon: Trophy, label: locale === "pt" ? "Concluídas" : "Completed", value: String(completedCount), unit: locale === "pt" ? "unidades" : "units", color: "text-[var(--magenta)] bg-[var(--magenta)]/10" },
+    { icon: Trophy, label: locale === "pt" ? "Concluídas" : "Completed", value: String(completedLessonCount), unit: locale === "pt" ? "lições" : "lessons", color: "text-[var(--magenta)] bg-[var(--magenta)]/10" },
     { icon: Clock, label: locale === "pt" ? "Estudou" : "Studied", value: weekLabel, unit: locale === "pt" ? "semana" : "this week", color: "text-[var(--violet)] bg-[var(--violet)]/10" },
   ];
-
-  const units = UNIT_DEFS.map((u, i) => {
-    const p = progressByUnit.get(u.id) ?? 0;
-    const prevDone = i === 0 || (progressByUnit.get(UNIT_DEFS[i - 1].id) ?? 0) >= 100;
-    return {
-      id: u.id,
-      title: locale === "pt" ? u.pt : u.en,
-      image: u.image,
-      progress: p,
-      done: p >= 100,
-      locked: !prevDone && p === 0,
-      current: u.id === currentUnit.id,
-    };
-  });
 
   const displayName = user?.fullName?.split(" ")[0] ?? (locale === "pt" ? "Aluno" : "Learner");
 
@@ -278,7 +308,7 @@ function DashboardPage() {
                       {locale === "pt" ? "Continuar aprendendo" : "Continue learning"}
                     </p>
                     <h3 className="font-display text-3xl md:text-4xl font-bold mb-4">
-                      {locale === "pt" ? `Unidade ${currentUnit.id}: ${currentUnit.pt}` : `Unit ${currentUnit.id}: ${currentUnit.en}`}
+                      {locale === "pt" ? `Unidade ${currentUnit.index}: ${currentUnit.title}` : `Unit ${currentUnit.index}: ${currentUnit.title}`}
                     </h3>
                     <p className="text-white/80 text-sm mb-6 max-w-md">
                       {locale === "pt"
@@ -289,7 +319,8 @@ function DashboardPage() {
                       <div className="bg-white h-full rounded-full" style={{ width: `${Math.max(5, currentPct)}%` }} />
                     </div>
                     <Link
-                      to="/lesson"
+                      to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
+                      params={nextLessonId ? { lessonId: nextLessonId } : undefined}
                       className="inline-flex items-center gap-2 bg-white text-[var(--violet)] px-8 py-4 rounded-2xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform"
                     >
                       <Play className="w-4 h-4 fill-current" />
@@ -299,7 +330,7 @@ function DashboardPage() {
                   <div className="w-48 h-48 shrink-0 relative z-10 hidden md:block">
                     <img
                       src={currentUnit.image}
-                      alt={locale === "pt" ? currentUnit.pt : currentUnit.en}
+                      alt={currentUnit.title}
                       className="w-full h-full object-cover rounded-2xl rotate-3 shadow-2xl"
                       loading="lazy"
                     />
@@ -382,8 +413,8 @@ function DashboardPage() {
                           u.current ? "text-[var(--violet)]" : u.locked ? "text-gray-300" : "text-gray-500"
                         }`}>
                           {u.current
-                            ? `${locale === "pt" ? "ATUAL" : "CURRENT"} • ${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.id}`
-                            : `${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.id}`
+                            ? `${locale === "pt" ? "ATUAL" : "CURRENT"} • ${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`
+                            : `${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`
                           }
                         </p>
                         <p className={`text-xs font-bold truncate ${u.locked ? "text-gray-300" : "text-[var(--ink)]"}`}>
@@ -522,12 +553,13 @@ function DashboardPage() {
                   <div className="flex items-end justify-between">
                     <div>
                       <span className="text-white/70 text-[10px] font-bold uppercase tracking-widest">
-                        {locale === "pt" ? "UNIDADE" : "UNIT"} {currentUnit.id}
+                        {locale === "pt" ? "UNIDADE" : "UNIT"} {currentUnit.index}
                       </span>
-                      <h2 className="text-white font-display text-lg font-bold">{locale === "pt" ? currentUnit.pt : currentUnit.en}</h2>
+                      <h2 className="text-white font-display text-lg font-bold">{currentUnit.title}</h2>
                     </div>
                     <Link
-                      to="/lesson"
+                      to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
+                      params={nextLessonId ? { lessonId: nextLessonId } : undefined}
                       className="bg-white text-[var(--violet)] px-4 py-2 rounded-full text-xs font-bold shadow-lg active:scale-90 transition-transform shrink-0"
                     >
                       {locale === "pt" ? "Retomar" : "Resume"}
@@ -622,8 +654,8 @@ function DashboardPage() {
                           u.current ? "text-[var(--violet)]" : "text-gray-400"
                         }`}>
                           {u.current
-                            ? `${locale === "pt" ? "ATUAL" : "CURRENT"} • ${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.id}`
-                            : `${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.id}`
+                            ? `${locale === "pt" ? "ATUAL" : "CURRENT"} • ${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`
+                            : `${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`
                           }
                         </p>
                         <h4 className="font-display text-sm font-bold text-[var(--ink)]">{u.title}</h4>
@@ -635,7 +667,8 @@ function DashboardPage() {
                       </div>
                       {u.current && !u.locked && !u.done && (
                         <Link
-                          to="/lesson"
+                          to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
+                          params={nextLessonId ? { lessonId: nextLessonId } : undefined}
                           className="shrink-0 text-[var(--violet)] text-xs font-bold flex items-center gap-1 mt-1"
                         >
                           {locale === "pt" ? "Continuar" : "Continue"} <ChevronRight className="w-3 h-3" />

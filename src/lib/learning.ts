@@ -3,6 +3,43 @@ import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
+// ---------- CURRICULUM (courses/units/lessons) ----------
+export type CourseRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  level: string;
+  order_index: number;
+};
+export type UnitRow = {
+  id: string;
+  course_id: string;
+  title: string;
+  description: string | null;
+  theme: string | null;
+  order_index: number;
+};
+export type LessonRow = {
+  id: string;
+  unit_id: string;
+  slug: string;
+  title: string;
+  summary: string | null;
+  duration_min: number | null;
+  xp_reward: number | null;
+  order_index: number;
+  lesson_type: string;
+};
+
+export function useCurriculum() {
+  return useQuery({
+    queryKey: ["curriculum"],
+    queryFn: () => apiFetch<{ courses: CourseRow[]; units: UnitRow[]; lessons: LessonRow[] }>("/v1/courses"),
+    staleTime: 60_000,
+  });
+}
+
 // ---------- USER STATS ----------
 export function useUserStats() {
   const { user } = useAuth();

@@ -162,7 +162,7 @@ function TrackPage() {
           >
             <div className="grid gap-3 grid-cols-2 md:grid-cols-3">
               {track.games.map((g) => (
-                <div key={g.en} className="rounded-xl border bg-card p-4 flex items-center gap-3">
+                <div key={g.id} className="rounded-xl border bg-card p-4 flex items-center gap-3">
                   <span className="text-2xl" aria-hidden>{g.emoji}</span>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold truncate">{locale === "pt" ? g.pt : g.en}</div>

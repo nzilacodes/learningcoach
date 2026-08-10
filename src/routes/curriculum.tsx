@@ -11,6 +11,7 @@ import {
   useMinExamScore,
   type CefrLevel,
 } from "@/lib/level-access";
+import { useCurriculum, type LessonRow } from "@/lib/learning";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import {
   ArrowRight,
@@ -51,42 +52,6 @@ export const Route = createFileRoute("/curriculum")({
     ],
   }),
 });
-
-type CourseRow = {
-  id: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  level: CefrLevel;
-  order_index: number;
-};
-type UnitRow = {
-  id: string;
-  course_id: string;
-  title: string;
-  description: string | null;
-  theme: string | null;
-  order_index: number;
-};
-type LessonRow = {
-  id: string;
-  unit_id: string;
-  slug: string;
-  title: string;
-  summary: string | null;
-  duration_min: number | null;
-  xp_reward: number | null;
-  order_index: number;
-  lesson_type: string;
-};
-
-function useCurriculum() {
-  return useQuery({
-    queryKey: ["curriculum"],
-    queryFn: () => apiFetch<{ courses: CourseRow[]; units: UnitRow[]; lessons: LessonRow[] }>("/v1/courses"),
-    staleTime: 60_000,
-  });
-}
 
 function useProgress() {
   const { user } = useAuth();
@@ -486,7 +451,8 @@ function CurriculumPage() {
                   </div>
                 </div>
                 <Link
-                  to="/lesson"
+                  to="/lesson/$lessonId"
+                  params={{ lessonId: nextLesson.lesson.id }}
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] text-white px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity shrink-0"
                 >
                   {locale === "pt" ? "Continuar" : "Continue"}
@@ -701,7 +667,8 @@ function CurriculumPage() {
                                       </span>
                                     ) : (
                                       <Link
-                                        to="/lesson"
+                                        to="/lesson/$lessonId"
+                                        params={{ lessonId: l.id }}
                                         className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold shrink-0 transition-all ${
                                           isNext
                                             ? "bg-[var(--primary)] text-white hover:opacity-90"

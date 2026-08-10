@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useRef, useEffect } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import {
   Search,
   Bell,
@@ -20,7 +20,8 @@ import { useAuth } from "@/lib/auth";
 import { useAgeGroup } from "@/lib/use-age-group";
 import { useLocale } from "@/lib/i18n";
 import { AGE_TRACKS } from "@/lib/age-tracks";
-import { extractYouTubeId, youtubeThumb } from "@/lib/youtube";
+import { extractYouTubeId, youtubeThumb, videoPoolForAge } from "@/lib/youtube";
+import { useUserStats, useWeeklyStudy } from "@/lib/learning";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 
 export const Route = createFileRoute("/videos")({
@@ -51,73 +52,6 @@ type Recent = {
 
 const FILTERS = ["All Videos", "Grammar", "Business English", "Listening", "Pronunciation"];
 
-const MOCK_VIDEOS = [
-  {
-    id: "1",
-    title: "Business English: Conducting Meetings",
-    level: "B2 INTERMEDIATE",
-    duration: "14:20",
-    thumb:
-      "https://images.unsplash.com/photo-1766867264693-e34f484d3371?auto=format&w=600&q=80&fit=crop",
-  },
-  {
-    id: "2",
-    title: "IELTS Speaking Strategies: 8.0+ Band",
-    level: "C1 ADVANCED",
-    duration: "18:45",
-    thumb:
-      "https://images.unsplash.com/photo-1765020553552-6286dde23660?auto=format&w=600&q=80&fit=crop",
-  },
-  {
-    id: "3",
-    title: "Phrasal Verbs in Daily Conversations",
-    level: "B1 INTERMEDIATE",
-    duration: "09:30",
-    thumb:
-      "https://images.unsplash.com/photo-1765474604988-4fc3fa14f46b?auto=format&w=600&q=80&fit=crop",
-  },
-  {
-    id: "4",
-    title: "Grammar: The Ultimate Tense Guide",
-    level: "A2-C2 ALL LEVELS",
-    duration: "22:10",
-    thumb:
-      "https://images.unsplash.com/photo-1551836022-1c223a824392?auto=format&w=600&q=80&fit=crop",
-  },
-  {
-    id: "5",
-    title: "English for Tech Job Interviews",
-    level: "C1 ADVANCED",
-    duration: "12:05",
-    thumb:
-      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&w=600&q=80&fit=crop",
-  },
-  {
-    id: "6",
-    title: "Culture & Etiquette in US Business",
-    level: "B2 INTERMEDIATE",
-    duration: "15:40",
-    thumb:
-      "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&w=600&q=80&fit=crop",
-  },
-  {
-    id: "7",
-    title: "High-Level Academic Writing",
-    level: "C2 PROFICIENT",
-    duration: "31:15",
-    thumb:
-      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&w=600&q=80&fit=crop",
-  },
-  {
-    id: "8",
-    title: "5 Tips for New Vocabulary",
-    level: "B1 INTERMEDIATE",
-    duration: "05:50",
-    thumb:
-      "https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?auto=format&w=600&q=80&fit=crop",
-  },
-];
-
 function VideosPage() {
   const { user, signOut } = useAuth();
   const { group } = useAgeGroup();
@@ -142,10 +76,15 @@ function VideosPage() {
     enabled: !!user,
     queryFn: () => apiFetch<Recent[]>("/v1/me/video-history"),
   });
+  const { data: userStats } = useUserStats();
+  const { data: week } = useWeeklyStudy();
 
   const recs = AGE_TRACKS[group].videos;
   const featuredRec = recs[0];
   const featuredId = featuredRec ? extractYouTubeId(featuredRec.url) : null;
+  const catalog = useMemo(() => videoPoolForAge(group), [group]);
+  const weekHours = ((week?.seconds ?? 0) / 3600).toFixed(1);
+  const watchedCount = recent?.filter((r) => r.completed).length ?? 0;
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -234,19 +173,19 @@ function VideosPage() {
               <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                 Study Hours
               </div>
-              <div className="text-xl font-bold text-(--ink)">12.5</div>
+              <div className="text-xl font-bold text-(--ink)">{weekHours}</div>
             </div>
             <div className="glass-card rounded-2xl p-4 text-center premium-shadow">
               <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                 Streak
               </div>
-              <div className="text-xl font-bold text-(--ink)">15 Days</div>
+              <div className="text-xl font-bold text-(--ink)">{userStats?.streak_days ?? 0} Days</div>
             </div>
             <div className="glass-card rounded-2xl p-4 text-center premium-shadow">
               <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                 Watched
               </div>
-              <div className="text-xl font-bold text-(--ink)">342</div>
+              <div className="text-xl font-bold text-(--ink)">{watchedCount}</div>
             </div>
           </div>
 
@@ -331,76 +270,127 @@ function VideosPage() {
             </Link>
           </div>
 
+          {/* Continue watching */}
+          {recent && recent.length > 0 && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-display font-bold">
+                {locale === "pt" ? "Continuar assistindo" : "Continue watching"}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10">
+                {recent.map((r) => {
+                  const pct =
+                    r.duration_seconds && r.duration_seconds > 0
+                      ? Math.min(100, Math.round((r.position_seconds / r.duration_seconds) * 100))
+                      : 0;
+                  return (
+                    <Link
+                      key={r.video_id}
+                      to="/watch/$videoId"
+                      params={{ videoId: r.video_id }}
+                      search={{ title: r.title ?? undefined, channel: r.channel ?? undefined }}
+                      className="group block space-y-3"
+                    >
+                      <div className="relative aspect-video rounded-3xl overflow-hidden premium-shadow">
+                        <img
+                          src={youtubeThumb(r.video_id)}
+                          alt={r.title ?? ""}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="play-overlay absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-all duration-300">
+                          <div className="w-14 h-14 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/30">
+                            <Play className="w-6 h-6 text-white ml-0.5" fill="white" />
+                          </div>
+                        </div>
+                        {pct > 0 && (
+                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30">
+                            <div className="h-full bg-(--violet)" style={{ width: `${pct}%` }} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="px-1 space-y-1">
+                        <h4 className="font-display font-bold text-sm leading-tight group-hover:text-(--violet) transition-colors line-clamp-2">
+                          {r.title ?? r.video_id}
+                        </h4>
+                        <span className="text-[10px] text-gray-400 font-bold">{r.channel}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Video Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-            {MOCK_VIDEOS.map((video) => (
-              <div key={video.id} className="group cursor-pointer space-y-3 video-card relative">
-                {/* Thumbnail */}
-                <div className="relative aspect-video rounded-3xl overflow-hidden premium-shadow">
-                  <img
-                    src={video.thumb}
-                    alt={video.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  {/* Play overlay on hover */}
-                  <div className="play-overlay absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-all duration-300">
-                    <div className="w-14 h-14 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/30">
-                      <Play className="w-6 h-6 text-white ml-0.5" fill="white" />
-                    </div>
-                  </div>
-                  {/* Duration badge */}
-                  <div className="absolute bottom-3 right-3 px-1.5 py-0.5 bg-black/80 backdrop-blur-md text-white text-[10px] font-bold rounded-md">
-                    {video.duration}
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="flex justify-between items-start px-1 relative">
-                  <div className="flex-1 space-y-1">
-                    <h4 className="font-display font-bold text-sm leading-tight group-hover:text-(--violet) transition-colors line-clamp-2">
-                      {video.title}
-                    </h4>
-                    <span className="text-[10px] text-gray-400 font-bold">{video.level}</span>
-                  </div>
-
-                  {/* 3-dot menu */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenMenuId(openMenuId === video.id ? null : video.id);
-                    }}
-                    className="p-1.5 hover:bg-gray-100 rounded-xl transition-colors"
-                  >
-                    <MoreVertical className="w-4 h-4 text-gray-400" />
-                  </button>
-
-                  {/* Dropdown */}
-                  {openMenuId === video.id && (
-                    <>
-                      <div className="fixed inset-0 z-30" onClick={() => setOpenMenuId(null)} />
-                      <div className="absolute right-0 top-10 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                        <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
-                          <ListPlus className="w-4 h-4 text-(--violet)" />
-                          {locale === "pt" ? "Salvar na playlist" : "Save to playlist"}
-                        </button>
-                        <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          {locale === "pt" ? "Marcar como concluído" : "Mark as completed"}
-                        </button>
-                        <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left border-b border-gray-50">
-                          <Share2 className="w-4 h-4 text-blue-500" />
-                          {locale === "pt" ? "Compartilhar" : "Share"}
-                        </button>
-                        <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left">
-                          <ThumbsDown className="w-4 h-4" />
-                          {locale === "pt" ? "Não tenho interesse" : "Not interested"}
-                        </button>
+            {catalog.map((video) => {
+              const search = { title: video.title, channel: video.channel, level: video.level };
+              return (
+                <div key={video.videoId} className="group space-y-3 video-card relative">
+                  {/* Thumbnail */}
+                  <Link to="/watch/$videoId" params={{ videoId: video.videoId }} search={search} className="block">
+                    <div className="relative aspect-video rounded-3xl overflow-hidden premium-shadow">
+                      <img
+                        src={youtubeThumb(video.videoId)}
+                        alt={video.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      {/* Play overlay on hover */}
+                      <div className="play-overlay absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-all duration-300">
+                        <div className="w-14 h-14 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/30">
+                          <Play className="w-6 h-6 text-white ml-0.5" fill="white" />
+                        </div>
                       </div>
-                    </>
-                  )}
+                    </div>
+                  </Link>
+
+                  {/* Info */}
+                  <div className="flex justify-between items-start px-1 relative">
+                    <Link to="/watch/$videoId" params={{ videoId: video.videoId }} search={search} className="flex-1 min-w-0 space-y-1">
+                      <h4 className="font-display font-bold text-sm leading-tight group-hover:text-(--violet) transition-colors line-clamp-2">
+                        {video.title}
+                      </h4>
+                      <span className="text-[10px] text-gray-400 font-bold">{video.level}</span>
+                    </Link>
+
+                    {/* 3-dot menu */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(openMenuId === video.videoId ? null : video.videoId);
+                      }}
+                      className="p-1.5 hover:bg-gray-100 rounded-xl transition-colors"
+                    >
+                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                    </button>
+
+                    {/* Dropdown */}
+                    {openMenuId === video.videoId && (
+                      <>
+                        <div className="fixed inset-0 z-30" onClick={() => setOpenMenuId(null)} />
+                        <div className="absolute right-0 top-10 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
+                          <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                            <ListPlus className="w-4 h-4 text-(--violet)" />
+                            {locale === "pt" ? "Salvar na playlist" : "Save to playlist"}
+                          </button>
+                          <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                            {locale === "pt" ? "Marcar como concluído" : "Mark as completed"}
+                          </button>
+                          <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left border-b border-gray-50">
+                            <Share2 className="w-4 h-4 text-blue-500" />
+                            {locale === "pt" ? "Compartilhar" : "Share"}
+                          </button>
+                          <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left">
+                            <ThumbsDown className="w-4 h-4" />
+                            {locale === "pt" ? "Não tenho interesse" : "Not interested"}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Footer */}

@@ -20,7 +20,7 @@ export const prefersReducedMotion = () =>
 gsap.defaults({
   ease: "power3.out",
   force3D: true,
-  overwrite: "auto" as gsap.OverwriteType,
+  overwrite: "auto",
 });
 
 // Configurar ScrollTrigger

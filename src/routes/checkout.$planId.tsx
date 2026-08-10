@@ -18,10 +18,13 @@ import type { PlanRow, PaymentMethod, OrderInfo } from "@/lib/api/billing-types"
 
 export const Route = createFileRoute("/checkout/$planId")({
   loader: async ({ params }) => {
-    const plans = await apiFetch<PlanRow[]>("/v1/plans");
+    const [plans, config] = await Promise.all([
+      apiFetch<PlanRow[]>("/v1/plans"),
+      apiFetch<{ sandboxPaymentsEnabled: boolean }>("/v1/config"),
+    ]);
     const plan = plans.find((p) => p.id === params.planId);
     if (!plan) throw new Error("Plano não encontrado");
-    return { plan };
+    return { plan, sandboxPaymentsEnabled: config.sandboxPaymentsEnabled };
   },
   errorComponent: ({ error }) => (
     <div className="min-h-screen"><SiteHeader />
@@ -52,7 +55,7 @@ const METHODS: {
 ];
 
 function CheckoutPage() {
-  const { plan } = Route.useLoaderData();
+  const { plan, sandboxPaymentsEnabled } = Route.useLoaderData();
   const navigate = useNavigate();
 
   const [method, setMethod] = useState<PaymentMethod>("reference");
@@ -198,20 +201,34 @@ function CheckoutPage() {
                       <Field label="Total" value={`${order.amount_kz.toLocaleString("pt-AO")} Kz`} />
                     </div>
 
-                    <div className="mt-6 rounded-lg border bg-muted/40 p-4 text-xs text-muted-foreground">
-                      Este é um ambiente sandbox. Em produção, o gateway (Multicaixa Express / EMIS / AppyPay)
-                      confirmará o pagamento por webhook. Podes simular a confirmação abaixo.
-                    </div>
-
-                    <div className="mt-4 flex gap-2">
-                      <Button onClick={confirm} disabled={confirming} className="flex-1">
-                        {confirming ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                        Simular confirmação
-                      </Button>
-                      <Button asChild variant="outline">
-                        <Link to="/subscription">Ver assinatura</Link>
-                      </Button>
-                    </div>
+                    {sandboxPaymentsEnabled ? (
+                      <>
+                        <div className="mt-6 rounded-lg border bg-muted/40 p-4 text-xs text-muted-foreground">
+                          Este é um ambiente sandbox. Em produção, o gateway (Multicaixa Express / EMIS / AppyPay)
+                          confirmará o pagamento por webhook. Podes simular a confirmação abaixo.
+                        </div>
+                        <div className="mt-4 flex gap-2">
+                          <Button onClick={confirm} disabled={confirming} className="flex-1">
+                            {confirming ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                            Simular confirmação
+                          </Button>
+                          <Button asChild variant="outline">
+                            <Link to="/subscription">Ver assinatura</Link>
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="mt-6 rounded-lg border bg-amber-500/10 border-amber-500/30 p-4 text-xs text-muted-foreground">
+                          Aguardando ativação do administrador. Assim que o pagamento for confirmado, a sua assinatura é ativada automaticamente.
+                        </div>
+                        <div className="mt-4">
+                          <Button asChild variant="outline" className="w-full">
+                            <Link to="/subscription">Ver assinatura</Link>
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               )}

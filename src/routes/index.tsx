@@ -22,6 +22,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { useLandingAnimations } from "@/hooks/use-landing-animations";
 import { useLocale } from "@/lib/i18n";
+import { useCurriculum } from "@/lib/learning";
 import heroStudents from "@/assets/hero-students.jpg";
 import panelKids from "@/assets/panel-kids.jpg";
 import panelTeens from "@/assets/panel-teens.jpg";
@@ -88,6 +89,14 @@ const stats = [
 function LandingPage() {
   const root = useLandingAnimations();
   const { locale } = useLocale();
+  const { data: curriculum } = useCurriculum();
+  const demoCourse = curriculum?.courses.slice().sort((a, b) => a.order_index - b.order_index)[0];
+  const demoUnit = curriculum?.units
+    .filter((u) => u.course_id === demoCourse?.id)
+    .sort((a, b) => a.order_index - b.order_index)[0];
+  const demoLesson = curriculum?.lessons
+    .filter((l) => l.unit_id === demoUnit?.id)
+    .sort((a, b) => a.order_index - b.order_index)[0];
   return (
     <div ref={root} className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
       <SiteHeader />
@@ -135,7 +144,8 @@ function LandingPage() {
                 </span>
               </Link>
               <Link
-                to="/lesson"
+                to={demoLesson ? "/lesson/$lessonId" : "/curriculum"}
+                params={demoLesson ? { lessonId: demoLesson.id } : undefined}
                 className="inline-flex items-center gap-3 rounded-full border-2 border-slate-200 bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-[#0F172A] transition-all hover:border-[#0EA5A4] hover:text-[#0EA5A4]"
               >
                 <Play className="h-4 w-4" />

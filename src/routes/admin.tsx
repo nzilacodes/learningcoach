@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
-import { SubscriptionsSection, AnalyticsSection, ReportsSection } from "@/components/admin/sections";
+import { SubscriptionsSection, AnalyticsSection, ReportsSection, CurriculumSection } from "@/components/admin/sections";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -271,6 +271,7 @@ function AdminPage() {
 
         <SubscriptionsSection />
         <AnalyticsSection />
+        <CurriculumSection />
         <ReportsSection />
       </div>
     </div>
