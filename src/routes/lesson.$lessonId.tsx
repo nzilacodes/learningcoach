@@ -365,6 +365,14 @@ function LessonBody({ lesson, locale }: { lesson: LessonDetail; locale: "pt" | "
 
 function LessonPage() {
   const { lessonId } = Route.useParams();
+  // Forces a fresh mount (and fresh local state — completing/justCompleted,
+  // quiz answers, recorded audio, etc.) whenever the route param changes,
+  // instead of TanStack Router reusing this component instance across two
+  // different lessons and leaking the previous lesson's "completed" state.
+  return <LessonPageInner key={lessonId} lessonId={lessonId} />;
+}
+
+function LessonPageInner({ lessonId }: { lessonId: string }) {
   const { locale } = useLocale();
   const qc = useQueryClient();
 
