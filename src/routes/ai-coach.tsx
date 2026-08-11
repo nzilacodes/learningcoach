@@ -122,7 +122,11 @@ function AICoachPage() {
     } catch (e) {
       setInput(content);
       toast.error(
-        e instanceof Error ? e.message : locale === "pt" ? "Falha ao enviar mensagem" : "Failed to send message",
+        e instanceof Error
+          ? e.message
+          : locale === "pt"
+            ? "Falha ao enviar mensagem"
+            : "Failed to send message",
       );
     } finally {
       setSending(false);
@@ -250,11 +254,16 @@ function AICoachPage() {
                 {transcriptLoading ? (
                   <div className="flex items-center justify-center gap-2 py-12 text-gray-400">
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    <span className="text-sm">{locale === "pt" ? "Carregando conversa…" : "Loading conversation…"}</span>
+                    <span className="text-sm">
+                      {locale === "pt" ? "Carregando conversa…" : "Loading conversation…"}
+                    </span>
                   </div>
                 ) : (
                   transcript.map((m) => (
-                    <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div
+                      key={m.id}
+                      className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
                       <div
                         className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
                           m.role === "user"
@@ -306,7 +315,11 @@ function AICoachPage() {
                     disabled={sending || !input.trim()}
                     className="ml-2 p-2 text-gray-400 hover:text-[var(--primary)] transition-colors shrink-0 disabled:opacity-40"
                   >
-                    {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                    {sending ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Send className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
                 <div className="flex items-center justify-between px-4 py-3 bg-gray-50/30 border-t border-gray-100/50">
@@ -382,17 +395,23 @@ function AICoachPage() {
                     >
                       <div className="flex justify-between items-start mb-1">
                         <h4 className="text-sm font-bold text-[var(--ink)] truncate pr-4">
-                          {conversation.title || (locale === "pt" ? "Nova conversa" : "New conversation")}
+                          {conversation.title ||
+                            (locale === "pt" ? "Nova conversa" : "New conversation")}
                         </h4>
-                        <div className={`w-2 h-2 rounded-full shrink-0 mt-1 ${active ? "bg-[var(--primary)]" : "bg-gray-200"}`} />
+                        <div
+                          className={`w-2 h-2 rounded-full shrink-0 mt-1 ${active ? "bg-[var(--primary)]" : "bg-gray-200"}`}
+                        />
                       </div>
                       <p className="text-[12px] text-gray-500">
-                        {new Date(conversation.updated_at).toLocaleDateString(locale === "pt" ? "pt-PT" : "en-US", {
-                          day: "2-digit",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {new Date(conversation.updated_at).toLocaleDateString(
+                          locale === "pt" ? "pt-PT" : "en-US",
+                          {
+                            day: "2-digit",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
                       </p>
                     </button>
                   );

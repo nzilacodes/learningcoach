@@ -111,9 +111,13 @@ function DashboardPage() {
   const totalDays = sub?.subscription_plans?.duration_days ?? 30;
   const pct = daysLeft != null ? Math.min(100, Math.round((daysLeft / totalDays) * 100)) : 0;
   const planLabel = sub?.subscription_plans?.billing_cycle
-    ? ({ monthly: locale === "pt" ? "Mensal" : "Monthly", quarterly: locale === "pt" ? "Trimestral" : "Quarterly", semiannual: locale === "pt" ? "Semestral" : "Semiannual" } as any)[
-        sub.subscription_plans.billing_cycle
-      ]
+    ? (
+        {
+          monthly: locale === "pt" ? "Mensal" : "Monthly",
+          quarterly: locale === "pt" ? "Trimestral" : "Quarterly",
+          semiannual: locale === "pt" ? "Semestral" : "Semiannual",
+        } as any
+      )[sub.subscription_plans.billing_cycle]
     : null;
 
   const weekSeconds = week?.seconds ?? 0;
@@ -134,15 +138,21 @@ function DashboardPage() {
   }, [activeCourse, curriculum]);
   const lessonsByUnit = useMemo(() => {
     const m = new Map<string, LessonRow[]>();
-    (curriculum?.lessons ?? []).forEach((l) => {
-      const arr = m.get(l.unit_id) ?? [];
-      arr.push(l);
-      m.set(l.unit_id, arr);
-    });
+    (curriculum?.lessons ?? [])
+      .slice()
+      .sort((a, b) => a.order_index - b.order_index)
+      .forEach((l) => {
+        const arr = m.get(l.unit_id) ?? [];
+        arr.push(l);
+        m.set(l.unit_id, arr);
+      });
     return m;
   }, [curriculum]);
   const doneLessonIds = useMemo(
-    () => new Set(progress.filter((p: any) => p.completed_at || p.progress_pct >= 100).map((p: any) => p.lesson_id)),
+    () =>
+      new Set(
+        progress.filter((p) => p.completed_at || p.progress_pct >= 100).map((p) => p.lesson_id),
+      ),
     [progress],
   );
 
@@ -152,7 +162,9 @@ function DashboardPage() {
     const done = lessons.filter((l) => doneLessonIds.has(l.id)).length;
     const p = total ? Math.round((done / total) * 100) : 0;
     const prevLessons = i === 0 ? [] : (lessonsByUnit.get(previewUnits[i - 1].id) ?? []);
-    const prevDone = i === 0 || (prevLessons.length > 0 && prevLessons.every((l) => doneLessonIds.has(l.id)));
+    // .every() on an empty array is vacuously true — a predecessor unit with
+    // no published lessons yet shouldn't permanently lock everything after it.
+    const prevDone = i === 0 || prevLessons.every((l) => doneLessonIds.has(l.id));
     return {
       id: u.id,
       index: i + 1,
@@ -166,20 +178,56 @@ function DashboardPage() {
   // Exactly one "current" unit: the first unlocked one that isn't finished yet
   // (falls back to the last unit once everything in the preview is done).
   const currentIndex = baseUnits.findIndex((u) => !u.done && !u.locked);
-  const units = baseUnits.map((u, i) => ({ ...u, current: currentIndex === -1 ? i === baseUnits.length - 1 : i === currentIndex }));
+  const units = baseUnits.map((u, i) => ({
+    ...u,
+    current: currentIndex === -1 ? i === baseUnits.length - 1 : i === currentIndex,
+  }));
   const currentUnit = units[currentIndex === -1 ? units.length - 1 : currentIndex] ?? {
-    id: "", index: 1, title: "", image: UNIT_IMAGES[0], progress: 0, done: false, locked: false, current: true,
+    id: "",
+    index: 1,
+    title: "",
+    image: UNIT_IMAGES[0],
+    progress: 0,
+    done: false,
+    locked: false,
+    current: true,
   };
   const currentPct = currentUnit.progress;
   const completedLessonCount = doneLessonIds.size;
   const currentUnitLessons = currentUnit.id ? (lessonsByUnit.get(currentUnit.id) ?? []) : [];
-  const nextLessonId = (currentUnitLessons.find((l) => !doneLessonIds.has(l.id)) ?? currentUnitLessons[0])?.id;
+  const nextLessonId = (
+    currentUnitLessons.find((l) => !doneLessonIds.has(l.id)) ?? currentUnitLessons[0]
+  )?.id;
 
   const stats = [
-    { icon: Flame, label: locale === "pt" ? "Sequência" : "Streak", value: String(userStats?.streak_days ?? 0), unit: locale === "pt" ? "dias" : "days", color: "text-orange-500 bg-orange-100" },
-    { icon: Star, label: "XP", value: (userStats?.xp ?? 0).toLocaleString(), unit: "", color: "text-amber-500 bg-amber-100" },
-    { icon: Trophy, label: locale === "pt" ? "Concluídas" : "Completed", value: String(completedLessonCount), unit: locale === "pt" ? "lições" : "lessons", color: "text-[var(--magenta)] bg-[var(--magenta)]/10" },
-    { icon: Clock, label: locale === "pt" ? "Estudou" : "Studied", value: weekLabel, unit: locale === "pt" ? "semana" : "this week", color: "text-[var(--violet)] bg-[var(--violet)]/10" },
+    {
+      icon: Flame,
+      label: locale === "pt" ? "Sequência" : "Streak",
+      value: String(userStats?.streak_days ?? 0),
+      unit: locale === "pt" ? "dias" : "days",
+      color: "text-orange-500 bg-orange-100",
+    },
+    {
+      icon: Star,
+      label: "XP",
+      value: (userStats?.xp ?? 0).toLocaleString(),
+      unit: "",
+      color: "text-amber-500 bg-amber-100",
+    },
+    {
+      icon: Trophy,
+      label: locale === "pt" ? "Concluídas" : "Completed",
+      value: String(completedLessonCount),
+      unit: locale === "pt" ? "lições" : "lessons",
+      color: "text-[var(--magenta)] bg-[var(--magenta)]/10",
+    },
+    {
+      icon: Clock,
+      label: locale === "pt" ? "Estudou" : "Studied",
+      value: weekLabel,
+      unit: locale === "pt" ? "semana" : "this week",
+      color: "text-[var(--violet)] bg-[var(--violet)]/10",
+    },
   ];
 
   const displayName = user?.fullName?.split(" ")[0] ?? (locale === "pt" ? "Aluno" : "Learner");
@@ -230,7 +278,10 @@ function DashboardPage() {
                   </div>
                 </>
               )}
-              <button onClick={() => setAvatarMenuOpen(!avatarMenuOpen)} className="relative inline-flex">
+              <button
+                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
+                className="relative inline-flex"
+              >
                 <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
                   <User className="w-4 h-4 text-gray-600" />
                 </div>
@@ -253,256 +304,329 @@ function DashboardPage() {
             {/* ====== DESKTOP LAYOUT ====== */}
             <div className="hidden lg:block">
               <div className="lg:mr-[380px]">
-              {/* --- Main Column (Desktop) --- */}
-              <div className="space-y-8">
-                {/* Profile Header */}
-                <ProfileHeader />
+                {/* --- Main Column (Desktop) --- */}
+                <div className="space-y-8">
+                  {/* Profile Header */}
+                  <ProfileHeader />
 
-                {/* Welcome */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {locale === "pt" ? "Bons estudos," : "Good studies,"}
-                    </p>
-                    <h1 className="font-display text-2xl md:text-3xl font-bold text-[var(--ink)]">
-                      {locale === "pt" ? `Bom dia, ${displayName}!` : `Good morning, ${displayName}!`} 👋
-                    </h1>
+                  {/* Welcome */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        {locale === "pt" ? "Bons estudos," : "Good studies,"}
+                      </p>
+                      <h1 className="font-display text-2xl md:text-3xl font-bold text-[var(--ink)]">
+                        {locale === "pt"
+                          ? `Bom dia, ${displayName}!`
+                          : `Good morning, ${displayName}!`}{" "}
+                        👋
+                      </h1>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="bg-[var(--violet)]/10 text-[var(--violet)] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        {user?.cefrLevel ?? "A1"}
+                      </span>
+                      <button className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-semibold hover:bg-gray-50 transition-colors">
+                        <MessageCircle className="w-4 h-4" />
+                        {locale === "pt" ? "Falar com Professor" : "Talk to Teacher"}
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="bg-[var(--violet)]/10 text-[var(--violet)] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      {user?.cefrLevel ?? "A1"}
-                    </span>
-                    <button className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-semibold hover:bg-gray-50 transition-colors">
-                      <MessageCircle className="w-4 h-4" />
-                      {locale === "pt" ? "Falar com Professor" : "Talk to Teacher"}
-                    </button>
+
+                  {/* Stats — glass cards */}
+                  <div className="grid grid-cols-4 gap-4">
+                    {stats.map((s) => (
+                      <div
+                        key={s.label}
+                        className="bg-white/70 backdrop-blur-md border border-gray-100/80 p-4 rounded-2xl shadow-sm flex flex-col"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <div
+                            className={`w-8 h-8 rounded-lg ${s.color} flex items-center justify-center`}
+                          >
+                            <s.icon className="w-4 h-4" />
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                            {s.label}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="font-display text-3xl font-bold text-[var(--ink)]">
+                            {s.value}
+                          </span>
+                          {s.unit && <span className="text-xs text-gray-400">{s.unit}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Hero: Continue Card */}
+                  <div className="bg-gradient-to-br from-[var(--violet)] via-[var(--magenta)] to-[var(--violet)] rounded-3xl p-6 md:p-8 text-white flex items-center gap-8 shadow-xl relative overflow-hidden">
+                    {/* Blobs */}
+                    <div className="absolute -top-10 -right-10 w-64 h-64 bg-white/10 blur-3xl rounded-full" />
+                    <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-black/10 blur-2xl rounded-full" />
+                    <div className="relative z-10 flex-1">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70 mb-2">
+                        {locale === "pt" ? "Continuar aprendendo" : "Continue learning"}
+                      </p>
+                      <h3 className="font-display text-3xl md:text-4xl font-bold mb-4">
+                        {locale === "pt"
+                          ? `Unidade ${currentUnit.index}: ${currentUnit.title}`
+                          : `Unit ${currentUnit.index}: ${currentUnit.title}`}
+                      </h3>
+                      <p className="text-white/80 text-sm mb-6 max-w-md">
+                        {locale === "pt"
+                          ? `Você parou na lição atual. Complete agora para ganhar XP bônus!`
+                          : `You stopped at the current lesson. Complete now to earn bonus XP!`}
+                      </p>
+                      <div className="w-full bg-white/20 h-3 rounded-full mb-8 overflow-hidden">
+                        <div
+                          className="bg-white h-full rounded-full"
+                          style={{ width: `${Math.max(5, currentPct)}%` }}
+                        />
+                      </div>
+                      <Link
+                        to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
+                        params={nextLessonId ? { lessonId: nextLessonId } : undefined}
+                        className="inline-flex items-center gap-2 bg-white text-[var(--violet)] px-8 py-4 rounded-2xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                      >
+                        <Play className="w-4 h-4 fill-current" />
+                        {locale === "pt" ? "Retomar Lição" : "Resume Lesson"}
+                      </Link>
+                    </div>
+                    <div className="w-48 h-48 shrink-0 relative z-10 hidden md:block">
+                      <img
+                        src={currentUnit.image}
+                        alt={currentUnit.title}
+                        className="w-full h-full object-cover rounded-2xl rotate-3 shadow-2xl"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Quick Practice */}
+                  <div>
+                    <h3 className="font-display text-lg font-bold text-[var(--ink)] mb-4">
+                      {locale === "pt" ? "Prática Rápida" : "Quick Practice"}
+                    </h3>
+                    <div className="grid grid-cols-4 gap-4">
+                      {[
+                        {
+                          icon: Mic,
+                          label: locale === "pt" ? "Falar" : "Speak",
+                          accent: "hover:bg-[var(--violet)]/5",
+                        },
+                        {
+                          icon: BookOpen,
+                          label: locale === "pt" ? "Ler" : "Read",
+                          accent: "hover:bg-[var(--magenta)]/5",
+                        },
+                        {
+                          icon: Gamepad2,
+                          label: locale === "pt" ? "Jogar" : "Play",
+                          accent: "hover:bg-amber-50",
+                        },
+                        {
+                          icon: Target,
+                          label: locale === "pt" ? "Quiz" : "Quiz",
+                          accent: "hover:bg-emerald-50",
+                        },
+                      ].map((a) => (
+                        <button
+                          key={a.label}
+                          className={`flex flex-col items-center gap-3 bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-2xl p-5 shadow-sm transition-all ${a.accent} hover:shadow-md active:scale-95`}
+                        >
+                          <a.icon className="w-7 h-7 text-[var(--violet)]" />
+                          <span className="text-xs font-bold text-gray-700">{a.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Learning Track — Bento Grid */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-display text-lg font-bold text-[var(--ink)]">
+                        {locale === "pt" ? "Trilha de Aprendizado" : "Learning Track"}
+                      </h3>
+                      <Link
+                        to="/curriculum"
+                        className="text-sm font-bold text-[var(--violet)] hover:opacity-80"
+                      >
+                        {locale === "pt" ? "Ver tudo" : "View all"}
+                      </Link>
+                    </div>
+                    <div
+                      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6"
+                      style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}
+                    >
+                      {units.map((u) => (
+                        <div key={u.id} className="relative group cursor-pointer">
+                          <div
+                            className={`aspect-square rounded-2xl overflow-hidden mb-2 border ${
+                              u.current
+                                ? "ring-2 ring-[var(--violet)] ring-offset-2 border-[var(--violet)]/20"
+                                : u.locked
+                                  ? "border-gray-100 grayscale opacity-50 bg-gray-50"
+                                  : u.done
+                                    ? "border-gray-100 grayscale opacity-60"
+                                    : "border-gray-100"
+                            }`}
+                          >
+                            {u.locked ? (
+                              <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                <Lock className="w-8 h-8 text-gray-300" />
+                              </div>
+                            ) : (
+                              <>
+                                <img
+                                  src={u.image}
+                                  alt={u.title}
+                                  loading="lazy"
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                />
+                                {u.done && (
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                    <Check className="w-8 h-8 text-white" />
+                                  </div>
+                                )}
+                              </>
+                            )}
+                            {u.current && !u.locked && (
+                              <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                                <div className="h-1 bg-white/30 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-white rounded-full"
+                                    style={{ width: `${u.progress}%` }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <p
+                            className={`text-[10px] font-bold uppercase tracking-wider ${
+                              u.current
+                                ? "text-[var(--violet)]"
+                                : u.locked
+                                  ? "text-gray-300"
+                                  : "text-gray-500"
+                            }`}
+                          >
+                            {u.current
+                              ? `${locale === "pt" ? "ATUAL" : "CURRENT"} • ${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`
+                              : `${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`}
+                          </p>
+                          <p
+                            className={`text-xs font-bold truncate ${u.locked ? "text-gray-300" : "text-[var(--ink)]"}`}
+                          >
+                            {u.title}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Extras — Activity Calendar + Leaderboard */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <ActivityCalendar />
+                    <LeaderboardCard />
+                  </div>
+
+                  {/* More extras */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <GoalsCard />
+                    <CertificatesCard />
+                    <AchievementsCard />
                   </div>
                 </div>
-
-                {/* Stats — glass cards */}
-                <div className="grid grid-cols-4 gap-4">
-                  {stats.map((s) => (
-                    <div key={s.label} className="bg-white/70 backdrop-blur-md border border-gray-100/80 p-4 rounded-2xl shadow-sm flex flex-col">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-8 h-8 rounded-lg ${s.color} flex items-center justify-center`}>
-                          <s.icon className="w-4 h-4" />
-                        </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">{s.label}</span>
-                      </div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="font-display text-3xl font-bold text-[var(--ink)]">{s.value}</span>
-                        {s.unit && <span className="text-xs text-gray-400">{s.unit}</span>}
-                      </div>
-                    </div>
+              </div>
+            </div>
+            {/* --- Right Sidebar (Desktop, fixed) --- */}
+            <aside className="hidden lg:flex flex-col fixed right-0 top-16 bottom-0 w-[380px] border-l border-gray-100 bg-[#f7f9fb] p-6 gap-6 overflow-y-auto">
+              {/* Weekly Goal */}
+              <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm flex flex-col items-center">
+                <h4 className="text-sm font-bold text-[var(--ink)] self-start mb-4">
+                  {locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
+                </h4>
+                <div className="relative w-32 h-32 mb-4">
+                  <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      fill="transparent"
+                      strokeWidth="10"
+                      className="stroke-gray-100"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      fill="transparent"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                      className="stroke-[var(--violet)] transition-all duration-1000"
+                      strokeDasharray={`${(weekPct * 2 * Math.PI * 42).toFixed(1)} 999`}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="font-display text-2xl font-bold text-[var(--ink)]">
+                      {week?.days ?? 0}/{goalDays}
+                    </span>
+                    <span className="text-[10px] uppercase font-bold text-gray-400">
+                      {locale === "pt" ? "Dias" : "Days"}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-center text-gray-500">
+                  {locale === "pt"
+                    ? `Falta${goalDays - (week?.days ?? 0) === 1 ? " 1 dia" : `m ${goalDays - (week?.days ?? 0)} dias`} para bater sua meta!`
+                    : `${goalDays - (week?.days ?? 0)} day${goalDays - (week?.days ?? 0) === 1 ? "" : "s"} to go!`}
+                </p>
+                <div className="flex gap-1 mt-3">
+                  {Array.from({ length: goalDays }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-6 h-1.5 rounded-full ${i < (week?.days ?? 0) ? "bg-[var(--violet)]" : "bg-gray-200"}`}
+                    />
                   ))}
                 </div>
+              </div>
 
-                {/* Hero: Continue Card */}
-                <div className="bg-gradient-to-br from-[var(--violet)] via-[var(--magenta)] to-[var(--violet)] rounded-3xl p-6 md:p-8 text-white flex items-center gap-8 shadow-xl relative overflow-hidden">
-                  {/* Blobs */}
-                  <div className="absolute -top-10 -right-10 w-64 h-64 bg-white/10 blur-3xl rounded-full" />
-                  <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-black/10 blur-2xl rounded-full" />
-                  <div className="relative z-10 flex-1">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70 mb-2">
-                      {locale === "pt" ? "Continuar aprendendo" : "Continue learning"}
-                    </p>
-                    <h3 className="font-display text-3xl md:text-4xl font-bold mb-4">
-                      {locale === "pt" ? `Unidade ${currentUnit.index}: ${currentUnit.title}` : `Unit ${currentUnit.index}: ${currentUnit.title}`}
-                    </h3>
-                    <p className="text-white/80 text-sm mb-6 max-w-md">
-                      {locale === "pt"
-                        ? `Você parou na lição atual. Complete agora para ganhar XP bônus!`
-                        : `You stopped at the current lesson. Complete now to earn bonus XP!`}
-                    </p>
-                    <div className="w-full bg-white/20 h-3 rounded-full mb-8 overflow-hidden">
-                      <div className="bg-white h-full rounded-full" style={{ width: `${Math.max(5, currentPct)}%` }} />
-                    </div>
-                    <Link
-                      to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
-                      params={nextLessonId ? { lessonId: nextLessonId } : undefined}
-                      className="inline-flex items-center gap-2 bg-white text-[var(--violet)] px-8 py-4 rounded-2xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform"
-                    >
-                      <Play className="w-4 h-4 fill-current" />
-                      {locale === "pt" ? "Retomar Lição" : "Resume Lesson"}
-                    </Link>
-                  </div>
-                  <div className="w-48 h-48 shrink-0 relative z-10 hidden md:block">
-                    <img
-                      src={currentUnit.image}
-                      alt={currentUnit.title}
-                      className="w-full h-full object-cover rounded-2xl rotate-3 shadow-2xl"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
+              {/* Study Reminder */}
+              <ReminderCard reminder={reminder} locale={locale} />
 
-                {/* Quick Practice */}
-                <div>
-                  <h3 className="font-display text-lg font-bold text-[var(--ink)] mb-4">
-                    {locale === "pt" ? "Prática Rápida" : "Quick Practice"}
-                  </h3>
-                  <div className="grid grid-cols-4 gap-4">
-                    {[
-                      { icon: Mic, label: locale === "pt" ? "Falar" : "Speak", accent: "hover:bg-[var(--violet)]/5" },
-                      { icon: BookOpen, label: locale === "pt" ? "Ler" : "Read", accent: "hover:bg-[var(--magenta)]/5" },
-                      { icon: Gamepad2, label: locale === "pt" ? "Jogar" : "Play", accent: "hover:bg-amber-50" },
-                      { icon: Target, label: locale === "pt" ? "Quiz" : "Quiz", accent: "hover:bg-emerald-50" },
-                    ].map((a) => (
-                      <button
-                        key={a.label}
-                        className={`flex flex-col items-center gap-3 bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-2xl p-5 shadow-sm transition-all ${a.accent} hover:shadow-md active:scale-95`}
-                      >
-                        <a.icon className="w-7 h-7 text-[var(--violet)]" />
-                        <span className="text-xs font-bold text-gray-700">{a.label}</span>
-                      </button>
-                    ))}
+              {/* Recent Achievements */}
+              <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
+                <h4 className="text-sm font-bold text-[var(--ink)] mb-4">
+                  {locale === "pt" ? "Conquistas Recentes" : "Recent Achievements"}
+                </h4>
+                <div className="flex gap-3">
+                  <div className="w-11 h-11 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 border border-orange-200">
+                    <Flame className="w-5 h-5" />
                   </div>
-                </div>
-
-                {/* Learning Track — Bento Grid */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-display text-lg font-bold text-[var(--ink)]">
-                      {locale === "pt" ? "Trilha de Aprendizado" : "Learning Track"}
-                    </h3>
-                    <Link to="/curriculum" className="text-sm font-bold text-[var(--violet)] hover:opacity-80">
-                      {locale === "pt" ? "Ver tudo" : "View all"}
-                    </Link>
+                  <div className="w-11 h-11 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 border border-violet-200">
+                    <Award className="w-5 h-5" />
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}>
-                    {units.map((u) => (
-                      <div key={u.id} className="relative group cursor-pointer">
-                        <div className={`aspect-square rounded-2xl overflow-hidden mb-2 border ${
-                          u.current
-                            ? "ring-2 ring-[var(--violet)] ring-offset-2 border-[var(--violet)]/20"
-                            : u.locked
-                            ? "border-gray-100 grayscale opacity-50 bg-gray-50"
-                            : u.done
-                            ? "border-gray-100 grayscale opacity-60"
-                            : "border-gray-100"
-                        }`}>
-                          {u.locked ? (
-                            <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                              <Lock className="w-8 h-8 text-gray-300" />
-                            </div>
-                          ) : (
-                            <>
-                              <img
-                                src={u.image}
-                                alt={u.title}
-                                loading="lazy"
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                              />
-                              {u.done && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                  <Check className="w-8 h-8 text-white" />
-                                </div>
-                              )}
-                            </>
-                          )}
-                          {u.current && !u.locked && (
-                            <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
-                              <div className="h-1 bg-white/30 rounded-full overflow-hidden">
-                                <div className="h-full bg-white rounded-full" style={{ width: `${u.progress}%` }} />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <p className={`text-[10px] font-bold uppercase tracking-wider ${
-                          u.current ? "text-[var(--violet)]" : u.locked ? "text-gray-300" : "text-gray-500"
-                        }`}>
-                          {u.current
-                            ? `${locale === "pt" ? "ATUAL" : "CURRENT"} • ${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`
-                            : `${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`
-                          }
-                        </p>
-                        <p className={`text-xs font-bold truncate ${u.locked ? "text-gray-300" : "text-[var(--ink)]"}`}>
-                          {u.title}
-                        </p>
-                      </div>
-                    ))}
+                  <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 border border-blue-200">
+                    <Trophy className="w-5 h-5" />
                   </div>
-                </div>
-
-                {/* Extras — Activity Calendar + Leaderboard */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <ActivityCalendar />
-                  <LeaderboardCard />
-                </div>
-
-                {/* More extras */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <GoalsCard />
-                  <CertificatesCard />
-                  <AchievementsCard />
+                  <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 border border-gray-200 opacity-50">
+                    <span className="text-lg font-bold">...</span>
+                  </div>
                 </div>
               </div>
 
-              </div>
-              </div>
-              {/* --- Right Sidebar (Desktop, fixed) --- */}
-              <aside className="hidden lg:flex flex-col fixed right-0 top-16 bottom-0 w-[380px] border-l border-gray-100 bg-[#f7f9fb] p-6 gap-6 overflow-y-auto">
-                {/* Weekly Goal */}
-                <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm flex flex-col items-center">
-                  <h4 className="text-sm font-bold text-[var(--ink)] self-start mb-4">
-                    {locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
-                  </h4>
-                  <div className="relative w-32 h-32 mb-4">
-                    <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                      <circle cx="50" cy="50" r="42" fill="transparent" strokeWidth="10" className="stroke-gray-100" />
-                      <circle
-                        cx="50" cy="50" r="42" fill="transparent" strokeWidth="10" strokeLinecap="round"
-                        className="stroke-[var(--violet)] transition-all duration-1000"
-                        strokeDasharray={`${(weekPct * 2 * Math.PI * 42).toFixed(1)} 999`}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="font-display text-2xl font-bold text-[var(--ink)]">{week?.days ?? 0}/{goalDays}</span>
-                      <span className="text-[10px] uppercase font-bold text-gray-400">
-                        {locale === "pt" ? "Dias" : "Days"}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-center text-gray-500">
-                    {locale === "pt"
-                      ? `Falta${goalDays - (week?.days ?? 0) === 1 ? " 1 dia" : `m ${goalDays - (week?.days ?? 0)} dias`} para bater sua meta!`
-                      : `${goalDays - (week?.days ?? 0)} day${goalDays - (week?.days ?? 0) === 1 ? "" : "s"} to go!`}
-                  </p>
-                  <div className="flex gap-1 mt-3">
-                    {Array.from({ length: goalDays }).map((_, i) => (
-                      <div key={i} className={`w-6 h-1.5 rounded-full ${i < (week?.days ?? 0) ? "bg-[var(--violet)]" : "bg-gray-200"}`} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Study Reminder */}
-                <ReminderCard reminder={reminder} locale={locale} />
-
-                {/* Recent Achievements */}
-                <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
-                  <h4 className="text-sm font-bold text-[var(--ink)] mb-4">
-                    {locale === "pt" ? "Conquistas Recentes" : "Recent Achievements"}
-                  </h4>
-                  <div className="flex gap-3">
-                    <div className="w-11 h-11 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 border border-orange-200">
-                      <Flame className="w-5 h-5" />
-                    </div>
-                    <div className="w-11 h-11 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 border border-violet-200">
-                      <Award className="w-5 h-5" />
-                    </div>
-                    <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 border border-blue-200">
-                      <Trophy className="w-5 h-5" />
-                    </div>
-                    <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 border border-gray-200 opacity-50">
-                      <span className="text-lg font-bold">...</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Subscription */}
-                <SubscriptionCard sub={sub} daysLeft={daysLeft} planLabel={planLabel} pct={pct} locale={locale} />
-              </aside>
+              {/* Subscription */}
+              <SubscriptionCard
+                sub={sub}
+                daysLeft={daysLeft}
+                planLabel={planLabel}
+                pct={pct}
+                locale={locale}
+              />
+            </aside>
 
             {/* ====== MOBILE LAYOUT ====== */}
             <div className="lg:hidden space-y-6">
@@ -516,7 +640,8 @@ function DashboardPage() {
                     {locale === "pt" ? "Bons estudos," : "Good studies,"}
                   </p>
                   <h1 className="font-display text-xl font-bold text-[var(--ink)]">
-                    {locale === "pt" ? `Bom dia, ${displayName}!` : `Good morning, ${displayName}!`} 👋
+                    {locale === "pt" ? `Bom dia, ${displayName}!` : `Good morning, ${displayName}!`}{" "}
+                    👋
                   </h1>
                 </div>
                 <span className="bg-[var(--violet)]/10 text-[var(--violet)] px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1">
@@ -528,13 +653,22 @@ function DashboardPage() {
               {/* Stats — 2 col horizontal */}
               <div className="grid grid-cols-2 gap-3">
                 {stats.map((s) => (
-                  <div key={s.label} className="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center shrink-0`}>
+                  <div
+                    key={s.label}
+                    className="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm flex items-center gap-3"
+                  >
+                    <div
+                      className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center shrink-0`}
+                    >
                       <s.icon className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{s.label}</p>
-                      <p className="font-display text-base font-bold text-[var(--ink)]">{s.value}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        {s.label}
+                      </p>
+                      <p className="font-display text-base font-bold text-[var(--ink)]">
+                        {s.value}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -555,7 +689,9 @@ function DashboardPage() {
                       <span className="text-white/70 text-[10px] font-bold uppercase tracking-widest">
                         {locale === "pt" ? "UNIDADE" : "UNIT"} {currentUnit.index}
                       </span>
-                      <h2 className="text-white font-display text-lg font-bold">{currentUnit.title}</h2>
+                      <h2 className="text-white font-display text-lg font-bold">
+                        {currentUnit.title}
+                      </h2>
                     </div>
                     <Link
                       to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
@@ -566,7 +702,10 @@ function DashboardPage() {
                     </Link>
                   </div>
                   <div className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-white h-full rounded-full" style={{ width: `${Math.max(5, currentPct)}%` }} />
+                    <div
+                      className="bg-white h-full rounded-full"
+                      style={{ width: `${Math.max(5, currentPct)}%` }}
+                    />
                   </div>
                   <p className="text-white/70 text-[10px] text-right">{currentPct}% concluído</p>
                 </div>
@@ -601,14 +740,25 @@ function DashboardPage() {
               <div className="bg-white border border-gray-100 rounded-[2rem] p-5 flex items-center gap-5 shadow-sm">
                 <div className="relative w-20 h-20 shrink-0">
                   <svg viewBox="0 0 36 36" className="w-full h-full">
-                    <path className="text-gray-100 stroke-current" fill="none" strokeWidth="3"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path className="text-[var(--violet)] stroke-current" fill="none" strokeWidth="3" strokeLinecap="round"
+                    <path
+                      className="text-gray-100 stroke-current"
+                      fill="none"
+                      strokeWidth="3"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className="text-[var(--violet)] stroke-current"
+                      fill="none"
+                      strokeWidth="3"
+                      strokeLinecap="round"
                       strokeDasharray={`${weekPct * 100}, 100`}
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="font-display text-sm font-bold text-[var(--violet)]">{week?.days ?? 0}/{goalDays}</span>
+                    <span className="font-display text-sm font-bold text-[var(--violet)]">
+                      {week?.days ?? 0}/{goalDays}
+                    </span>
                     <span className="text-[9px] font-bold text-gray-400 uppercase">
                       {locale === "pt" ? "Dias" : "Days"}
                     </span>
@@ -625,7 +775,10 @@ function DashboardPage() {
                   </p>
                   <div className="flex gap-1 pt-1">
                     {Array.from({ length: goalDays }).map((_, i) => (
-                      <div key={i} className={`w-6 h-1.5 rounded-full ${i < (week?.days ?? 0) ? "bg-[var(--violet)]" : "bg-gray-200"}`} />
+                      <div
+                        key={i}
+                        className={`w-6 h-1.5 rounded-full ${i < (week?.days ?? 0) ? "bg-[var(--violet)]" : "bg-gray-200"}`}
+                      />
                     ))}
                   </div>
                 </div>
@@ -640,28 +793,44 @@ function DashboardPage() {
                   <div className="absolute left-5 top-5 bottom-5 w-0.5 bg-gray-200 -z-10" />
                   {units.map((u) => (
                     <div key={u.id} className="flex gap-4 items-start">
-                      <div className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center relative z-10 ${
-                        u.done
-                          ? "bg-emerald-500 text-white shadow-lg shadow-emerald-100"
-                          : u.current
-                          ? "bg-[var(--violet)]/10 text-[var(--violet)] ring-2 ring-[var(--violet)]/30 shadow-lg"
-                          : "bg-gray-100 text-gray-400"
-                      }`}>
-                        {u.done ? <Check className="w-5 h-5" /> : u.locked ? <Lock className="w-4 h-4" /> : <Play className="w-5 h-5 fill-current" />}
+                      <div
+                        className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center relative z-10 ${
+                          u.done
+                            ? "bg-emerald-500 text-white shadow-lg shadow-emerald-100"
+                            : u.current
+                              ? "bg-[var(--violet)]/10 text-[var(--violet)] ring-2 ring-[var(--violet)]/30 shadow-lg"
+                              : "bg-gray-100 text-gray-400"
+                        }`}
+                      >
+                        {u.done ? (
+                          <Check className="w-5 h-5" />
+                        ) : u.locked ? (
+                          <Lock className="w-4 h-4" />
+                        ) : (
+                          <Play className="w-5 h-5 fill-current" />
+                        )}
                       </div>
-                      <div className={`flex-1 pb-4 border-b border-gray-100 ${u.locked ? "opacity-40" : ""}`}>
-                        <p className={`text-[10px] font-bold uppercase tracking-wider ${
-                          u.current ? "text-[var(--violet)]" : "text-gray-400"
-                        }`}>
+                      <div
+                        className={`flex-1 pb-4 border-b border-gray-100 ${u.locked ? "opacity-40" : ""}`}
+                      >
+                        <p
+                          className={`text-[10px] font-bold uppercase tracking-wider ${
+                            u.current ? "text-[var(--violet)]" : "text-gray-400"
+                          }`}
+                        >
                           {u.current
                             ? `${locale === "pt" ? "ATUAL" : "CURRENT"} • ${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`
-                            : `${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`
-                          }
+                            : `${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`}
                         </p>
-                        <h4 className="font-display text-sm font-bold text-[var(--ink)]">{u.title}</h4>
+                        <h4 className="font-display text-sm font-bold text-[var(--ink)]">
+                          {u.title}
+                        </h4>
                         {u.current && !u.done && (
                           <div className="mt-2 h-1 bg-gray-100 rounded-full overflow-hidden w-24">
-                            <div className="h-full bg-[var(--violet)] rounded-full" style={{ width: `${u.progress}%` }} />
+                            <div
+                              className="h-full bg-[var(--violet)] rounded-full"
+                              style={{ width: `${u.progress}%` }}
+                            />
                           </div>
                         )}
                       </div>
@@ -671,7 +840,8 @@ function DashboardPage() {
                           params={nextLessonId ? { lessonId: nextLessonId } : undefined}
                           className="shrink-0 text-[var(--violet)] text-xs font-bold flex items-center gap-1 mt-1"
                         >
-                          {locale === "pt" ? "Continuar" : "Continue"} <ChevronRight className="w-3 h-3" />
+                          {locale === "pt" ? "Continuar" : "Continue"}{" "}
+                          <ChevronRight className="w-3 h-3" />
                         </Link>
                       )}
                     </div>
@@ -689,7 +859,13 @@ function DashboardPage() {
               </div>
 
               {/* Mobile subscription */}
-              <SubscriptionCard sub={sub} daysLeft={daysLeft} planLabel={planLabel} pct={pct} locale={locale} />
+              <SubscriptionCard
+                sub={sub}
+                daysLeft={daysLeft}
+                planLabel={planLabel}
+                pct={pct}
+                locale={locale}
+              />
             </div>
           </div>
         </main>
@@ -701,7 +877,11 @@ function DashboardPage() {
 
 /* ====== Subscription Card Component ====== */
 function SubscriptionCard({
-  sub, daysLeft, planLabel, pct, locale,
+  sub,
+  daysLeft,
+  planLabel,
+  pct,
+  locale,
 }: {
   sub: any;
   daysLeft: number | null;
@@ -717,8 +897,12 @@ function SubscriptionCard({
             <Zap className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs font-bold">{locale === "pt" ? "Plano" : "Plan"} • {planLabel}</p>
-            <p className="text-[10px] text-white/70">{daysLeft} {locale === "pt" ? "dias restantes" : "days left"}</p>
+            <p className="text-xs font-bold">
+              {locale === "pt" ? "Plano" : "Plan"} • {planLabel}
+            </p>
+            <p className="text-[10px] text-white/70">
+              {daysLeft} {locale === "pt" ? "dias restantes" : "days left"}
+            </p>
           </div>
         </div>
         {sub.activation_code && (
@@ -770,8 +954,12 @@ function SubscriptionCard({
           <Zap className="w-5 h-5 text-gray-400" />
         </div>
         <div>
-          <p className="text-xs font-bold text-[var(--ink)]">{locale === "pt" ? "Sem assinatura" : "No subscription"}</p>
-          <p className="text-[10px] text-gray-400">{locale === "pt" ? "Escolha um plano" : "Choose a plan"}</p>
+          <p className="text-xs font-bold text-[var(--ink)]">
+            {locale === "pt" ? "Sem assinatura" : "No subscription"}
+          </p>
+          <p className="text-[10px] text-gray-400">
+            {locale === "pt" ? "Escolha um plano" : "Choose a plan"}
+          </p>
         </div>
       </div>
       <Link
@@ -785,28 +973,47 @@ function SubscriptionCard({
 }
 
 /* ====== Reminder Card ====== */
-function ReminderCard({ reminder, locale }: { reminder: ReturnType<typeof useStudyReminder>; locale: "pt" | "en" }) {
+function ReminderCard({
+  reminder,
+  locale,
+}: {
+  reminder: ReturnType<typeof useStudyReminder>;
+  locale: "pt" | "en";
+}) {
   const r = reminder.data ?? { interval_minutes: 30, enabled: false };
   const options = [15, 30, 45, 60, 90];
   return (
     <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-display text-sm font-bold text-[var(--ink)] flex items-center gap-2">
-          {r.enabled ? <Bell className="w-4 h-4 text-[var(--violet)]" /> : <BellOff className="w-4 h-4 text-gray-400" />}
+          {r.enabled ? (
+            <Bell className="w-4 h-4 text-[var(--violet)]" />
+          ) : (
+            <BellOff className="w-4 h-4 text-gray-400" />
+          )}
           {locale === "pt" ? "Lembrete de estudo" : "Study reminder"}
         </h3>
         <button
           onClick={() => {
             reminder.save.mutate({ interval_minutes: r.interval_minutes, enabled: !r.enabled });
-            if (!r.enabled && typeof Notification !== "undefined" && Notification.permission === "default") {
+            if (
+              !r.enabled &&
+              typeof Notification !== "undefined" &&
+              Notification.permission === "default"
+            ) {
               Notification.requestPermission().then((p) => {
-                if (p !== "granted") toast.error(locale === "pt" ? "Permita notificações no navegador" : "Please allow notifications");
+                if (p !== "granted")
+                  toast.error(
+                    locale === "pt"
+                      ? "Permita notificações no navegador"
+                      : "Please allow notifications",
+                  );
               });
             }
           }}
           className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${r.enabled ? "bg-[var(--violet)] text-white" : "border border-gray-200 text-gray-500"}`}
         >
-          {r.enabled ? (locale === "pt" ? "Ativo" : "On") : (locale === "pt" ? "Desativado" : "Off")}
+          {r.enabled ? (locale === "pt" ? "Ativo" : "On") : locale === "pt" ? "Desativado" : "Off"}
         </button>
       </div>
       <div className="flex gap-2">
@@ -825,7 +1032,9 @@ function ReminderCard({ reminder, locale }: { reminder: ReturnType<typeof useStu
         ))}
       </div>
       <p className="mt-3 text-xs text-gray-400">
-        {locale === "pt" ? `Notificação a cada ${r.interval_minutes} min` : `Notify every ${r.interval_minutes} min`}
+        {locale === "pt"
+          ? `Notificação a cada ${r.interval_minutes} min`
+          : `Notify every ${r.interval_minutes} min`}
       </p>
     </div>
   );

@@ -4,7 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api/client";
-import { speak, startRecording, transcribe, scorePronunciation, feedbackFor, type Recorder } from "@/lib/voice";
+import {
+  speak,
+  startRecording,
+  transcribe,
+  scorePronunciation,
+  feedbackFor,
+  type Recorder,
+} from "@/lib/voice";
 import type { AgeTrack } from "@/lib/age-tracks";
 import { toast } from "sonner";
 
@@ -19,7 +26,13 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-type XpResult = { xp: number; gained: number; level: number; level_up: boolean; coins_gained: number };
+type XpResult = {
+  xp: number;
+  gained: number;
+  level: number;
+  level_up: boolean;
+  coins_gained: number;
+};
 
 async function awardGameXp(gameId: string): Promise<XpResult> {
   return apiFetch<XpResult>("/v1/xp/events", {
@@ -51,7 +64,17 @@ function ResultBanner({ result, locale }: { result: XpResult; locale: "pt" | "en
 }
 
 /** Vocabulary/grammar/mixed: N-round multiple choice using the track's word bank. */
-function MultipleChoiceGame({ track, game, locale, onFinish }: { track: AgeTrack; game: GameEntry; locale: "pt" | "en"; onFinish: (result: XpResult) => void }) {
+function MultipleChoiceGame({
+  track,
+  game,
+  locale,
+  onFinish,
+}: {
+  track: AgeTrack;
+  game: GameEntry;
+  locale: "pt" | "en";
+  onFinish: (result: XpResult) => void;
+}) {
   const rounds = useMemo(() => {
     const pool = track.vocabulary;
     const count = Math.min(5, pool.length);
@@ -59,7 +82,10 @@ function MultipleChoiceGame({ track, game, locale, onFinish }: { track: AgeTrack
       .slice(0, count)
       .map((correct) => ({
         correct,
-        options: shuffle([correct, ...shuffle(pool.filter((v) => v.word !== correct.word)).slice(0, 3)]),
+        options: shuffle([
+          correct,
+          ...shuffle(pool.filter((v) => v.word !== correct.word)).slice(0, 3),
+        ]),
       }));
   }, [track]);
 
@@ -93,10 +119,14 @@ function MultipleChoiceGame({ track, game, locale, onFinish }: { track: AgeTrack
   return (
     <div className="space-y-5">
       <div className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-        {locale === "pt" ? `Pergunta ${step + 1} de ${rounds.length}` : `Question ${step + 1} of ${rounds.length}`}
+        {locale === "pt"
+          ? `Pergunta ${step + 1} de ${rounds.length}`
+          : `Question ${step + 1} of ${rounds.length}`}
       </div>
       <div className="text-center py-6">
-        <span className="text-5xl" aria-hidden>{round.correct.emoji}</span>
+        <span className="text-5xl" aria-hidden>
+          {round.correct.emoji}
+        </span>
         <h3 className="mt-3 font-display text-2xl font-bold">{round.correct.word}</h3>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -125,7 +155,13 @@ function MultipleChoiceGame({ track, game, locale, onFinish }: { track: AgeTrack
       {picked && (
         <Button onClick={next} disabled={finishing} className="w-full">
           {finishing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          {step + 1 < rounds.length ? (locale === "pt" ? "Próxima" : "Next") : locale === "pt" ? "Concluir" : "Finish"}
+          {step + 1 < rounds.length
+            ? locale === "pt"
+              ? "Próxima"
+              : "Next"
+            : locale === "pt"
+              ? "Concluir"
+              : "Finish"}
         </Button>
       )}
       <div className="text-center text-xs text-gray-400">
@@ -136,7 +172,17 @@ function MultipleChoiceGame({ track, game, locale, onFinish }: { track: AgeTrack
 }
 
 /** Listening: plays a word via TTS, learner picks which word they heard. */
-function ListeningGame({ track, game, locale, onFinish }: { track: AgeTrack; game: GameEntry; locale: "pt" | "en"; onFinish: (result: XpResult) => void }) {
+function ListeningGame({
+  track,
+  game,
+  locale,
+  onFinish,
+}: {
+  track: AgeTrack;
+  game: GameEntry;
+  locale: "pt" | "en";
+  onFinish: (result: XpResult) => void;
+}) {
   const rounds = useMemo(() => {
     const pool = track.vocabulary;
     const count = Math.min(5, pool.length);
@@ -144,7 +190,10 @@ function ListeningGame({ track, game, locale, onFinish }: { track: AgeTrack; gam
       .slice(0, count)
       .map((correct) => ({
         correct,
-        options: shuffle([correct, ...shuffle(pool.filter((v) => v.word !== correct.word)).slice(0, 3)]),
+        options: shuffle([
+          correct,
+          ...shuffle(pool.filter((v) => v.word !== correct.word)).slice(0, 3),
+        ]),
       }));
   }, [track]);
 
@@ -190,7 +239,9 @@ function ListeningGame({ track, game, locale, onFinish }: { track: AgeTrack; gam
   return (
     <div className="space-y-5">
       <div className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-        {locale === "pt" ? `Pergunta ${step + 1} de ${rounds.length}` : `Question ${step + 1} of ${rounds.length}`}
+        {locale === "pt"
+          ? `Pergunta ${step + 1} de ${rounds.length}`
+          : `Question ${step + 1} of ${rounds.length}`}
       </div>
       <div className="flex justify-center py-6">
         <button
@@ -227,7 +278,13 @@ function ListeningGame({ track, game, locale, onFinish }: { track: AgeTrack; gam
       {picked && (
         <Button onClick={next} disabled={finishing} className="w-full">
           {finishing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          {step + 1 < rounds.length ? (locale === "pt" ? "Próxima" : "Next") : locale === "pt" ? "Concluir" : "Finish"}
+          {step + 1 < rounds.length
+            ? locale === "pt"
+              ? "Próxima"
+              : "Next"
+            : locale === "pt"
+              ? "Concluir"
+              : "Finish"}
         </Button>
       )}
       <div className="text-center text-xs text-gray-400">
@@ -238,7 +295,17 @@ function ListeningGame({ track, game, locale, onFinish }: { track: AgeTrack; gam
 }
 
 /** Speaking: repeat a target sentence, scored the same way as the lesson speak tab. */
-function SpeakingGame({ track, game, locale, onFinish }: { track: AgeTrack; game: GameEntry; locale: "pt" | "en"; onFinish: (result: XpResult) => void }) {
+function SpeakingGame({
+  track,
+  game,
+  locale,
+  onFinish,
+}: {
+  track: AgeTrack;
+  game: GameEntry;
+  locale: "pt" | "en";
+  onFinish: (result: XpResult) => void;
+}) {
   const target = useMemo(() => shuffle(track.examples)[0], [track]);
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -256,7 +323,9 @@ function SpeakingGame({ track, game, locale, onFinish }: { track: AgeTrack; game
         setTranscript("");
         setScore(null);
       } catch {
-        toast.error(locale === "pt" ? "Permita o acesso ao microfone" : "Please allow microphone access");
+        toast.error(
+          locale === "pt" ? "Permita o acesso ao microfone" : "Please allow microphone access",
+        );
       }
       return;
     }
@@ -303,10 +372,16 @@ function SpeakingGame({ track, game, locale, onFinish }: { track: AgeTrack; game
       </button>
       <div className="text-xs text-gray-400">
         {processing
-          ? locale === "pt" ? "Analisando..." : "Analyzing..."
+          ? locale === "pt"
+            ? "Analisando..."
+            : "Analyzing..."
           : recording
-            ? locale === "pt" ? "Gravando... toque para parar" : "Recording... tap to stop"
-            : locale === "pt" ? "Toque para gravar" : "Tap to record"}
+            ? locale === "pt"
+              ? "Gravando... toque para parar"
+              : "Recording... tap to stop"
+            : locale === "pt"
+              ? "Toque para gravar"
+              : "Tap to record"}
       </div>
       {score !== null && (
         <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-left">
@@ -328,7 +403,17 @@ function SpeakingGame({ track, game, locale, onFinish }: { track: AgeTrack; game
 }
 
 /** Writing: a short free-response prompt built from the track's themes. */
-function WritingGame({ track, game, locale, onFinish }: { track: AgeTrack; game: GameEntry; locale: "pt" | "en"; onFinish: (result: XpResult) => void }) {
+function WritingGame({
+  track,
+  game,
+  locale,
+  onFinish,
+}: {
+  track: AgeTrack;
+  game: GameEntry;
+  locale: "pt" | "en";
+  onFinish: (result: XpResult) => void;
+}) {
   const theme = useMemo(() => shuffle(track.themes)[0], [track]);
   const [text, setText] = useState("");
   const [finishing, setFinishing] = useState(false);
@@ -361,7 +446,9 @@ function WritingGame({ track, game, locale, onFinish }: { track: AgeTrack; game:
         rows={5}
         placeholder={locale === "pt" ? "Escreva aqui..." : "Write here..."}
       />
-      <p className="text-xs text-gray-400">{text.trim().length}/20 {locale === "pt" ? "caracteres mínimos" : "characters minimum"}</p>
+      <p className="text-xs text-gray-400">
+        {text.trim().length}/20 {locale === "pt" ? "caracteres mínimos" : "characters minimum"}
+      </p>
       <Button onClick={finish} disabled={!ready || finishing} className="w-full">
         {finishing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
         {locale === "pt" ? "Concluir" : "Finish"}

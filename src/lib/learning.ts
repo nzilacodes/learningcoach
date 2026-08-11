@@ -35,7 +35,8 @@ export type LessonRow = {
 export function useCurriculum() {
   return useQuery({
     queryKey: ["curriculum"],
-    queryFn: () => apiFetch<{ courses: CourseRow[]; units: UnitRow[]; lessons: LessonRow[] }>("/v1/courses"),
+    queryFn: () =>
+      apiFetch<{ courses: CourseRow[]; units: UnitRow[]; lessons: LessonRow[] }>("/v1/courses"),
     staleTime: 60_000,
   });
 }
@@ -47,10 +48,16 @@ export function useUserStats() {
     queryKey: ["user_stats", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const data = await apiFetch<{ streakDays: number; lastActivityDate: string | null; xp: number }>(
-        "/v1/me/study-stats",
-      );
-      return { xp: data.xp, streak_days: data.streakDays, last_activity_date: data.lastActivityDate };
+      const data = await apiFetch<{
+        streakDays: number;
+        lastActivityDate: string | null;
+        xp: number;
+      }>("/v1/me/study-stats");
+      return {
+        xp: data.xp,
+        streak_days: data.streakDays,
+        last_activity_date: data.lastActivityDate,
+      };
     },
   });
 }
@@ -62,9 +69,9 @@ export function useLessonProgress() {
     queryKey: ["lesson_progress", user?.id],
     enabled: !!user,
     queryFn: () =>
-      apiFetch<{ unit_id: string; lesson_id: string; progress_pct: number; completed_at: string | null }[]>(
-        "/v1/me/progress",
-      ),
+      apiFetch<
+        { unit_id: string; lesson_id: string; progress_pct: number; completed_at: string | null }[]
+      >("/v1/me/progress"),
   });
 }
 
@@ -75,7 +82,9 @@ export function useWeeklyStudy() {
     queryKey: ["study_week", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const data = await apiFetch<{ day: string; seconds: number }[]>("/v1/me/study-sessions?days=7");
+      const data = await apiFetch<{ day: string; seconds: number }[]>(
+        "/v1/me/study-sessions?days=7",
+      );
       const seconds = data.reduce((a, b) => a + b.seconds, 0);
       const days = new Set(data.map((d) => d.day)).size;
       return { seconds, days };
@@ -103,7 +112,10 @@ export function useStudyHeartbeat() {
       const s = acc.current;
       if (s < 5) return;
       acc.current = 0;
-      await apiFetch("/v1/me/study-time", { method: "POST", body: JSON.stringify({ seconds: s }) }).catch(() => {});
+      await apiFetch("/v1/me/study-time", {
+        method: "POST",
+        body: JSON.stringify({ seconds: s }),
+      }).catch(() => {});
     };
     const iv = setInterval(flush, 30_000);
     window.addEventListener("beforeunload", flush);
@@ -123,7 +135,9 @@ export function useStudyReminder() {
     queryKey: ["study_reminder", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const data = await apiFetch<{ intervalMinutes: number; enabled: boolean }>("/v1/me/study-reminder");
+      const data = await apiFetch<{ intervalMinutes: number; enabled: boolean }>(
+        "/v1/me/study-reminder",
+      );
       return { interval_minutes: data.intervalMinutes, enabled: data.enabled };
     },
   });
@@ -144,16 +158,13 @@ export function useStudyReminder() {
     if (!r?.enabled) return;
     if (typeof Notification === "undefined") return;
     if (Notification.permission === "default") Notification.requestPermission();
-    const iv = setInterval(
-      () => {
-        if (Notification.permission === "granted") {
-          new Notification("Learning English with Coach", {
-            body: "Time to practice your English! 🌟",
-          });
-        }
-      },
-      r.interval_minutes * 60_000,
-    );
+    const iv = setInterval(() => {
+      if (Notification.permission === "granted") {
+        new Notification("Learning English with Coach", {
+          body: "Time to practice your English! 🌟",
+        });
+      }
+    }, r.interval_minutes * 60_000);
     return () => clearInterval(iv);
   }, [query.data?.enabled, query.data?.interval_minutes]);
 

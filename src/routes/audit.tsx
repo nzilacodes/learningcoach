@@ -7,7 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ShieldCheck, ShieldAlert, Lock, AlertTriangle, Activity, Ban, Search } from "lucide-react";
 import { toast } from "sonner";
 
@@ -82,16 +89,22 @@ function AuditPage() {
       apiFetch<AuditLog[]>("/v1/admin/audit-logs").catch(() => []),
       apiFetch<LoginAttempt[]>("/v1/admin/login-attempts").catch(() => []),
       apiFetch<Lockout[]>("/v1/admin/lockouts").catch(() => []),
-    ]).then(([s, l, a, k]) => {
-      if (s) setSummary(s);
-      setLogs(l);
-      setAttempts(a);
-      setLockouts(k);
-    }).catch((e) => toast.error(e?.message ?? "Falha ao carregar auditoria"));
+    ])
+      .then(([s, l, a, k]) => {
+        if (s) setSummary(s);
+        setLogs(l);
+        setAttempts(a);
+        setLockouts(k);
+      })
+      .catch((e) => toast.error(e?.message ?? "Falha ao carregar auditoria"));
   }, []);
 
-  const filteredLogs = logs.filter((l) =>
-    !query || `${l.action} ${l.actor_email ?? ""} ${l.entity ?? ""}`.toLowerCase().includes(query.toLowerCase())
+  const filteredLogs = logs.filter(
+    (l) =>
+      !query ||
+      `${l.action} ${l.actor_email ?? ""} ${l.entity ?? ""}`
+        .toLowerCase()
+        .includes(query.toLowerCase()),
   );
 
   function sevBadge(s: string) {
@@ -115,10 +128,26 @@ function AuditPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Kpi icon={<Activity className="h-5 w-5" />} label="Eventos (24h)" value={summary?.total_events_24h ?? 0} />
-          <Kpi icon={<ShieldAlert className="h-5 w-5 text-red-500" />} label="Falhas login (24h)" value={summary?.failed_logins_24h ?? 0} />
-          <Kpi icon={<Lock className="h-5 w-5 text-amber-500" />} label="Bloqueios ativos" value={summary?.active_lockouts ?? 0} />
-          <Kpi icon={<AlertTriangle className="h-5 w-5 text-orange-500" />} label="Críticos (7 dias)" value={summary?.critical_events_7d ?? 0} />
+          <Kpi
+            icon={<Activity className="h-5 w-5" />}
+            label="Eventos (24h)"
+            value={summary?.total_events_24h ?? 0}
+          />
+          <Kpi
+            icon={<ShieldAlert className="h-5 w-5 text-red-500" />}
+            label="Falhas login (24h)"
+            value={summary?.failed_logins_24h ?? 0}
+          />
+          <Kpi
+            icon={<Lock className="h-5 w-5 text-amber-500" />}
+            label="Bloqueios ativos"
+            value={summary?.active_lockouts ?? 0}
+          />
+          <Kpi
+            icon={<AlertTriangle className="h-5 w-5 text-orange-500" />}
+            label="Críticos (7 dias)"
+            value={summary?.critical_events_7d ?? 0}
+          />
         </div>
 
         {summary?.suspicious_ips && summary.suspicious_ips.length > 0 && (
@@ -154,7 +183,12 @@ function AuditPage() {
                   <CardTitle className="text-base">Eventos ({filteredLogs.length})</CardTitle>
                   <div className="relative w-64">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Filtrar..." value={query} onChange={(e) => setQuery(e.target.value)} className="pl-8" />
+                    <Input
+                      placeholder="Filtrar..."
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      className="pl-8"
+                    />
                   </div>
                 </div>
               </CardHeader>
@@ -173,18 +207,25 @@ function AuditPage() {
                   <TableBody>
                     {filteredLogs.map((l) => (
                       <TableRow key={l.id}>
-                        <TableCell className="whitespace-nowrap text-xs">{fmtDate(l.created_at)}</TableCell>
+                        <TableCell className="whitespace-nowrap text-xs">
+                          {fmtDate(l.created_at)}
+                        </TableCell>
                         <TableCell className="text-xs">{l.actor_email ?? "—"}</TableCell>
                         <TableCell className="font-medium">{l.action}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">
-                          {l.entity ?? "—"}{l.entity_id ? `#${l.entity_id.slice(0, 8)}` : ""}
+                          {l.entity ?? "—"}
+                          {l.entity_id ? `#${l.entity_id.slice(0, 8)}` : ""}
                         </TableCell>
                         <TableCell>{sevBadge(l.severity)}</TableCell>
                         <TableCell className="font-mono text-xs">{l.ip_address ?? "—"}</TableCell>
                       </TableRow>
                     ))}
                     {filteredLogs.length === 0 && (
-                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Sem eventos.</TableCell></TableRow>
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-muted-foreground">
+                          Sem eventos.
+                        </TableCell>
+                      </TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -194,7 +235,9 @@ function AuditPage() {
 
           <TabsContent value="attempts" className="mt-4">
             <Card>
-              <CardHeader className="pb-3"><CardTitle className="text-base">Últimas 100 tentativas</CardTitle></CardHeader>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Últimas 100 tentativas</CardTitle>
+              </CardHeader>
               <CardContent className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -209,19 +252,29 @@ function AuditPage() {
                   <TableBody>
                     {attempts.map((a) => (
                       <TableRow key={a.id}>
-                        <TableCell className="whitespace-nowrap text-xs">{fmtDate(a.created_at)}</TableCell>
+                        <TableCell className="whitespace-nowrap text-xs">
+                          {fmtDate(a.created_at)}
+                        </TableCell>
                         <TableCell className="text-xs">{a.email}</TableCell>
                         <TableCell>
-                          {a.success
-                            ? <Badge className="bg-emerald-500 text-white">OK</Badge>
-                            : <Badge variant="destructive">Falha</Badge>}
+                          {a.success ? (
+                            <Badge className="bg-emerald-500 text-white">OK</Badge>
+                          ) : (
+                            <Badge variant="destructive">Falha</Badge>
+                          )}
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{a.reason ?? "—"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {a.reason ?? "—"}
+                        </TableCell>
                         <TableCell className="font-mono text-xs">{a.ip_address ?? "—"}</TableCell>
                       </TableRow>
                     ))}
                     {attempts.length === 0 && (
-                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Sem tentativas.</TableCell></TableRow>
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-muted-foreground">
+                          Sem tentativas.
+                        </TableCell>
+                      </TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -231,7 +284,9 @@ function AuditPage() {
 
           <TabsContent value="lockouts" className="mt-4">
             <Card>
-              <CardHeader className="pb-3"><CardTitle className="text-base">Contas bloqueadas</CardTitle></CardHeader>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Contas bloqueadas</CardTitle>
+              </CardHeader>
               <CardContent className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -248,18 +303,29 @@ function AuditPage() {
                       const active = new Date(l.locked_until) > new Date();
                       return (
                         <TableRow key={l.id}>
-                          <TableCell className="whitespace-nowrap text-xs">{fmtDate(l.created_at)}</TableCell>
+                          <TableCell className="whitespace-nowrap text-xs">
+                            {fmtDate(l.created_at)}
+                          </TableCell>
                           <TableCell className="text-xs">{l.email}</TableCell>
                           <TableCell>{l.reason}</TableCell>
                           <TableCell className="text-xs">
-                            {fmtDate(l.locked_until)} {active && <Badge variant="destructive" className="ml-2">ativo</Badge>}
+                            {fmtDate(l.locked_until)}{" "}
+                            {active && (
+                              <Badge variant="destructive" className="ml-2">
+                                ativo
+                              </Badge>
+                            )}
                           </TableCell>
                           <TableCell className="font-mono text-xs">{l.ip_address ?? "—"}</TableCell>
                         </TableRow>
                       );
                     })}
                     {lockouts.length === 0 && (
-                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Sem bloqueios.</TableCell></TableRow>
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-muted-foreground">
+                          Sem bloqueios.
+                        </TableCell>
+                      </TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -276,18 +342,44 @@ function AuditPage() {
           </CardHeader>
           <CardContent>
             <ul className="grid gap-2 text-sm sm:grid-cols-2">
-              <li>✅ <b>JWT</b> — sessões assinadas pelo backend (jose), em cookies HttpOnly</li>
-              <li>✅ <b>HTTPS</b> — TLS forçado em todas as ligações</li>
-              <li>✅ <b>Autorização no backend</b> — cada rota admin exige papel verificado no servidor</li>
-              <li>✅ <b>Proteção SQL Injection</b> — queries parametrizadas via postgres.js</li>
-              <li>✅ <b>Proteção XSS</b> — escaping automático React + CSP</li>
-              <li>✅ <b>Proteção CSRF</b> — token de dupla submissão (cookie + header) + SameSite cookies</li>
-              <li>✅ <b>Password hashing</b> — bcrypt (custo 12) + regras mínimas de complexidade</li>
-              <li>✅ <b>Backups automáticos</b> — snapshots diários da BD</li>
-              <li>✅ <b>Auto-lock</b> — 5 tentativas em 15 min → 15 min bloqueado</li>
-              <li>✅ <b>Auditoria</b> — todos os eventos críticos registados</li>
-              <li>✅ <b>Deteção suspeita</b> — IPs com falhas recorrentes</li>
-              <li>✅ <b>Sessões seguras</b> — refresh tokens rotativos</li>
+              <li>
+                ✅ <b>JWT</b> — sessões assinadas pelo backend (jose), em cookies HttpOnly
+              </li>
+              <li>
+                ✅ <b>HTTPS</b> — TLS forçado em todas as ligações
+              </li>
+              <li>
+                ✅ <b>Autorização no backend</b> — cada rota admin exige papel verificado no
+                servidor
+              </li>
+              <li>
+                ✅ <b>Proteção SQL Injection</b> — queries parametrizadas via postgres.js
+              </li>
+              <li>
+                ✅ <b>Proteção XSS</b> — escaping automático React + CSP
+              </li>
+              <li>
+                ✅ <b>Proteção CSRF</b> — token de dupla submissão (cookie + header) + SameSite
+                cookies
+              </li>
+              <li>
+                ✅ <b>Password hashing</b> — bcrypt (custo 12) + regras mínimas de complexidade
+              </li>
+              <li>
+                ✅ <b>Backups automáticos</b> — snapshots diários da BD
+              </li>
+              <li>
+                ✅ <b>Auto-lock</b> — 5 tentativas em 15 min → 15 min bloqueado
+              </li>
+              <li>
+                ✅ <b>Auditoria</b> — todos os eventos críticos registados
+              </li>
+              <li>
+                ✅ <b>Deteção suspeita</b> — IPs com falhas recorrentes
+              </li>
+              <li>
+                ✅ <b>Sessões seguras</b> — refresh tokens rotativos
+              </li>
             </ul>
           </CardContent>
         </Card>

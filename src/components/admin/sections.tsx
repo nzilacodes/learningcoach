@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { CourseRow, UnitRow, LessonRow } from "@/lib/learning";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,11 +56,25 @@ export function SubscriptionsSection() {
         <h2 className="font-display text-xl font-bold flex items-center gap-2">
           <CreditCard className="h-5 w-5 text-magenta" /> Assinaturas
         </h2>
-        <Button size="sm" variant="outline" onClick={() => csvDownload("subscriptions", data.map((s: any) => ({
-          learner: s.profiles?.full_name, email: s.profiles?.email,
-          tier: s.subscription_plans?.tier, cycle: s.subscription_plans?.billing_cycle,
-          status: s.status, starts_at: s.starts_at, expires_at: s.expires_at, code: s.activation_code,
-        })))}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() =>
+            csvDownload(
+              "subscriptions",
+              data.map((s: any) => ({
+                learner: s.profiles?.full_name,
+                email: s.profiles?.email,
+                tier: s.subscription_plans?.tier,
+                cycle: s.subscription_plans?.billing_cycle,
+                status: s.status,
+                starts_at: s.starts_at,
+                expires_at: s.expires_at,
+                code: s.activation_code,
+              })),
+            )
+          }
+        >
           <Download className="h-3.5 w-3.5 mr-1" /> CSV
         </Button>
       </div>
@@ -72,7 +94,9 @@ export function SubscriptionsSection() {
           <TableBody>
             {data.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">Sem assinaturas</TableCell>
+                <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
+                  Sem assinaturas
+                </TableCell>
               </TableRow>
             )}
             {data.map((s: any) => (
@@ -81,14 +105,31 @@ export function SubscriptionsSection() {
                   <div className="font-medium">{s.profiles?.full_name ?? "—"}</div>
                   <div className="text-xs text-muted-foreground">{s.profiles?.email}</div>
                 </TableCell>
-                <TableCell className="capitalize">{s.subscription_plans?.tier} · {s.subscription_plans?.billing_cycle}</TableCell>
-                <TableCell><Badge variant={s.status === "active" ? "default" : "outline"} className="capitalize">{s.status}</Badge></TableCell>
-                <TableCell className="text-xs">{s.starts_at ? new Date(s.starts_at).toLocaleDateString() : "—"}</TableCell>
-                <TableCell className="text-xs">{s.expires_at ? new Date(s.expires_at).toLocaleDateString() : "—"}</TableCell>
-                <TableCell><code className="text-xs">{s.activation_code ?? "—"}</code></TableCell>
+                <TableCell className="capitalize">
+                  {s.subscription_plans?.tier} · {s.subscription_plans?.billing_cycle}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={s.status === "active" ? "default" : "outline"}
+                    className="capitalize"
+                  >
+                    {s.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-xs">
+                  {s.starts_at ? new Date(s.starts_at).toLocaleDateString() : "—"}
+                </TableCell>
+                <TableCell className="text-xs">
+                  {s.expires_at ? new Date(s.expires_at).toLocaleDateString() : "—"}
+                </TableCell>
+                <TableCell>
+                  <code className="text-xs">{s.activation_code ?? "—"}</code>
+                </TableCell>
                 <TableCell>
                   {s.status === "active" && (
-                    <Button size="sm" variant="outline" onClick={() => cancelSub(s.id)}>Cancelar</Button>
+                    <Button size="sm" variant="outline" onClick={() => cancelSub(s.id)}>
+                      Cancelar
+                    </Button>
                   )}
                 </TableCell>
               </TableRow>
@@ -108,7 +149,9 @@ export function AnalyticsSection() {
       const since = new Date(Date.now() - 30 * 86400000);
       const [profs, pays] = await Promise.all([
         apiFetch<{ created_at: string }[]>("/v1/admin/reports/users"),
-        apiFetch<{ paid_at: string | null; amount_kz: number; status: string }[]>("/v1/admin/reports/payments"),
+        apiFetch<{ paid_at: string | null; amount_kz: number; status: string }[]>(
+          "/v1/admin/reports/payments",
+        ),
       ]);
       const days: Record<string, { signups: number; revenue: number }> = {};
       for (let i = 29; i >= 0; i--) {
@@ -141,19 +184,28 @@ export function AnalyticsSection() {
           <BarChart3 className="h-5 w-5 text-violet" /> Analytics — últimos 30 dias
         </h2>
         <div className="flex gap-4 text-xs">
-          <span><b>{totalSignups}</b> novos alunos</span>
-          <span><b>{totalRevenue.toLocaleString("pt-AO")}</b> Kz</span>
+          <span>
+            <b>{totalSignups}</b> novos alunos
+          </span>
+          <span>
+            <b>{totalRevenue.toLocaleString("pt-AO")}</b> Kz
+          </span>
         </div>
       </div>
       <div className="p-6">
         <div className="mb-4">
-          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Novos registos por dia</div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+            Novos registos por dia
+          </div>
           <div className="flex items-end gap-1 h-24">
             {(data ?? []).map((d) => (
               <div key={d.day} className="flex-1 group relative">
                 <div
                   className="bg-magenta/70 rounded-t hover:bg-magenta transition-colors"
-                  style={{ height: `${(d.signups / maxSignups) * 100}%`, minHeight: d.signups ? "2px" : "0" }}
+                  style={{
+                    height: `${(d.signups / maxSignups) * 100}%`,
+                    minHeight: d.signups ? "2px" : "0",
+                  }}
                   title={`${d.day}: ${d.signups} registos`}
                 />
               </div>
@@ -161,13 +213,18 @@ export function AnalyticsSection() {
           </div>
         </div>
         <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Receita diária (Kz)</div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+            Receita diária (Kz)
+          </div>
           <div className="flex items-end gap-1 h-24">
             {(data ?? []).map((d) => (
               <div key={d.day} className="flex-1">
                 <div
                   className="bg-gradient-to-t from-sunset to-amber rounded-t"
-                  style={{ height: `${(d.revenue / maxRevenue) * 100}%`, minHeight: d.revenue ? "2px" : "0" }}
+                  style={{
+                    height: `${(d.revenue / maxRevenue) * 100}%`,
+                    minHeight: d.revenue ? "2px" : "0",
+                  }}
                   title={`${d.day}: ${d.revenue.toLocaleString()} Kz`}
                 />
               </div>
@@ -188,7 +245,10 @@ export function ReportsSection() {
     csvDownload("payments", await apiFetch<Record<string, any>[]>("/v1/admin/reports/payments"));
   };
   const exportDiagnostics = async () => {
-    csvDownload("diagnostics", await apiFetch<Record<string, any>[]>("/v1/admin/reports/diagnostics"));
+    csvDownload(
+      "diagnostics",
+      await apiFetch<Record<string, any>[]>("/v1/admin/reports/diagnostics"),
+    );
   };
 
   return (
@@ -196,11 +256,19 @@ export function ReportsSection() {
       <h2 className="font-display text-xl font-bold flex items-center gap-2 mb-4">
         <Download className="h-5 w-5 text-emerald-500" /> Relatórios
       </h2>
-      <p className="text-sm text-muted-foreground mb-4">Exportar dados em CSV para análise externa.</p>
+      <p className="text-sm text-muted-foreground mb-4">
+        Exportar dados em CSV para análise externa.
+      </p>
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" onClick={exportUsers}><Download className="h-3.5 w-3.5 mr-1" /> Utilizadores</Button>
-        <Button variant="outline" size="sm" onClick={exportPayments}><Download className="h-3.5 w-3.5 mr-1" /> Pagamentos</Button>
-        <Button variant="outline" size="sm" onClick={exportDiagnostics}><Download className="h-3.5 w-3.5 mr-1" /> Diagnósticos</Button>
+        <Button variant="outline" size="sm" onClick={exportUsers}>
+          <Download className="h-3.5 w-3.5 mr-1" /> Utilizadores
+        </Button>
+        <Button variant="outline" size="sm" onClick={exportPayments}>
+          <Download className="h-3.5 w-3.5 mr-1" /> Pagamentos
+        </Button>
+        <Button variant="outline" size="sm" onClick={exportDiagnostics}>
+          <Download className="h-3.5 w-3.5 mr-1" /> Diagnósticos
+        </Button>
       </div>
     </div>
   );
@@ -234,17 +302,18 @@ export function CurriculumSection() {
 
   const { data: curriculum } = useQuery({
     queryKey: ["curriculum"],
-    queryFn: () => apiFetch<{ courses: any[]; units: any[]; lessons: any[] }>("/v1/courses"),
+    queryFn: () =>
+      apiFetch<{ courses: CourseRow[]; units: UnitRow[]; lessons: LessonRow[] }>("/v1/courses"),
     staleTime: 60_000,
   });
 
-  const course = curriculum?.courses.find((c: any) => c.level === level);
+  const course = curriculum?.courses.find((c) => c.level === level);
   const units = (curriculum?.units ?? [])
-    .filter((u: any) => u.course_id === course?.id)
-    .sort((a: any, b: any) => a.order_index - b.order_index);
+    .filter((u) => u.course_id === course?.id)
+    .sort((a, b) => a.order_index - b.order_index);
   const lessons = (curriculum?.lessons ?? [])
-    .filter((l: any) => l.unit_id === unitId)
-    .sort((a: any, b: any) => a.order_index - b.order_index);
+    .filter((l) => l.unit_id === unitId)
+    .sort((a, b) => a.order_index - b.order_index);
 
   return (
     <div className="mt-10 rounded-2xl border border-border bg-card shadow-card">
@@ -262,7 +331,9 @@ export function CurriculumSection() {
                 setLessonId(null);
               }}
               className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${
-                level === l ? "bg-sunset text-white" : "bg-muted text-muted-foreground hover:bg-muted/70"
+                level === l
+                  ? "bg-sunset text-white"
+                  : "bg-muted text-muted-foreground hover:bg-muted/70"
               }`}
             >
               {l}
@@ -272,7 +343,7 @@ export function CurriculumSection() {
       </div>
       <div className="grid divide-border md:grid-cols-[220px_240px_1fr] md:divide-x">
         <div className="max-h-[560px] overflow-y-auto p-3">
-          {units.map((u: any) => (
+          {units.map((u) => (
             <button
               key={u.id}
               onClick={() => {
@@ -289,7 +360,7 @@ export function CurriculumSection() {
           {units.length === 0 && <p className="p-2 text-xs text-muted-foreground">Sem unidades.</p>}
         </div>
         <div className="max-h-[560px] overflow-y-auto p-3">
-          {lessons.map((l: any) => (
+          {lessons.map((l) => (
             <button
               key={l.id}
               onClick={() => setLessonId(l.id)}
@@ -298,10 +369,14 @@ export function CurriculumSection() {
               }`}
             >
               <div className="truncate">{l.title}</div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{l.lesson_type}</div>
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                {l.lesson_type}
+              </div>
             </button>
           ))}
-          {unitId && lessons.length === 0 && <p className="p-2 text-xs text-muted-foreground">Sem lições.</p>}
+          {unitId && lessons.length === 0 && (
+            <p className="p-2 text-xs text-muted-foreground">Sem lições.</p>
+          )}
           {!unitId && <p className="p-2 text-xs text-muted-foreground">Selecione uma unidade.</p>}
         </div>
         <div className="p-4">
@@ -364,14 +439,21 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (isLoading || !lesson) return <div className="p-4 text-sm text-muted-foreground">Carregando…</div>;
+  if (isLoading || !lesson)
+    return <div className="p-4 text-sm text-muted-foreground">Carregando…</div>;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Badge variant="outline" className="uppercase">{lesson.lesson_type}</Badge>
+        <Badge variant="outline" className="uppercase">
+          {lesson.lesson_type}
+        </Badge>
         <label className="flex items-center gap-2 text-xs text-muted-foreground">
-          <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={published}
+            onChange={(e) => setPublished(e.target.checked)}
+          />
           Publicada
         </label>
       </div>
@@ -385,11 +467,18 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
       </div>
       <div>
         <label className="text-xs font-semibold text-muted-foreground">XP</label>
-        <Input type="number" min={0} value={xpReward} onChange={(e) => setXpReward(Number(e.target.value))} className="w-28" />
+        <Input
+          type="number"
+          min={0}
+          value={xpReward}
+          onChange={(e) => setXpReward(Number(e.target.value))}
+          className="w-28"
+        />
       </div>
       <div>
         <label className="text-xs font-semibold text-muted-foreground">
-          Conteúdo (JSON — campos variam por tipo de lição: objective, wordlist, rule, text, prompt, etc.)
+          Conteúdo (JSON — campos variam por tipo de lição: objective, wordlist, rule, text, prompt,
+          etc.)
         </label>
         <Textarea
           value={contentText}
@@ -403,7 +492,11 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
       </Button>
 
       <div className="mt-6 border-t border-border pt-4">
-        <ExerciseEditor lessonId={lessonId} exercises={lesson.exercises} onChanged={invalidateLesson} />
+        <ExerciseEditor
+          lessonId={lessonId}
+          exercises={lesson.exercises}
+          onChanged={invalidateLesson}
+        />
       </div>
     </div>
   );
@@ -445,14 +538,26 @@ function ExerciseEditor({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-bold">Exercícios (quiz) — {exercises.length}</h4>
-        <Button size="sm" variant="outline" onClick={() => addExercise.mutate()} disabled={addExercise.isPending}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => addExercise.mutate()}
+          disabled={addExercise.isPending}
+        >
           <Plus className="mr-1 h-3.5 w-3.5" /> Adicionar
         </Button>
       </div>
       {exercises.map((ex) => (
-        <ExerciseRow key={ex.id} exercise={ex} onDeleted={() => deleteExercise.mutate(ex.id)} onSaved={onChanged} />
+        <ExerciseRow
+          key={ex.id}
+          exercise={ex}
+          onDeleted={() => deleteExercise.mutate(ex.id)}
+          onSaved={onChanged}
+        />
       ))}
-      {exercises.length === 0 && <p className="text-xs text-muted-foreground">Sem exercícios nesta lição.</p>}
+      {exercises.length === 0 && (
+        <p className="text-xs text-muted-foreground">Sem exercícios nesta lição.</p>
+      )}
     </div>
   );
 }
@@ -471,17 +576,38 @@ function ExerciseRow({
   const [correctIndex, setCorrectIndex] = useState(exercise.correct_answer?.index ?? 0);
   const [xpReward, setXpReward] = useState(exercise.xp_reward);
 
+  // Resync local fields if the server row changes under us (e.g. another
+  // admin edits it, or a refetch returns updated data) — useState's initial
+  // value only applies on mount, so without this the form would keep
+  // showing stale values after the first render.
+  useEffect(() => {
+    setPrompt(exercise.prompt);
+    setOptions((exercise.data?.options ?? []).join(" | "));
+    setCorrectIndex(exercise.correct_answer?.index ?? 0);
+    setXpReward(exercise.xp_reward);
+  }, [exercise]);
+
   const save = useMutation({
-    mutationFn: () =>
-      apiFetch(`/v1/admin/exercises/${exercise.id}`, {
+    mutationFn: () => {
+      const parsedOptions = options
+        .split("|")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (correctIndex < 0 || correctIndex >= parsedOptions.length) {
+        throw new Error(
+          `Índice da resposta correta (${correctIndex}) precisa estar entre 0 e ${parsedOptions.length - 1}.`,
+        );
+      }
+      return apiFetch(`/v1/admin/exercises/${exercise.id}`, {
         method: "PATCH",
         body: JSON.stringify({
           prompt,
-          data: { options: options.split("|").map((s) => s.trim()).filter(Boolean) },
+          data: { options: parsedOptions },
           correctAnswer: { index: correctIndex },
           xpReward,
         }),
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success("Exercício salvo");
       onSaved();
@@ -491,7 +617,12 @@ function ExerciseRow({
 
   return (
     <div className="space-y-2 rounded-xl border border-border p-3">
-      <Input value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Pergunta" className="text-sm" />
+      <Input
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        placeholder="Pergunta"
+        className="text-sm"
+      />
       <Input
         value={options}
         onChange={(e) => setOptions(e.target.value)}

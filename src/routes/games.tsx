@@ -93,7 +93,9 @@ function GamesPage() {
     queryKey: ["games-profile-stats", user?.id],
     enabled: !!user,
     queryFn: () =>
-      apiFetch<{ xp: number; coins: number; level: number; streak: number }>("/v1/me/gamification-stats"),
+      apiFetch<{ xp: number; coins: number; level: number; streak: number }>(
+        "/v1/me/gamification-stats",
+      ),
     staleTime: 30_000,
   });
 
@@ -106,6 +108,8 @@ function GamesPage() {
   const onGameCompleted = () => {
     qc.invalidateQueries({ queryKey: ["games-profile-stats", user?.id] });
     qc.invalidateQueries({ queryKey: ["games_plays"] });
+    // XP earned here is also shown on Dashboard/Videos via useUserStats().
+    qc.invalidateQueries({ queryKey: ["user_stats", user?.id] });
   };
 
   const stats = [
@@ -301,7 +305,12 @@ function GamesPage() {
             {filteredGames.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
                 {filteredGames.map((game) => (
-                  <GameCard key={game.id} game={game} locale={locale} onPlay={() => setActiveGame(game)} />
+                  <GameCard
+                    key={game.id}
+                    game={game}
+                    locale={locale}
+                    onPlay={() => setActiveGame(game)}
+                  />
                 ))}
               </div>
             ) : (
@@ -345,7 +354,8 @@ function GamesPage() {
               <button
                 onClick={() => {
                   const unlocked = track.games.filter((g) => !g.locked);
-                  if (unlocked.length) setActiveGame(unlocked[Math.floor(Math.random() * unlocked.length)]);
+                  if (unlocked.length)
+                    setActiveGame(unlocked[Math.floor(Math.random() * unlocked.length)]);
                 }}
                 className="px-6 py-3 rounded-xl bg-white text-primary text-sm md:text-base font-semibold hover:opacity-90 transition-opacity shrink-0"
               >
@@ -370,7 +380,15 @@ function GamesPage() {
   );
 }
 
-function GameCard({ game, locale, onPlay }: { game: GameEntry; locale: string; onPlay: () => void }) {
+function GameCard({
+  game,
+  locale,
+  onPlay,
+}: {
+  game: GameEntry;
+  locale: string;
+  onPlay: () => void;
+}) {
   const title = locale === "pt" ? game.pt : game.en;
   const catLabel = CAT_LABELS[game.cat];
 

@@ -9,16 +9,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/lib/i18n";
 import { apiFetch } from "@/lib/api/client";
 import { useCurriculum, useLessonProgress } from "@/lib/learning";
-import { speak, startRecording, transcribe, scorePronunciation, feedbackFor, type Recorder } from "@/lib/voice";
+import {
+  speak,
+  startRecording,
+  transcribe,
+  scorePronunciation,
+  feedbackFor,
+  type Recorder,
+} from "@/lib/voice";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/lesson/$lessonId")({
   component: LessonPage,
   head: () => ({
-    meta: [
-      { title: "Aula — Learning English with Coach" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Aula — Learning English with Coach" }, { name: "robots", content: "noindex" }],
   }),
 });
 
@@ -43,7 +47,12 @@ type LessonDetail = {
   lesson_type: string;
   exercises: ExerciseRow[];
 };
-type CompleteResult = { alreadyCompleted: boolean; gained?: number; level_up?: boolean; level?: number };
+type CompleteResult = {
+  alreadyCompleted: boolean;
+  gained?: number;
+  level_up?: boolean;
+  level?: number;
+};
 
 function useLesson(lessonId: string) {
   return useQuery({
@@ -53,12 +62,15 @@ function useLesson(lessonId: string) {
 }
 
 const str = (v: unknown): string => (typeof v === "string" ? v : "");
-const strArr = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
+const strArr = (v: unknown): string[] =>
+  Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
 
 function ContentSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="glass rounded-3xl p-6 md:p-8 shadow-card space-y-4">
-      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{title}</div>
+      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        {title}
+      </div>
       {children}
     </div>
   );
@@ -97,13 +109,23 @@ function SpeakButton({ text, locale }: { text: string; locale: "pt" | "en" }) {
         }
       }}
     >
-      {playing ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Volume2 className="mr-1.5 h-4 w-4" />}
+      {playing ? (
+        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+      ) : (
+        <Volume2 className="mr-1.5 h-4 w-4" />
+      )}
       {locale === "pt" ? "Ouvir" : "Listen"}
     </Button>
   );
 }
 
-function WritingPractice({ content, locale }: { content: Record<string, unknown>; locale: "pt" | "en" }) {
+function WritingPractice({
+  content,
+  locale,
+}: {
+  content: Record<string, unknown>;
+  locale: "pt" | "en";
+}) {
   const [text, setText] = useState("");
   return (
     <ContentSection title={locale === "pt" ? "Escrita" : "Writing"}>
@@ -119,9 +141,16 @@ function WritingPractice({ content, locale }: { content: Record<string, unknown>
   );
 }
 
-function SpeakingPractice({ content, locale }: { content: Record<string, unknown>; locale: "pt" | "en" }) {
+function SpeakingPractice({
+  content,
+  locale,
+}: {
+  content: Record<string, unknown>;
+  locale: "pt" | "en";
+}) {
   const target =
-    str(content.prompt) || (locale === "pt" ? "Fale sobre o tema desta lição." : "Talk about this lesson's topic.");
+    str(content.prompt) ||
+    (locale === "pt" ? "Fale sobre o tema desta lição." : "Talk about this lesson's topic.");
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -137,7 +166,9 @@ function SpeakingPractice({ content, locale }: { content: Record<string, unknown
         setTranscript("");
         setScore(null);
       } catch {
-        toast.error(locale === "pt" ? "Permita o acesso ao microfone" : "Please allow microphone access");
+        toast.error(
+          locale === "pt" ? "Permita o acesso ao microfone" : "Please allow microphone access",
+        );
       }
       return;
     }
@@ -172,10 +203,16 @@ function SpeakingPractice({ content, locale }: { content: Record<string, unknown
         </button>
         <div className="text-xs text-muted-foreground">
           {processing
-            ? locale === "pt" ? "Analisando..." : "Analyzing..."
+            ? locale === "pt"
+              ? "Analisando..."
+              : "Analyzing..."
             : recording
-              ? locale === "pt" ? "Gravando... toque para parar" : "Recording... tap to stop"
-              : locale === "pt" ? "Toque para gravar" : "Tap to record"}
+              ? locale === "pt"
+                ? "Gravando... toque para parar"
+                : "Recording... tap to stop"
+              : locale === "pt"
+                ? "Toque para gravar"
+                : "Tap to record"}
         </div>
       </div>
       {score !== null && (
@@ -199,6 +236,10 @@ function QuizSection({ exercises, locale }: { exercises: ExerciseRow[]; locale: 
     setAnswers((a) => ({ ...a, [exerciseId]: index }));
   };
   const answeredCount = Object.keys(answers).length;
+  // correct_answer is only sent to signed-in callers (see backend getLessonDetail) —
+  // an anonymous visitor can still pick an answer, but sees a neutral state
+  // instead of every choice being marked "wrong" for lack of an answer key.
+  const hasAnswerKey = exercises.some((ex) => ex.correct_answer != null);
   const correctCount = exercises.filter((ex) => answers[ex.id] === ex.correct_answer?.index).length;
 
   return (
@@ -208,6 +249,7 @@ function QuizSection({ exercises, locale }: { exercises: ExerciseRow[]; locale: 
           const options = ex.data?.options ?? [];
           const picked = answers[ex.id];
           const show = picked !== undefined;
+          const exerciseHasKey = ex.correct_answer != null;
           return (
             <div key={ex.id}>
               <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -216,7 +258,7 @@ function QuizSection({ exercises, locale }: { exercises: ExerciseRow[]; locale: 
               <h4 className="mt-1 font-display text-lg font-bold">{ex.prompt}</h4>
               <div className="mt-3 space-y-2">
                 {options.map((opt, i) => {
-                  const isCorrect = i === ex.correct_answer?.index;
+                  const isCorrect = exerciseHasKey && i === ex.correct_answer?.index;
                   const chosen = picked === i;
                   return (
                     <button
@@ -226,14 +268,18 @@ function QuizSection({ exercises, locale }: { exercises: ExerciseRow[]; locale: 
                       className={`flex w-full items-center justify-between rounded-xl border-2 p-3 text-left text-sm transition-all ${
                         show && isCorrect
                           ? "border-emerald-500 bg-emerald-500/10"
-                          : show && chosen
+                          : show && chosen && exerciseHasKey
                             ? "border-destructive bg-destructive/10"
-                            : "border-border bg-background/60 hover:border-magenta/50"
+                            : show && chosen
+                              ? "border-[var(--violet)] bg-[var(--violet)]/10"
+                              : "border-border bg-background/60 hover:border-magenta/50"
                       }`}
                     >
                       <span>{opt}</span>
                       {show && isCorrect && <Check className="h-4 w-4 text-emerald-600" />}
-                      {show && chosen && !isCorrect && <X className="h-4 w-4 text-destructive" />}
+                      {show && chosen && exerciseHasKey && !isCorrect && (
+                        <X className="h-4 w-4 text-destructive" />
+                      )}
                     </button>
                   );
                 })}
@@ -242,9 +288,16 @@ function QuizSection({ exercises, locale }: { exercises: ExerciseRow[]; locale: 
           );
         })}
       </div>
-      {answeredCount > 0 && (
+      {answeredCount > 0 && hasAnswerKey && (
         <div className="text-sm text-muted-foreground">
           {locale === "pt" ? "Acertos" : "Correct"}: {correctCount}/{answeredCount}
+        </div>
+      )}
+      {answeredCount > 0 && !hasAnswerKey && (
+        <div className="text-sm text-muted-foreground">
+          {locale === "pt"
+            ? "Inicia sessão para veres a correção."
+            : "Sign in to see which answers were correct."}
         </div>
       )}
     </ContentSection>
@@ -274,9 +327,13 @@ function LessonBody({ lesson, locale }: { lesson: LessonDetail; locale: "pt" | "
                   <div className="font-display text-lg font-bold">{str(w.word)}</div>
                   <SpeakButton text={str(w.word)} locale={locale} />
                 </div>
-                {w.pos ? <div className="text-xs text-muted-foreground italic">{str(w.pos)}</div> : null}
+                {w.pos ? (
+                  <div className="text-xs text-muted-foreground italic">{str(w.pos)}</div>
+                ) : null}
                 {w.definition ? <p className="mt-1.5 text-sm">{str(w.definition)}</p> : null}
-                {w.example ? <p className="mt-1 text-sm text-muted-foreground">"{str(w.example)}"</p> : null}
+                {w.example ? (
+                  <p className="mt-1 text-sm text-muted-foreground">"{str(w.example)}"</p>
+                ) : null}
               </div>
             ))}
           </div>
@@ -305,7 +362,9 @@ function LessonBody({ lesson, locale }: { lesson: LessonDetail; locale: "pt" | "
         <ContentSection title={locale === "pt" ? "Escuta" : "Listening"}>
           <SpeakButton text={str(c.audio_script)} locale={locale} />
           <p className="text-xs text-muted-foreground">
-            {locale === "pt" ? "Roteiro (confira depois de ouvir):" : "Script (check after listening):"}
+            {locale === "pt"
+              ? "Roteiro (confira depois de ouvir):"
+              : "Script (check after listening):"}
           </p>
           <p className="whitespace-pre-line text-sm">{str(c.audio_script)}</p>
           <BulletList items={strArr(c.tasks)} />
@@ -382,7 +441,9 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
 
   const unit = curriculum?.units.find((u) => u.id === lesson?.unit_id);
   const course = curriculum?.courses.find((c) => c.id === unit?.course_id);
-  const alreadyDone = progress.some((p) => p.lesson_id === lessonId && (!!p.completed_at || p.progress_pct >= 100));
+  const alreadyDone = progress.some(
+    (p) => p.lesson_id === lessonId && (!!p.completed_at || p.progress_pct >= 100),
+  );
 
   const [completing, setCompleting] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
@@ -390,7 +451,9 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
   const completeLesson = async () => {
     setCompleting(true);
     try {
-      const result = await apiFetch<CompleteResult>(`/v1/lessons/${lessonId}/complete`, { method: "POST" });
+      const result = await apiFetch<CompleteResult>(`/v1/lessons/${lessonId}/complete`, {
+        method: "POST",
+      });
       setJustCompleted(true);
       if (!result.alreadyCompleted) {
         toast.success(
@@ -404,7 +467,13 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
       qc.invalidateQueries({ queryKey: ["user_stats"] });
       qc.invalidateQueries({ queryKey: ["curriculum"] });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : locale === "pt" ? "Erro ao concluir lição" : "Failed to finish lesson");
+      toast.error(
+        e instanceof Error
+          ? e.message
+          : locale === "pt"
+            ? "Erro ao concluir lição"
+            : "Failed to finish lesson",
+      );
     } finally {
       setCompleting(false);
     }
@@ -416,7 +485,9 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
         <SiteHeader />
         <div className="flex items-center justify-center gap-2 py-32 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
-          <span className="text-sm">{locale === "pt" ? "Carregando lição…" : "Loading lesson…"}</span>
+          <span className="text-sm">
+            {locale === "pt" ? "Carregando lição…" : "Loading lesson…"}
+          </span>
         </div>
         <SiteFooter />
       </div>
@@ -428,9 +499,13 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
       <div className="min-h-screen">
         <SiteHeader />
         <div className="mx-auto max-w-2xl px-6 py-20 text-center">
-          <p className="text-destructive">{locale === "pt" ? "Lição não encontrada." : "Lesson not found."}</p>
+          <p className="text-destructive">
+            {locale === "pt" ? "Lição não encontrada." : "Lesson not found."}
+          </p>
           <Button asChild className="mt-4">
-            <Link to="/curriculum">{locale === "pt" ? "Voltar ao currículo" : "Back to curriculum"}</Link>
+            <Link to="/curriculum">
+              {locale === "pt" ? "Voltar ao currículo" : "Back to curriculum"}
+            </Link>
           </Button>
         </div>
         <SiteFooter />
@@ -467,11 +542,19 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
         <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="font-display text-3xl font-bold md:text-4xl">{lesson.title}</h1>
-            {lesson.summary && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{lesson.summary}</p>}
+            {lesson.summary && (
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{lesson.summary}</p>
+            )}
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            {lesson.duration_min ? <div className="glass rounded-full px-3 py-1.5 text-xs font-bold">{lesson.duration_min} min</div> : null}
-            <div className="rounded-full bg-sunset/10 px-3 py-1.5 text-xs font-bold text-sunset">+{lesson.xp_reward} XP</div>
+            {lesson.duration_min ? (
+              <div className="glass rounded-full px-3 py-1.5 text-xs font-bold">
+                {lesson.duration_min} min
+              </div>
+            ) : null}
+            <div className="rounded-full bg-sunset/10 px-3 py-1.5 text-xs font-bold text-sunset">
+              +{lesson.xp_reward} XP
+            </div>
           </div>
         </div>
 
@@ -482,11 +565,14 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
         <div className="mt-10 flex flex-col items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5 sm:flex-row">
           {done ? (
             <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
-              <CheckCircle2 className="h-5 w-5" /> {locale === "pt" ? "Lição concluída" : "Lesson completed"}
+              <CheckCircle2 className="h-5 w-5" />{" "}
+              {locale === "pt" ? "Lição concluída" : "Lesson completed"}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              {locale === "pt" ? "Termine a lição para ganhar XP." : "Finish the lesson to earn XP."}
+              {locale === "pt"
+                ? "Termine a lição para ganhar XP."
+                : "Finish the lesson to earn XP."}
             </p>
           )}
           <div className="flex gap-2">
@@ -494,8 +580,16 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
               <Link to="/curriculum">{locale === "pt" ? "Ver currículo" : "View curriculum"}</Link>
             </Button>
             {!done && (
-              <Button onClick={completeLesson} disabled={completing} className="bg-gradient-sunset text-white">
-                {completing ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Trophy className="mr-1.5 h-4 w-4" />}
+              <Button
+                onClick={completeLesson}
+                disabled={completing}
+                className="bg-gradient-sunset text-white"
+              >
+                {completing ? (
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                ) : (
+                  <Trophy className="mr-1.5 h-4 w-4" />
+                )}
                 {locale === "pt" ? "Concluir lição" : "Finish lesson"}
               </Button>
             )}

@@ -1,16 +1,37 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Users, CreditCard, DollarSign, Clock, TrendingUp, ShieldCheck, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Users,
+  CreditCard,
+  DollarSign,
+  Clock,
+  TrendingUp,
+  ShieldCheck,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
-import { SubscriptionsSection, AnalyticsSection, ReportsSection, CurriculumSection } from "@/components/admin/sections";
+import {
+  SubscriptionsSection,
+  AnalyticsSection,
+  ReportsSection,
+  CurriculumSection,
+} from "@/components/admin/sections";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -43,7 +64,12 @@ function AdminPage() {
         pendingPayments: number;
         monthRevenue: number;
       }>("/v1/admin/stats");
-      return { total: s.totalUsers, active: s.activeSubscriptions, pending: s.pendingPayments, revenue: s.monthRevenue };
+      return {
+        total: s.totalUsers,
+        active: s.activeSubscriptions,
+        pending: s.pendingPayments,
+        revenue: s.monthRevenue,
+      };
     },
   });
 
@@ -67,12 +93,16 @@ function AdminPage() {
 
   const activate = useMutation({
     mutationFn: async (payment: any) =>
-      apiFetch<{ activationCode: string | null }>(`/v1/admin/payments/${payment.id}/activate`, { method: "POST" }),
+      apiFetch<{ activationCode: string | null }>(`/v1/admin/payments/${payment.id}/activate`, {
+        method: "POST",
+      }),
     onSuccess: ({ activationCode }) => {
       if (activationCode) {
         navigator.clipboard?.writeText(activationCode).catch(() => {});
         toast.success(
-          locale === "pt" ? `Ativada. Código: ${activationCode} (copiado)` : `Activated. Code: ${activationCode} (copied)`,
+          locale === "pt"
+            ? `Ativada. Código: ${activationCode} (copiado)`
+            : `Activated. Code: ${activationCode} (copied)`,
           { duration: 8000 },
         );
       } else {
@@ -85,7 +115,8 @@ function AdminPage() {
   });
 
   const cancel = useMutation({
-    mutationFn: async (payment: any) => apiFetch(`/v1/admin/payments/${payment.id}/cancel`, { method: "POST" }),
+    mutationFn: async (payment: any) =>
+      apiFetch(`/v1/admin/payments/${payment.id}/cancel`, { method: "POST" }),
     onSuccess: () => {
       toast.success(locale === "pt" ? "Pagamento cancelado" : "Payment cancelled");
       qc.invalidateQueries({ queryKey: ["admin_payments"] });
@@ -118,10 +149,30 @@ function AdminPage() {
   }
 
   const statCards = [
-    { icon: Users, label: locale === "pt" ? "Total de alunos" : "Total learners", value: stats?.total ?? 0, color: "text-sunset bg-sunset/10" },
-    { icon: CreditCard, label: locale === "pt" ? "Assinaturas ativas" : "Active subs", value: stats?.active ?? 0, color: "text-magenta bg-magenta/10" },
-    { icon: Clock, label: locale === "pt" ? "Pendentes" : "Pending", value: stats?.pending ?? 0, color: "text-amber bg-amber/10" },
-    { icon: DollarSign, label: locale === "pt" ? "Receita (mês)" : "Revenue (month)", value: `${(stats?.revenue ?? 0).toLocaleString("pt-AO")} Kz`, color: "text-violet bg-violet/10" },
+    {
+      icon: Users,
+      label: locale === "pt" ? "Total de alunos" : "Total learners",
+      value: stats?.total ?? 0,
+      color: "text-sunset bg-sunset/10",
+    },
+    {
+      icon: CreditCard,
+      label: locale === "pt" ? "Assinaturas ativas" : "Active subs",
+      value: stats?.active ?? 0,
+      color: "text-magenta bg-magenta/10",
+    },
+    {
+      icon: Clock,
+      label: locale === "pt" ? "Pendentes" : "Pending",
+      value: stats?.pending ?? 0,
+      color: "text-amber bg-amber/10",
+    },
+    {
+      icon: DollarSign,
+      label: locale === "pt" ? "Receita (mês)" : "Revenue (month)",
+      value: `${(stats?.revenue ?? 0).toLocaleString("pt-AO")} Kz`,
+      color: "text-violet bg-violet/10",
+    },
   ];
 
   return (
@@ -143,7 +194,9 @@ function AdminPage() {
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {statCards.map((s) => (
             <div key={s.label} className="rounded-2xl border border-border bg-card p-5 shadow-card">
-              <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${s.color}`}>
+              <div
+                className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${s.color}`}
+              >
                 <s.icon className="h-5 w-5" />
               </div>
               <div className="mt-3 text-2xl font-bold">{s.value}</div>
@@ -154,8 +207,12 @@ function AdminPage() {
 
         <div className="mt-10 rounded-2xl border border-border bg-card shadow-card">
           <div className="border-b border-border px-6 py-4 flex items-center justify-between">
-            <h2 className="font-display text-xl font-bold">{locale === "pt" ? "Alunos" : "Learners"}</h2>
-            <span className="text-xs text-muted-foreground">{users.length} {locale === "pt" ? "registados" : "registered"}</span>
+            <h2 className="font-display text-xl font-bold">
+              {locale === "pt" ? "Alunos" : "Learners"}
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              {users.length} {locale === "pt" ? "registados" : "registered"}
+            </span>
           </div>
           <div className="overflow-x-auto">
             <Table>
@@ -174,13 +231,17 @@ function AdminPage() {
               <TableBody>
                 {users.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
+                    <TableCell
+                      colSpan={8}
+                      className="py-10 text-center text-sm text-muted-foreground"
+                    >
                       {locale === "pt" ? "Sem alunos" : "No learners"}
                     </TableCell>
                   </TableRow>
                 )}
                 {users.map((u: any) => {
-                  const room = u.age == null ? "—" : u.age < 13 ? "Kids" : u.age < 18 ? "Teens" : "Adults";
+                  const room =
+                    u.age == null ? "—" : u.age < 13 ? "Kids" : u.age < 18 ? "Teens" : "Adults";
                   return (
                     <TableRow key={u.id}>
                       <TableCell className="font-medium">{u.full_name || "—"}</TableCell>
@@ -188,9 +249,15 @@ function AdminPage() {
                       <TableCell className="text-xs">{u.phone || "—"}</TableCell>
                       <TableCell className="text-xs">{u.country || "—"}</TableCell>
                       <TableCell>{u.age ?? "—"}</TableCell>
-                      <TableCell><Badge variant="outline">{room}</Badge></TableCell>
-                      <TableCell><Badge variant="outline">{u.cefr_level || "—"}</Badge></TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{room}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{u.cefr_level || "—"}</Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {new Date(u.created_at).toLocaleDateString()}
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -201,7 +268,9 @@ function AdminPage() {
 
         <div className="mt-10 rounded-2xl border border-border bg-card shadow-card">
           <div className="border-b border-border px-6 py-4">
-            <h2 className="font-display text-xl font-bold">{locale === "pt" ? "Pagamentos" : "Payments"}</h2>
+            <h2 className="font-display text-xl font-bold">
+              {locale === "pt" ? "Pagamentos" : "Payments"}
+            </h2>
           </div>
           <div className="overflow-x-auto">
             <Table>
@@ -219,7 +288,10 @@ function AdminPage() {
               <TableBody>
                 {payments.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
+                    <TableCell
+                      colSpan={7}
+                      className="py-10 text-center text-sm text-muted-foreground"
+                    >
                       {locale === "pt" ? "Ainda sem pagamentos" : "No payments yet"}
                     </TableCell>
                   </TableRow>
@@ -233,16 +305,25 @@ function AdminPage() {
                     <TableCell className="capitalize">
                       {p.subscription_plans?.tier} · {p.subscription_plans?.billing_cycle}
                     </TableCell>
-                    <TableCell className="font-semibold">{p.amount_kz.toLocaleString("pt-AO")} Kz</TableCell>
-                    <TableCell><code className="text-xs">{p.reference}</code></TableCell>
-                    <TableCell><StatusBadge status={p.status} /></TableCell>
+                    <TableCell className="font-semibold">
+                      {p.amount_kz.toLocaleString("pt-AO")} Kz
+                    </TableCell>
+                    <TableCell>
+                      <code className="text-xs">{p.reference}</code>
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={p.status} />
+                    </TableCell>
                     <TableCell className="text-xs">
                       {p.subscriptions?.activation_code ? (
                         <div>
-                          <code className="font-mono font-semibold text-magenta">{p.subscriptions.activation_code}</code>
+                          <code className="font-mono font-semibold text-magenta">
+                            {p.subscriptions.activation_code}
+                          </code>
                           {p.subscriptions?.expires_at && (
                             <div className="text-muted-foreground">
-                              {locale === "pt" ? "expira" : "expires"} {new Date(p.subscriptions.expires_at).toLocaleDateString()}
+                              {locale === "pt" ? "expira" : "expires"}{" "}
+                              {new Date(p.subscriptions.expires_at).toLocaleDateString()}
                             </div>
                           )}
                         </div>
@@ -253,8 +334,14 @@ function AdminPage() {
                     <TableCell>
                       {p.status === "pending" && (
                         <div className="flex gap-1">
-                          <Button size="sm" onClick={() => activate.mutate(p)} disabled={activate.isPending} className="bg-emerald-500 text-white hover:bg-emerald-600">
-                            <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> {locale === "pt" ? "Ativar" : "Activate"}
+                          <Button
+                            size="sm"
+                            onClick={() => activate.mutate(p)}
+                            disabled={activate.isPending}
+                            className="bg-emerald-500 text-white hover:bg-emerald-600"
+                          >
+                            <CheckCircle2 className="mr-1 h-3.5 w-3.5" />{" "}
+                            {locale === "pt" ? "Ativar" : "Activate"}
                           </Button>
                           <Button size="sm" variant="outline" onClick={() => cancel.mutate(p)}>
                             <XCircle className="h-3.5 w-3.5" />
@@ -285,5 +372,11 @@ function StatusBadge({ status }: { status: string }) {
     cancelled: "bg-muted text-muted-foreground",
     expired: "bg-destructive/20 text-destructive",
   };
-  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${map[status] ?? ""}`}>{status}</span>;
+  return (
+    <span
+      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${map[status] ?? ""}`}
+    >
+      {status}
+    </span>
+  );
 }

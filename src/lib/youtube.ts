@@ -43,7 +43,7 @@ export interface VideoRef {
 import { AGE_TRACKS, type AgeGroup } from "@/lib/age-tracks";
 
 /** Build a lightweight pool of ready-to-play videos per age group from the age-tracks data. */
-export function videoPoolForAge(age: AgeGroup): VideoRef[] {
+export function videoPoolForAge(age: AgeGroup, locale: "pt" | "en" = "pt"): VideoRef[] {
   return AGE_TRACKS[age].videos
     .map((v) => {
       const id = extractYouTubeId(v.url);
@@ -51,7 +51,7 @@ export function videoPoolForAge(age: AgeGroup): VideoRef[] {
       return {
         videoId: id,
         url: v.url,
-        title: v.title.pt,
+        title: v.title[locale],
         channel: v.channel,
         level: v.level,
         ageGroup: age,

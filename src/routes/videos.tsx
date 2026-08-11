@@ -82,7 +82,7 @@ function VideosPage() {
   const recs = AGE_TRACKS[group].videos;
   const featuredRec = recs[0];
   const featuredId = featuredRec ? extractYouTubeId(featuredRec.url) : null;
-  const catalog = useMemo(() => videoPoolForAge(group), [group]);
+  const catalog = useMemo(() => videoPoolForAge(group, locale), [group, locale]);
   const weekHours = ((week?.seconds ?? 0) / 3600).toFixed(1);
   const watchedCount = recent?.filter((r) => r.completed).length ?? 0;
 
@@ -179,7 +179,9 @@ function VideosPage() {
               <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                 Streak
               </div>
-              <div className="text-xl font-bold text-(--ink)">{userStats?.streak_days ?? 0} Days</div>
+              <div className="text-xl font-bold text-(--ink)">
+                {userStats?.streak_days ?? 0} Days
+              </div>
             </div>
             <div className="glass-card rounded-2xl p-4 text-center premium-shadow">
               <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
@@ -327,7 +329,12 @@ function VideosPage() {
               return (
                 <div key={video.videoId} className="group space-y-3 video-card relative">
                   {/* Thumbnail */}
-                  <Link to="/watch/$videoId" params={{ videoId: video.videoId }} search={search} className="block">
+                  <Link
+                    to="/watch/$videoId"
+                    params={{ videoId: video.videoId }}
+                    search={search}
+                    className="block"
+                  >
                     <div className="relative aspect-video rounded-3xl overflow-hidden premium-shadow">
                       <img
                         src={youtubeThumb(video.videoId)}
@@ -345,7 +352,12 @@ function VideosPage() {
 
                   {/* Info */}
                   <div className="flex justify-between items-start px-1 relative">
-                    <Link to="/watch/$videoId" params={{ videoId: video.videoId }} search={search} className="flex-1 min-w-0 space-y-1">
+                    <Link
+                      to="/watch/$videoId"
+                      params={{ videoId: video.videoId }}
+                      search={search}
+                      className="flex-1 min-w-0 space-y-1"
+                    >
                       <h4 className="font-display font-bold text-sm leading-tight group-hover:text-(--violet) transition-colors line-clamp-2">
                         {video.title}
                       </h4>

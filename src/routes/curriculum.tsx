@@ -59,9 +59,10 @@ function useProgress() {
     queryKey: ["lesson_progress_all", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const data = await apiFetch<{ lesson_id: string; progress_pct: number; completed_at: string | null }[]>(
-        "/v1/me/progress",
-      );
+      const data =
+        await apiFetch<{ lesson_id: string; progress_pct: number; completed_at: string | null }[]>(
+          "/v1/me/progress",
+        );
       const map = new Map<string, { pct: number; done: boolean }>();
       data.forEach((p) => {
         map.set(p.lesson_id, {
@@ -290,9 +291,7 @@ function CurriculumPage() {
                     <div className="text-[10px] uppercase tracking-wider text-white/60 font-bold">
                       {locale === "pt" ? "Nível atual" : "Current level"}
                     </div>
-                    <div className="mt-1 font-display text-2xl font-bold">
-                      {unlocked ?? "A1"}
-                    </div>
+                    <div className="mt-1 font-display text-2xl font-bold">{unlocked ?? "A1"}</div>
                     <div className="text-xs text-white/60">
                       {locale === "pt" ? "Desbloqueado" : "Unlocked"}
                     </div>
@@ -333,7 +332,9 @@ function CurriculumPage() {
                       {i < CEFR_LEVELS.length - 1 && (
                         <div
                           className={`w-3 sm:w-6 h-0.5 mx-0.5 rounded-full ${
-                            user && cefrRank(lvl) < unlockedRank ? "bg-emerald-400/80" : "bg-white/15"
+                            user && cefrRank(lvl) < unlockedRank
+                              ? "bg-emerald-400/80"
+                              : "bg-white/15"
                           }`}
                         />
                       )}

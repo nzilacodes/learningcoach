@@ -42,7 +42,9 @@ function ContactPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
-      toast.error(pt ? "Preencha todos os campos obrigatórios." : "Please fill all required fields.");
+      toast.error(
+        pt ? "Preencha todos os campos obrigatórios." : "Please fill all required fields.",
+      );
       return;
     }
     setSubmitting(true);
@@ -57,7 +59,9 @@ function ContactPage() {
         }),
       });
       setForm({ name: "", email: "", subject: "", message: "" });
-      toast.success(pt ? "Mensagem enviada! Respondemos em breve." : "Message sent! We'll reply soon.");
+      toast.success(
+        pt ? "Mensagem enviada! Respondemos em breve." : "Message sent! We'll reply soon.",
+      );
     } catch (err) {
       const msg =
         err instanceof ApiError && err.status === 429

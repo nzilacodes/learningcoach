@@ -63,8 +63,16 @@ const cefr = [
 ];
 
 const features = [
-  { icon: Brain, name: "AI English Coach", desc: "Assistente 24/7 que corrige, sugere e conversa contigo." },
-  { icon: BookOpen, name: "Interactive Lessons", desc: "Aulas dinâmicas com vídeo, texto e prática." },
+  {
+    icon: Brain,
+    name: "AI English Coach",
+    desc: "Assistente 24/7 que corrige, sugere e conversa contigo.",
+  },
+  {
+    icon: BookOpen,
+    name: "Interactive Lessons",
+    desc: "Aulas dinâmicas com vídeo, texto e prática.",
+  },
   { icon: Mic, name: "IPA Pronunciation", desc: "Feedback fonético preciso em cada sílaba." },
   { icon: MessageCircle, name: "Speaking Practice", desc: "Sala de conversa com IA e nativos." },
   { icon: Headphones, name: "Listening Practice", desc: "Áudios reais em vários sotaques." },
@@ -226,7 +234,10 @@ function LandingPage() {
         <div data-anim="hero-dim" className="hero-dim-overlay hidden md:block" />
 
         {/* STATS — Desktop: overlay on hero | Mobile: normal section below */}
-        <div data-anim="stats-overlay" className="pointer-events-none absolute inset-0 z-20 hidden items-center justify-center md:flex">
+        <div
+          data-anim="stats-overlay"
+          className="pointer-events-none absolute inset-0 z-20 hidden items-center justify-center md:flex"
+        >
           <div className="grid w-full max-w-3xl grid-cols-2 gap-4 px-6 sm:grid-cols-3 sm:gap-5">
             {stats.map((s, i) => (
               <div
@@ -257,7 +268,10 @@ function LandingPage() {
       <section className="border-y border-slate-100 bg-white py-10 md:hidden">
         <div className="mx-auto grid grid-cols-2 gap-4 px-6">
           {stats.map((s, i) => (
-            <div key={s.label} className="rounded-2xl border border-slate-100 bg-white p-4 text-center shadow-md">
+            <div
+              key={s.label}
+              className="rounded-2xl border border-slate-100 bg-white p-4 text-center shadow-md"
+            >
               <div className="font-['Poppins',_sans-serif] text-2xl font-extrabold text-[#0EA5A4]">
                 {s.value}
               </div>
@@ -270,7 +284,10 @@ function LandingPage() {
       </section>
 
       {/* PINNED CONTAINER — Choose Your Path + Toolkit */}
-      <div data-anim="pin-container" className="relative min-h-screen overflow-visible md:h-screen md:overflow-clip">
+      <div
+        data-anim="pin-container"
+        className="relative min-h-screen overflow-visible md:h-screen md:overflow-clip"
+      >
         {/* SECTION 1: Choose Your Path */}
         <section data-anim="age-panels-section" className="h-full flex items-center bg-[#F8FAFC]">
           <div className="mx-auto max-w-7xl px-6 w-full py-10">
@@ -278,7 +295,8 @@ function LandingPage() {
               <h1>Choose Your Path</h1>
               <div className="mx-auto mt-3 h-1 w-16 rounded-full bg-[#84CC16]" />
               <p className="mx-auto mt-3 max-w-xl text-sm text-slate-500">
-                Programas especializados para cada fase da vida — todos na plataforma LEARNING ENGLISH WITH COACH.
+                Programas especializados para cada fase da vida — todos na plataforma LEARNING
+                ENGLISH WITH COACH.
               </p>
             </div>
 
@@ -313,7 +331,10 @@ function LandingPage() {
         </section>
 
         {/* SECTION 2: The Complete Toolkit — Dark Bento */}
-        <section className="relative w-full z-10 bg-[#030712] md:absolute md:top-full md:left-0 md:h-full md:overflow-y-auto" data-anim="toolkit-section">
+        <section
+          className="relative w-full z-10 bg-[#030712] md:absolute md:top-full md:left-0 md:h-full md:overflow-y-auto"
+          data-anim="toolkit-section"
+        >
           {/* Clip-path wave SVG definition */}
           <svg width="0" height="0" className="absolute">
             <defs>
@@ -431,7 +452,10 @@ function LandingPage() {
               </div>
             </div>
           </div>
-          <div data-anim="testimonial-card" className="relative rounded-[2rem] bg-[#0F172A] p-10 text-white shadow-2xl">
+          <div
+            data-anim="testimonial-card"
+            className="relative rounded-[2rem] bg-[#0F172A] p-10 text-white shadow-2xl"
+          >
             <div
               data-anim="testimonial-quote-mark"
               className="absolute -left-6 -top-6 flex h-14 w-14 items-center justify-center rounded-full bg-[#84CC16] font-serif text-4xl leading-none text-[#0F172A]"
@@ -439,7 +463,8 @@ function LandingPage() {
               "
             </div>
             <p className="text-xl italic leading-relaxed">
-              LEWC transformou a minha forma de comunicar. Já não sobrevivo às reuniões em inglês — eu lidero-as.
+              LEWC transformou a minha forma de comunicar. Já não sobrevivo às reuniões em inglês —
+              eu lidero-as.
             </p>
             <div className="mt-8 flex items-center gap-4">
               <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0EA5A4] to-[#84CC16]" />
@@ -474,7 +499,8 @@ function LandingPage() {
               Start Your English Journey Today
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-white/85">
-              Junta-te a milhares de estudantes que já falam com confiança. Começa grátis, sem cartão.
+              Junta-te a milhares de estudantes que já falam com confiança. Começa grátis, sem
+              cartão.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Link
@@ -545,23 +571,14 @@ function AgePanel({
             Learning English with Coach
           </div>
         </div>
-        <div
-          className={`isometric-icon ${chip}`}
-        >
+        <div className={`isometric-icon ${chip}`}>
           <Target className="h-8 w-8" />
         </div>
-        <h3 className="text-base font-bold text-[#0F172A]">
-          {title}
-        </h3>
-        <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
-          {desc}
-        </p>
+        <h3 className="text-base font-bold text-[#0F172A]">{title}</h3>
+        <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{desc}</p>
         <ul className="mt-3 space-y-1.5">
           {bullets.map((b) => (
-            <li
-              key={b}
-              className="flex items-center gap-2 text-sm font-medium text-slate-600"
-            >
+            <li key={b} className="flex items-center gap-2 text-sm font-medium text-slate-600">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#84CC16]" /> {b}
             </li>
           ))}

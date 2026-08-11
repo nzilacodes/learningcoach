@@ -31,7 +31,8 @@ export const Route = createFileRoute("/track")({
       { property: "og:title", content: "Meu Percurso — Learning English with Coach" },
       {
         property: "og:description",
-        content: "Percursos diferenciados para crianças, adolescentes e adultos, personalizados automaticamente pela idade.",
+        content:
+          "Percursos diferenciados para crianças, adolescentes e adultos, personalizados automaticamente pela idade.",
       },
       { property: "og:type", content: "website" },
     ],
@@ -108,7 +109,9 @@ function TrackPage() {
             <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
               {track.themes.map((t) => (
                 <div key={t.en} className="rounded-xl border bg-card p-4 flex items-center gap-3">
-                  <span className="text-2xl" aria-hidden>{t.emoji}</span>
+                  <span className="text-2xl" aria-hidden>
+                    {t.emoji}
+                  </span>
                   <div>
                     <div className="text-sm font-medium">{locale === "pt" ? t.pt : t.en}</div>
                   </div>
@@ -125,7 +128,9 @@ function TrackPage() {
             <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
               {track.vocabulary.map((v) => (
                 <div key={v.word} className="rounded-xl border bg-card p-4 text-center">
-                  <div className="text-3xl mb-1" aria-hidden>{v.emoji}</div>
+                  <div className="text-3xl mb-1" aria-hidden>
+                    {v.emoji}
+                  </div>
                   <div className="font-semibold">{v.word}</div>
                   <div className="text-xs text-muted-foreground">{v.pt}</div>
                 </div>
@@ -155,7 +160,8 @@ function TrackPage() {
             action={
               <Button asChild variant="outline" size="sm">
                 <Link to="/games">
-                  {locale === "pt" ? "Ver todos" : "See all"} <ArrowRight className="w-4 h-4 ml-1" />
+                  {locale === "pt" ? "Ver todos" : "See all"}{" "}
+                  <ArrowRight className="w-4 h-4 ml-1" />
                 </Link>
               </Button>
             }
@@ -163,10 +169,16 @@ function TrackPage() {
             <div className="grid gap-3 grid-cols-2 md:grid-cols-3">
               {track.games.map((g) => (
                 <div key={g.id} className="rounded-xl border bg-card p-4 flex items-center gap-3">
-                  <span className="text-2xl" aria-hidden>{g.emoji}</span>
+                  <span className="text-2xl" aria-hidden>
+                    {g.emoji}
+                  </span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold truncate">{locale === "pt" ? g.pt : g.en}</div>
-                    <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">+{g.xp} XP</div>
+                    <div className="text-sm font-semibold truncate">
+                      {locale === "pt" ? g.pt : g.en}
+                    </div>
+                    <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                      +{g.xp} XP
+                    </div>
                   </div>
                 </div>
               ))}
@@ -181,7 +193,9 @@ function TrackPage() {
             <div className="grid gap-3 md:grid-cols-2">
               {track.exercises.map((ex) => (
                 <div key={ex.en} className="rounded-xl border bg-card p-4 flex items-center gap-3">
-                  <span className="text-2xl" aria-hidden>{ex.icon}</span>
+                  <span className="text-2xl" aria-hidden>
+                    {ex.icon}
+                  </span>
                   <div className="text-sm">{locale === "pt" ? ex.pt : ex.en}</div>
                 </div>
               ))}
@@ -202,7 +216,9 @@ function TrackPage() {
                   rel="noopener noreferrer"
                   className="rounded-xl border bg-card p-4 hover:bg-accent transition block"
                 >
-                  <div className="text-xs text-muted-foreground mb-1">{v.channel} · {v.level}</div>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {v.channel} · {v.level}
+                  </div>
                   <div className="font-medium">{locale === "pt" ? v.title.pt : v.title.en}</div>
                   <div className="mt-2 text-xs text-primary inline-flex items-center gap-1">
                     <Youtube className="w-3.5 h-3.5" /> YouTube
@@ -223,7 +239,9 @@ function TrackPage() {
             </p>
             <div className="flex flex-wrap gap-2 justify-center">
               <Button asChild>
-                <Link to="/curriculum">{locale === "pt" ? "Ir para o Currículo" : "Go to Curriculum"}</Link>
+                <Link to="/curriculum">
+                  {locale === "pt" ? "Ir para o Currículo" : "Go to Curriculum"}
+                </Link>
               </Button>
               <Button asChild variant="outline">
                 <Link to="/games">{locale === "pt" ? "Ver Jogos" : "See Games"}</Link>

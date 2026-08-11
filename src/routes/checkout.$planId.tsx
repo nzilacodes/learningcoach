@@ -1,8 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  CreditCard, Landmark, Smartphone, Hash, Copy, Check, Loader2,
-  ShieldCheck, ArrowLeft, Sparkles,
+  CreditCard,
+  Landmark,
+  Smartphone,
+  Hash,
+  Copy,
+  Check,
+  Loader2,
+  ShieldCheck,
+  ArrowLeft,
+  Sparkles,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -27,10 +35,13 @@ export const Route = createFileRoute("/checkout/$planId")({
     return { plan, sandboxPaymentsEnabled: config.sandboxPaymentsEnabled };
   },
   errorComponent: ({ error }) => (
-    <div className="min-h-screen"><SiteHeader />
+    <div className="min-h-screen">
+      <SiteHeader />
       <div className="mx-auto max-w-2xl p-10 text-center">
         <p className="text-destructive">{error.message}</p>
-        <Button asChild className="mt-4"><Link to="/pricing">Voltar aos planos</Link></Button>
+        <Button asChild className="mt-4">
+          <Link to="/pricing">Voltar aos planos</Link>
+        </Button>
       </div>
     </div>
   ),
@@ -39,19 +50,51 @@ export const Route = createFileRoute("/checkout/$planId")({
   head: ({ params }) => ({
     meta: [
       { title: `Checkout ${params.planId} — Coach` },
-      { name: "description", content: "Finalize a sua assinatura com pagamento por cartão, referência Multicaixa ou transferência bancária." },
+      {
+        name: "description",
+        content:
+          "Finalize a sua assinatura com pagamento por cartão, referência Multicaixa ou transferência bancária.",
+      },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
 });
 
 const METHODS: {
-  id: PaymentMethod; icon: typeof CreditCard; title: string; desc: string; providers: string[];
+  id: PaymentMethod;
+  icon: typeof CreditCard;
+  title: string;
+  desc: string;
+  providers: string[];
 }[] = [
-  { id: "card", icon: CreditCard, title: "Cartão bancário", desc: "Multicaixa Express, Visa, Mastercard", providers: ["Multicaixa Express", "AppyPay", "PayPay AO"] },
-  { id: "reference", icon: Hash, title: "Referência de pagamento", desc: "Pague em qualquer ATM ou app Multicaixa Express", providers: ["EMIS", "Multicaixa"] },
-  { id: "transfer", icon: Landmark, title: "Transferência bancária", desc: "BAI, BFA, BIC, Millennium, Standard Bank", providers: ["BAI", "BFA", "BIC"] },
-  { id: "mobile_money", icon: Smartphone, title: "Mobile Money", desc: "Unitel Money · Africell Money", providers: ["Unitel Money", "Africell Money"] },
+  {
+    id: "card",
+    icon: CreditCard,
+    title: "Cartão bancário",
+    desc: "Multicaixa Express, Visa, Mastercard",
+    providers: ["Multicaixa Express", "AppyPay", "PayPay AO"],
+  },
+  {
+    id: "reference",
+    icon: Hash,
+    title: "Referência de pagamento",
+    desc: "Pague em qualquer ATM ou app Multicaixa Express",
+    providers: ["EMIS", "Multicaixa"],
+  },
+  {
+    id: "transfer",
+    icon: Landmark,
+    title: "Transferência bancária",
+    desc: "BAI, BFA, BIC, Millennium, Standard Bank",
+    providers: ["BAI", "BFA", "BIC"],
+  },
+  {
+    id: "mobile_money",
+    icon: Smartphone,
+    title: "Mobile Money",
+    desc: "Unitel Money · Africell Money",
+    providers: ["Unitel Money", "Africell Money"],
+  },
 ];
 
 function CheckoutPage() {
@@ -99,8 +142,12 @@ function CheckoutPage() {
       <SiteHeader />
       <div className="bg-hero">
         <div className="mx-auto max-w-5xl px-4 py-10 md:px-6">
-          <Link to="/pricing" className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="mr-1 h-3.5 w-3.5" />Voltar aos planos
+          <Link
+            to="/pricing"
+            className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="mr-1 h-3.5 w-3.5" />
+            Voltar aos planos
           </Link>
 
           <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
@@ -134,7 +181,9 @@ function CheckoutPage() {
                               <div className="text-xs text-muted-foreground">{m.desc}</div>
                               <div className="mt-1.5 flex flex-wrap gap-1">
                                 {m.providers.map((p) => (
-                                  <Badge key={p} variant="secondary" className="text-[10px]">{p}</Badge>
+                                  <Badge key={p} variant="secondary" className="text-[10px]">
+                                    {p}
+                                  </Badge>
                                 ))}
                               </div>
                             </div>
@@ -147,7 +196,9 @@ function CheckoutPage() {
                       <div className="mt-4">
                         <Label htmlFor="phone">Telefone (opcional)</Label>
                         <Input
-                          id="phone" value={phone} onChange={(e) => setPhone(e.target.value)}
+                          id="phone"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
                           placeholder="+244 9XX XXX XXX"
                         />
                       </div>
@@ -155,7 +206,9 @@ function CheckoutPage() {
 
                     <Button
                       className="mt-6 w-full bg-gradient-sunset text-white"
-                      size="lg" onClick={submit} disabled={loading}
+                      size="lg"
+                      onClick={submit}
+                      disabled={loading}
                     >
                       {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       Gerar ordem de pagamento
@@ -170,7 +223,8 @@ function CheckoutPage() {
                       <h2 className="font-display font-bold">Ordem gerada</h2>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Efetue o pagamento com os dados abaixo. Após confirmação, os cursos são liberados automaticamente.
+                      Efetue o pagamento com os dados abaixo. Após confirmação, os cursos são
+                      liberados automaticamente.
                     </p>
 
                     <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -198,18 +252,26 @@ function CheckoutPage() {
                         <Field label="Referência gateway" value={order.reference} mono />
                       )}
                       <Field label="Fatura" value={order.invoice_number} mono />
-                      <Field label="Total" value={`${order.amount_kz.toLocaleString("pt-AO")} Kz`} />
+                      <Field
+                        label="Total"
+                        value={`${order.amount_kz.toLocaleString("pt-AO")} Kz`}
+                      />
                     </div>
 
                     {sandboxPaymentsEnabled ? (
                       <>
                         <div className="mt-6 rounded-lg border bg-muted/40 p-4 text-xs text-muted-foreground">
-                          Este é um ambiente sandbox. Em produção, o gateway (Multicaixa Express / EMIS / AppyPay)
-                          confirmará o pagamento por webhook. Podes simular a confirmação abaixo.
+                          Este é um ambiente sandbox. Em produção, o gateway (Multicaixa Express /
+                          EMIS / AppyPay) confirmará o pagamento por webhook. Podes simular a
+                          confirmação abaixo.
                         </div>
                         <div className="mt-4 flex gap-2">
                           <Button onClick={confirm} disabled={confirming} className="flex-1">
-                            {confirming ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                            {confirming ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <Sparkles className="mr-2 h-4 w-4" />
+                            )}
                             Simular confirmação
                           </Button>
                           <Button asChild variant="outline">
@@ -220,7 +282,8 @@ function CheckoutPage() {
                     ) : (
                       <>
                         <div className="mt-6 rounded-lg border bg-amber-500/10 border-amber-500/30 p-4 text-xs text-muted-foreground">
-                          Aguardando ativação do administrador. Assim que o pagamento for confirmado, a sua assinatura é ativada automaticamente.
+                          Aguardando ativação do administrador. Assim que o pagamento for
+                          confirmado, a sua assinatura é ativada automaticamente.
                         </div>
                         <div className="mt-4">
                           <Button asChild variant="outline" className="w-full">
@@ -273,11 +336,15 @@ function Field({ label, value, mono }: { label: string; value: string; mono?: bo
   const [copied, setCopied] = useState(false);
   return (
     <div className="rounded-lg border bg-background p-3">
-      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</div>
+      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
       <div className="mt-1 flex items-center justify-between gap-2">
         <div className={`font-semibold ${mono ? "font-mono text-sm" : ""}`}>{value}</div>
         <Button
-          size="icon" variant="ghost" className="h-7 w-7"
+          size="icon"
+          variant="ghost"
+          className="h-7 w-7"
           onClick={() => {
             navigator.clipboard.writeText(value);
             setCopied(true);
