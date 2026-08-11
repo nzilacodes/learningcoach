@@ -205,11 +205,23 @@ function DiagnosticPage() {
                 <>
                   <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
                   <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                    <button
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        navigate({ to: "/profile" });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                    >
                       <User className="w-4 h-4 text-[var(--violet)]" />
                       {locale === "pt" ? "Ver perfil" : "View profile"}
                     </button>
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                    <button
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        navigate({ to: "/settings" });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                    >
                       <Settings className="w-4 h-4 text-gray-400" />
                       {locale === "pt" ? "Definições" : "Settings"}
                     </button>
@@ -343,6 +355,14 @@ function DiagnosticPage() {
                   setSection("grammar");
                 }}
                 onContinue={() => navigate({ to: "/dashboard" })}
+              />
+            )}
+
+            {section === "report" && !report && (
+              <SubmitFailedView
+                error={saveError}
+                onRetry={submit}
+                onBack={() => setSection("pron")}
               />
             )}
           </div>
@@ -955,6 +975,48 @@ const SKILL_LABEL: Record<string, { pt: string; en: string; icon: typeof BookOpe
   speaking: { pt: "Fala", en: "Speaking", icon: MessageSquare },
   pronunciation: { pt: "Pronúncia", en: "Pronunciation", icon: Volume2 },
 };
+
+/* ---------------- Submission failed (no report to show) ---------------- */
+
+function SubmitFailedView({
+  error,
+  onRetry,
+  onBack,
+}: {
+  error: string | null;
+  onRetry: () => void;
+  onBack: () => void;
+}) {
+  const { locale } = useLocale();
+  return (
+    <div className="mx-auto max-w-xl">
+      <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center premium-shadow">
+        <AlertCircle className="mx-auto h-10 w-10 text-destructive" />
+        <h2 className="mt-4 font-display text-xl font-bold text-[var(--ink)]">
+          {locale === "pt" ? "Não foi possível avaliar o seu diagnóstico" : "We couldn't evaluate your diagnostic"}
+        </h2>
+        <p className="mt-2 text-sm text-gray-500">
+          {locale === "pt"
+            ? "As suas respostas continuam guardadas nesta sessão. Pode tentar enviar novamente."
+            : "Your answers are still saved in this session. You can try submitting again."}
+        </p>
+        {error && (
+          <div className="mx-auto mt-4 flex max-w-md items-start gap-2 rounded-xl bg-destructive/10 p-3 text-left text-xs text-destructive">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> {error}
+          </div>
+        )}
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft className="mr-1.5 h-4 w-4" /> {locale === "pt" ? "Rever respostas" : "Review answers"}
+          </Button>
+          <Button onClick={onRetry} className="bg-gradient-sunset text-white hover:opacity-90">
+            {locale === "pt" ? "Tentar novamente" : "Try again"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function ReportView({
   report,

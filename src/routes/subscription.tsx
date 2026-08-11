@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Crown, Calendar, FileText, Receipt, Clock, CheckCircle2,
-  XCircle, Loader2, Download,
+  XCircle, Loader2, Download, AlertCircle,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -30,22 +30,28 @@ function SubscriptionPage() {
   const [subs, setSubs] = useState<SubWithPlan[]>([]);
   const [pays, setPays] = useState<PayWithPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [s, p] = await Promise.all([
+        apiFetch<SubWithPlan[]>("/v1/me/subscriptions"),
+        apiFetch<PayWithPlan[]>("/v1/me/payments"),
+      ]);
+      setSubs(s);
+      setPays(p);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao carregar a assinatura");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const [s, p] = await Promise.all([
-          apiFetch<SubWithPlan[]>("/v1/me/subscriptions"),
-          apiFetch<PayWithPlan[]>("/v1/me/payments"),
-        ]);
-        setSubs(s);
-        setPays(p);
-      } finally {
-        setLoading(false);
-      }
-    })();
-
-  }, []);
+    void load();
+  }, [load]);
 
   const active = subs.find((s) => s.status === "active");
   const invoices = pays.filter((p) => p.status === "paid");
@@ -64,6 +70,16 @@ function SubscriptionPage() {
             <div className="mt-10 flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" /> A carregar…
             </div>
+          ) : error ? (
+            <Card className="mt-10 border-dashed">
+              <CardContent className="p-10 text-center">
+                <AlertCircle className="mx-auto h-10 w-10 text-destructive" />
+                <p className="mt-3 text-sm text-muted-foreground">{error}</p>
+                <Button onClick={() => void load()} className="mt-4 bg-gradient-sunset text-white">
+                  Tentar novamente
+                </Button>
+              </CardContent>
+            </Card>
           ) : (
             <Tabs defaultValue="current" className="mt-6">
               <TabsList>

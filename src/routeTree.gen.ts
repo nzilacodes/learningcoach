@@ -13,10 +13,12 @@ import { Route as VideosRouteImport } from './routes/videos'
 import { Route as TrackRouteImport } from './routes/track'
 import { Route as SubscriptionRouteImport } from './routes/subscription'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RewardsRouteImport } from './routes/rewards'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ReadingRouteImport } from './routes/reading'
 import { Route as PronunciationRouteImport } from './routes/pronunciation'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PlacementRouteImport } from './routes/placement'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -62,6 +64,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RewardsRoute = RewardsRouteImport.update({
   id: '/rewards',
   path: '/rewards',
@@ -80,6 +87,11 @@ const ReadingRoute = ReadingRouteImport.update({
 const PronunciationRoute = PronunciationRouteImport.update({
   id: '/pronunciation',
   path: '/pronunciation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -223,10 +235,12 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/placement': typeof PlacementRoute
   '/pricing': typeof PricingRoute
+  '/profile': typeof ProfileRoute
   '/pronunciation': typeof PronunciationRoute
   '/reading': typeof ReadingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/rewards': typeof RewardsRoute
+  '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/subscription': typeof SubscriptionRoute
   '/track': typeof TrackRoute
@@ -257,10 +271,12 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/placement': typeof PlacementRoute
   '/pricing': typeof PricingRoute
+  '/profile': typeof ProfileRoute
   '/pronunciation': typeof PronunciationRoute
   '/reading': typeof ReadingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/rewards': typeof RewardsRoute
+  '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/subscription': typeof SubscriptionRoute
   '/track': typeof TrackRoute
@@ -292,10 +308,12 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/placement': typeof PlacementRoute
   '/pricing': typeof PricingRoute
+  '/profile': typeof ProfileRoute
   '/pronunciation': typeof PronunciationRoute
   '/reading': typeof ReadingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/rewards': typeof RewardsRoute
+  '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/subscription': typeof SubscriptionRoute
   '/track': typeof TrackRoute
@@ -328,10 +346,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/placement'
     | '/pricing'
+    | '/profile'
     | '/pronunciation'
     | '/reading'
     | '/reset-password'
     | '/rewards'
+    | '/settings'
     | '/sitemap.xml'
     | '/subscription'
     | '/track'
@@ -362,10 +382,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/placement'
     | '/pricing'
+    | '/profile'
     | '/pronunciation'
     | '/reading'
     | '/reset-password'
     | '/rewards'
+    | '/settings'
     | '/sitemap.xml'
     | '/subscription'
     | '/track'
@@ -396,10 +418,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/placement'
     | '/pricing'
+    | '/profile'
     | '/pronunciation'
     | '/reading'
     | '/reset-password'
     | '/rewards'
+    | '/settings'
     | '/sitemap.xml'
     | '/subscription'
     | '/track'
@@ -431,10 +455,12 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PlacementRoute: typeof PlacementRoute
   PricingRoute: typeof PricingRoute
+  ProfileRoute: typeof ProfileRoute
   PronunciationRoute: typeof PronunciationRoute
   ReadingRoute: typeof ReadingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RewardsRoute: typeof RewardsRoute
+  SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SubscriptionRoute: typeof SubscriptionRoute
   TrackRoute: typeof TrackRoute
@@ -476,6 +502,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rewards': {
       id: '/rewards'
       path: '/rewards'
@@ -502,6 +535,13 @@ declare module '@tanstack/react-router' {
       path: '/pronunciation'
       fullPath: '/pronunciation'
       preLoaderRoute: typeof PronunciationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -695,10 +735,12 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PlacementRoute: PlacementRoute,
   PricingRoute: PricingRoute,
+  ProfileRoute: ProfileRoute,
   PronunciationRoute: PronunciationRoute,
   ReadingRoute: ReadingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RewardsRoute: RewardsRoute,
+  SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SubscriptionRoute: SubscriptionRoute,
   TrackRoute: TrackRoute,

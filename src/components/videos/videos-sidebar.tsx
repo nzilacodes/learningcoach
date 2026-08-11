@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   Home,
   LayoutDashboard,
@@ -56,6 +56,7 @@ export function VideosSidebar() {
   const { locale } = useLocale();
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -158,11 +159,23 @@ export function VideosSidebar() {
                 ? "left-full ml-2 w-52"
                 : "left-4 right-4"
             }`}>
-              <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+              <button
+                onClick={() => {
+                  setProfileOpen(false);
+                  navigate({ to: "/profile" });
+                }}
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+              >
                 <User className="w-4 h-4 text-[var(--violet)]" />
                 {locale === "pt" ? "Ver perfil" : "View profile"}
               </button>
-              <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+              <button
+                onClick={() => {
+                  setProfileOpen(false);
+                  navigate({ to: "/settings" });
+                }}
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+              >
                 <Settings className="w-4 h-4 text-gray-400" />
                 {locale === "pt" ? "Definições" : "Settings"}
               </button>

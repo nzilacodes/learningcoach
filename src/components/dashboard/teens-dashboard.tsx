@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Flame,
@@ -33,6 +33,7 @@ import {
 export function TeensDashboard(data: DashboardData) {
   const { locale } = useLocale();
   const { signOut } = useAuth();
+  const navigate = useNavigate();
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
   const track = AGE_TRACKS.teens;
@@ -83,11 +84,23 @@ export function TeensDashboard(data: DashboardData) {
                 <>
                   <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
                   <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                    <button
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        navigate({ to: "/profile" });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                    >
                       <User className="w-4 h-4 text-[var(--violet)]" />
                       {locale === "pt" ? "Ver perfil" : "View profile"}
                     </button>
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                    <button
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        navigate({ to: "/settings" });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                    >
                       <Settings className="w-4 h-4 text-gray-400" />
                       {locale === "pt" ? "Definições" : "Settings"}
                     </button>
@@ -316,9 +329,13 @@ export function TeensDashboard(data: DashboardData) {
                     ? locale === "pt"
                       ? "Acesso ativo pela sua conta responsável."
                       : "Active access via your guardian's account."
-                    : locale === "pt"
-                      ? "Peça a um responsável para ativar seu plano."
-                      : "Ask a guardian to activate your plan."}
+                    : subscription.sub?.status === "pending"
+                      ? locale === "pt"
+                        ? "Pagamento em verificação pelo administrador."
+                        : "Payment under review by the admin."
+                      : locale === "pt"
+                        ? "Peça a um responsável para ativar seu plano."
+                        : "Ask a guardian to activate your plan."}
                 </p>
               </div>
             </aside>

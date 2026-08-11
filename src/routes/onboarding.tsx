@@ -28,6 +28,7 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth, type AuthUser } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import { ageToRoom, useAgeTheme } from "@/lib/age-theme";
+import { INTEREST_OPTIONS, GOAL_OPTIONS } from "@/lib/profile-options";
 
 export const Route = createFileRoute("/onboarding")({
   component: OnboardingWizard,
@@ -160,25 +161,6 @@ function UnknownStatusStep({ onDone }: { onDone: () => Promise<void> }) {
 }
 
 /* ---------------- STEP 1: PROFILE ---------------- */
-
-const INTEREST_OPTIONS = [
-  { id: "travel", pt: "Viagens", en: "Travel" },
-  { id: "business", pt: "Negócios", en: "Business" },
-  { id: "movies", pt: "Filmes & Séries", en: "Movies & TV" },
-  { id: "music", pt: "Música", en: "Music" },
-  { id: "tech", pt: "Tecnologia", en: "Technology" },
-  { id: "sports", pt: "Desporto", en: "Sports" },
-  { id: "gaming", pt: "Jogos", en: "Gaming" },
-  { id: "academic", pt: "Académico", en: "Academic" },
-];
-
-const GOAL_OPTIONS = [
-  { id: "travel", pt: "Viajar com confiança", en: "Travel with confidence" },
-  { id: "work", pt: "Melhorar carreira", en: "Boost my career" },
-  { id: "exam", pt: "Preparar exame (IELTS/TOEFL)", en: "Prepare exam (IELTS/TOEFL)" },
-  { id: "school", pt: "Escola / universidade", en: "School / university" },
-  { id: "fluency", pt: "Fluência conversacional", en: "Conversational fluency" },
-];
 
 function ProfileStep({
   user,

@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Flame,
@@ -44,6 +44,7 @@ import {
 export function AdultsDashboard(data: DashboardData) {
   const { locale } = useLocale();
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
 
@@ -132,11 +133,23 @@ export function AdultsDashboard(data: DashboardData) {
                 <>
                   <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
                   <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                    <button
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        navigate({ to: "/profile" });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                    >
                       <User className="w-4 h-4 text-[var(--violet)]" />
                       {locale === "pt" ? "Ver perfil" : "View profile"}
                     </button>
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                    <button
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        navigate({ to: "/settings" });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                    >
                       <Settings className="w-4 h-4 text-gray-400" />
                       {locale === "pt" ? "Definições" : "Settings"}
                     </button>
@@ -161,14 +174,14 @@ export function AdultsDashboard(data: DashboardData) {
                 <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
               </button>
             </div>
-            <div className="hidden md:block">
+            <Link to="/profile" className="hidden md:block" title={locale === "pt" ? "Ver perfil" : "View profile"}>
               <div className="relative inline-flex">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
                   <User className="w-4 h-4 text-gray-600" />
                 </div>
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 
@@ -766,7 +779,7 @@ function SubscriptionCard({
   pct: number;
   locale: "pt" | "en";
 }) {
-  if (sub?.status === "active" && daysLeft != null) {
+  if (sub?.status === "active") {
     const activationCode = sub.activation_code;
     return (
       <div className="bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] premium-shadow rounded-3xl p-6 text-white">
@@ -779,7 +792,9 @@ function SubscriptionCard({
               {locale === "pt" ? "Plano" : "Plan"} • {planLabel}
             </p>
             <p className="text-[10px] text-white/70">
-              {daysLeft} {locale === "pt" ? "dias restantes" : "days left"}
+              {daysLeft != null
+                ? `${daysLeft} ${locale === "pt" ? "dias restantes" : "days left"}`
+                : locale === "pt" ? "Sem data de expiração" : "No expiration date"}
             </p>
           </div>
         </div>
