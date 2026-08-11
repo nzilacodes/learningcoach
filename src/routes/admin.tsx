@@ -33,6 +33,27 @@ import {
   CurriculumSection,
 } from "@/components/admin/sections";
 
+type AdminUser = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  country: string | null;
+  age: number | null;
+  cefr_level: string | null;
+  created_at: string;
+};
+
+type AdminPayment = {
+  id: string;
+  amount_kz: number;
+  reference: string;
+  status: string;
+  profiles?: { full_name: string | null; email: string | null } | null;
+  subscription_plans?: { tier: string; billing_cycle: string } | null;
+  subscriptions?: { activation_code: string | null; expires_at: string | null } | null;
+};
+
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
   head: () => ({
@@ -77,7 +98,7 @@ function AdminPage() {
     queryKey: ["admin_users"],
     enabled: !!user && isAdmin,
     queryFn: async () => {
-      const res = await apiFetch<{ items: any[] }>("/v1/admin/users?limit=200");
+      const res = await apiFetch<{ items: AdminUser[] }>("/v1/admin/users?limit=200");
       return res.items;
     },
   });
@@ -86,13 +107,13 @@ function AdminPage() {
     queryKey: ["admin_payments"],
     enabled: !!user && isAdmin,
     queryFn: async () => {
-      const res = await apiFetch<{ items: any[] }>("/v1/admin/payments?limit=100");
+      const res = await apiFetch<{ items: AdminPayment[] }>("/v1/admin/payments?limit=100");
       return res.items;
     },
   });
 
   const activate = useMutation({
-    mutationFn: async (payment: any) =>
+    mutationFn: async (payment: AdminPayment) =>
       apiFetch<{ activationCode: string | null }>(`/v1/admin/payments/${payment.id}/activate`, {
         method: "POST",
       }),
@@ -115,7 +136,7 @@ function AdminPage() {
   });
 
   const cancel = useMutation({
-    mutationFn: async (payment: any) =>
+    mutationFn: async (payment: AdminPayment) =>
       apiFetch(`/v1/admin/payments/${payment.id}/cancel`, { method: "POST" }),
     onSuccess: () => {
       toast.success(locale === "pt" ? "Pagamento cancelado" : "Payment cancelled");
@@ -239,7 +260,7 @@ function AdminPage() {
                     </TableCell>
                   </TableRow>
                 )}
-                {users.map((u: any) => {
+                {users.map((u: AdminUser) => {
                   const room =
                     u.age == null ? "—" : u.age < 13 ? "Kids" : u.age < 18 ? "Teens" : "Adults";
                   return (

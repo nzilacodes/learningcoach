@@ -27,7 +27,7 @@ import { Label } from "@/components/ui/label";
 import { useLocale } from "@/lib/i18n";
 import { useAuth, type AuthUser } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
-import { useAgeTheme } from "@/lib/age-theme";
+import { ageToRoom, useAgeTheme } from "@/lib/age-theme";
 
 export const Route = createFileRoute("/onboarding")({
   component: OnboardingWizard,
@@ -50,12 +50,6 @@ const STEPS: { key: Status; labelPt: string; labelEn: string; icon: typeof User 
   { key: "checkout", labelPt: "Pagamento", labelEn: "Checkout", icon: CreditCard },
 ];
 
-function ageToRoom(age: number): "kids" | "teens" | "adults" {
-  if (age < 13) return "kids";
-  if (age < 18) return "teens";
-  return "adults";
-}
-
 function OnboardingWizard() {
   const { locale } = useLocale();
   const { user, loading, refresh: refreshAuth } = useAuth();
@@ -67,12 +61,7 @@ function OnboardingWizard() {
 
   const status: Status = (user?.onboardingStatus as Status) ?? "profile";
   const activeIdx = STEPS.findIndex((s) => s.key === status);
-
-  useEffect(() => {
-    if (status === "complete") navigate({ to: "/dashboard" });
-  }, [status, navigate]);
-
-  const refresh = refreshAuth;
+  const knownStep = activeIdx !== -1;
 
   if (loading || !user) {
     return (
@@ -123,13 +112,49 @@ function OnboardingWizard() {
             </div>
           </div>
 
-          {status === "profile" && <ProfileStep user={user} onDone={refresh} />}
-          {status === "placement" && <PlacementStep onDone={refresh} />}
-          {status === "plan" && <PlanStep user={user} onDone={refresh} />}
-          {status === "demo" && <DemoStep onDone={refresh} />}
-          {status === "checkout" && <CheckoutStep onDone={refresh} />}
+          {status === "profile" && <ProfileStep user={user} onDone={refreshAuth} />}
+          {status === "placement" && <PlacementStep onDone={refreshAuth} />}
+          {status === "plan" && <PlanStep user={user} onDone={refreshAuth} />}
+          {status === "demo" && <DemoStep onDone={refreshAuth} />}
+          {status === "checkout" && <CheckoutStep onDone={refreshAuth} />}
+          {!knownStep && status !== "complete" && <UnknownStatusStep onDone={refreshAuth} />}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---------------- FALLBACK: unrecognized onboardingStatus ---------------- */
+
+function UnknownStatusStep({ onDone }: { onDone: () => Promise<void> }) {
+  const { locale } = useLocale();
+  const [resetting, setResetting] = useState(false);
+
+  const reset = async () => {
+    setResetting(true);
+    try {
+      await apiFetch("/v1/me", { method: "PATCH", body: JSON.stringify({ onboardingStatus: "profile" }) });
+    } catch (e) {
+      setResetting(false);
+      return toast.error(e instanceof Error ? e.message : "Erro");
+    }
+    setResetting(false);
+    await onDone();
+  };
+
+  return (
+    <div className="glass rounded-3xl p-8 shadow-glow text-center">
+      <h2 className="font-display text-xl font-bold">
+        {locale === "pt" ? "Algo correu mal com o seu progresso" : "Something went wrong with your progress"}
+      </h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        {locale === "pt"
+          ? "Não foi possível determinar o passo atual do onboarding. Reinicie para continuar."
+          : "We couldn't determine your current onboarding step. Restart to continue."}
+      </p>
+      <Button onClick={reset} disabled={resetting} size="lg" className="bg-gradient-sunset mt-6 text-white shadow-soft hover:opacity-90">
+        {resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : locale === "pt" ? "Reiniciar onboarding" : "Restart onboarding"}
+      </Button>
     </div>
   );
 }
@@ -323,11 +348,7 @@ function PlacementStep({}: { onDone: () => Promise<void> }) {
       <Button
         size="lg"
         className="mt-6 bg-gradient-sunset text-white shadow-soft hover:opacity-90"
-        onClick={() => {
-          // Ensure onboarding state is 'placement' so /placement can advance it to 'plan' on completion.
-          void apiFetch("/v1/me", { method: "PATCH", body: JSON.stringify({ onboardingStatus: "placement" }) });
-          navigate({ to: "/placement" });
-        }}
+        onClick={() => navigate({ to: "/placement" })}
       >
         {locale === "pt" ? "Começar diagnóstico" : "Start diagnostic"} <ArrowRight className="ml-1.5 h-4 w-4" />
       </Button>

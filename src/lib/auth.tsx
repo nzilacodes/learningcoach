@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
-import { apiFetch } from "@/lib/api/client";
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
+import { apiFetch, ApiError } from "@/lib/api/client";
 
 type Role = "admin" | "user";
 
@@ -42,14 +42,35 @@ const Ctx = createContext<AuthCtx>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const inFlight = useRef<Promise<void> | null>(null);
 
-  const refresh = useCallback(async () => {
-    try {
-      const me = await apiFetch<AuthUser>("/v1/me");
-      setUser(me);
-    } catch {
-      setUser(null);
-    }
+  const refresh = useCallback(() => {
+    // De-duplicate concurrent refresh() calls (e.g. an onboarding step's
+    // onDone() firing around the same time as another consumer's refresh) so
+    // an older response can't resolve after a newer one and clobber state.
+    if (inFlight.current) return inFlight.current;
+
+    const promise = (async () => {
+      try {
+        const me = await apiFetch<AuthUser>("/v1/me");
+        setUser(me);
+      } catch (err) {
+        // Only a real 401 (session invalid/expired, already retried once via
+        // refreshSession() inside apiFetch) means "not logged in". A network
+        // hiccup or 5xx shouldn't silently sign out a user who was already
+        // authenticated.
+        if (err instanceof ApiError && err.status === 401) {
+          setUser(null);
+        } else {
+          console.error("[auth] failed to refresh session", err);
+        }
+      }
+    })();
+
+    inFlight.current = promise.finally(() => {
+      inFlight.current = null;
+    });
+    return inFlight.current;
   }, []);
 
   useEffect(() => {

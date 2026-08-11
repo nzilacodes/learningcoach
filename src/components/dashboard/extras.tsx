@@ -2,8 +2,23 @@ import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Award, Medal, Trophy, Target, Calendar, User, Sparkles, ExternalLink, Crown } from "lucide-react";
+import {
+  Award,
+  Medal,
+  Trophy,
+  Target,
+  Calendar,
+  User,
+  Sparkles,
+  ExternalLink,
+  Crown,
+  Users,
+  Bell,
+  BellOff,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import type { useStudyReminder } from "@/lib/learning";
 
 /* -------- Profile header -------- */
 export function ProfileHeader() {
@@ -43,7 +58,9 @@ export function ProfileHeader() {
           )}
         </div>
         <div className="flex-1">
-          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Perfil</div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Perfil
+          </div>
           <h2 className="font-display text-2xl font-bold">{user?.fullName || "Aluno"}</h2>
           <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
             {user?.country && <span>🌍 {user.country}</span>}
@@ -67,7 +84,14 @@ export function LeaderboardCard() {
     queryKey: ["leaderboard"],
     queryFn: () =>
       apiFetch<
-        Array<{ rank: number; user_id: string; display_name: string; xp: number; streak: number; cefr_level: string | null }>
+        Array<{
+          rank: number;
+          user_id: string;
+          display_name: string;
+          xp: number;
+          streak: number;
+          cefr_level: string | null;
+        }>
       >("/v1/leaderboard?limit=8"),
   });
 
@@ -109,12 +133,20 @@ export function LeaderboardCard() {
 }
 
 /* -------- Certificates -------- */
+type CertificateRow = {
+  id: string;
+  level: string;
+  issued_at: string;
+  verification_code: string;
+  pdf_url: string | null;
+};
+
 export function CertificatesCard() {
   const { user } = useAuth();
   const { data = [] } = useQuery({
     queryKey: ["my_certificates", user?.id],
     enabled: !!user,
-    queryFn: () => apiFetch<any[]>("/v1/me/certificates"),
+    queryFn: () => apiFetch<CertificateRow[]>("/v1/me/certificates"),
   });
 
   return (
@@ -129,8 +161,11 @@ export function CertificatesCard() {
         </p>
       ) : (
         <ul className="space-y-2">
-          {data.map((c: any) => (
-            <li key={c.id} className="flex items-center justify-between rounded-xl border border-border bg-background p-3">
+          {data.map((c) => (
+            <li
+              key={c.id}
+              className="flex items-center justify-between rounded-xl border border-border bg-background p-3"
+            >
               <div>
                 <div className="text-sm font-bold">Nível {c.level}</div>
                 <div className="text-[11px] text-muted-foreground">
@@ -158,9 +193,10 @@ export function AchievementsCard() {
   const { data = [] } = useQuery({
     queryKey: ["my_achievements", user?.id],
     enabled: !!user,
-    queryFn: () => apiFetch<{ earned_at: string; achievements: { title: string; icon: string; xp_reward: number } }[]>(
-      "/v1/me/achievements",
-    ),
+    queryFn: () =>
+      apiFetch<
+        { earned_at: string; achievements: { title: string; icon: string; xp_reward: number } }[]
+      >("/v1/me/achievements"),
   });
 
   return (
@@ -176,7 +212,10 @@ export function AchievementsCard() {
       ) : (
         <ul className="space-y-2">
           {data.slice(0, 6).map((a, i) => (
-            <li key={i} className="flex items-center gap-3 rounded-xl border border-border bg-background p-3">
+            <li
+              key={i}
+              className="flex items-center gap-3 rounded-xl border border-border bg-background p-3"
+            >
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber/15 text-lg">
                 {a.achievements?.icon ?? "🏅"}
               </div>
@@ -242,7 +281,9 @@ export function ActivityCalendar() {
       </div>
       <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
         <span>{activeDays} dias ativos · 12 semanas</span>
-        <span>{Math.floor(total / 3600)}h {Math.floor((total % 3600) / 60)}m</span>
+        <span>
+          {Math.floor(total / 3600)}h {Math.floor((total % 3600) / 60)}m
+        </span>
       </div>
     </div>
   );
@@ -260,7 +301,9 @@ export function GoalsCard() {
       </div>
       {user?.learningGoal ? (
         <div className="rounded-xl border border-border bg-background p-3">
-          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Meta principal</div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Meta principal
+          </div>
           <div className="mt-1 flex items-start gap-2 text-sm font-semibold">
             <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-magenta" />
             <span>{user.learningGoal}</span>
@@ -273,7 +316,9 @@ export function GoalsCard() {
       )}
       {user?.interests && user.interests.length > 0 && (
         <div className="mt-3">
-          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Interesses</div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Interesses
+          </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {user.interests.map((i: string) => (
               <span key={i} className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">
@@ -286,6 +331,158 @@ export function GoalsCard() {
       <Button asChild size="sm" variant="outline" className="mt-4 w-full">
         <Link to="/onboarding">Editar objetivos</Link>
       </Button>
+    </div>
+  );
+}
+
+/* -------- Classes (Turmas) -------- */
+type MyClasses = {
+  owned: { id: string; name: string; invite_code: string; member_count: number }[];
+  joined: { id: string; name: string; owner_name: string }[];
+};
+
+/**
+ * `variant="full"` (adults/teens): summary of owned + joined classes with a
+ * link to /classes. `variant="readonly"` (kids): a single read-only line
+ * naming the class they're in — class management is a parent/coach task.
+ */
+export function ClassesCard({ variant = "full" }: { variant?: "full" | "readonly" }) {
+  const { user } = useAuth();
+  const { data } = useQuery({
+    queryKey: ["my_classes", user?.id],
+    enabled: !!user,
+    queryFn: () => apiFetch<MyClasses>("/v1/me/classes"),
+  });
+
+  if (variant === "readonly") {
+    const joined = data?.joined ?? [];
+    if (joined.length === 0) return null;
+    return (
+      <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+        <div className="mb-2 flex items-center gap-2">
+          <Users className="h-4 w-4 text-violet" />
+          <h3 className="font-display font-bold">Minha turma</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Você está na turma:{" "}
+          <span className="font-semibold text-foreground">{joined[0].name}</span>
+        </p>
+      </div>
+    );
+  }
+
+  const owned = data?.owned ?? [];
+  const joined = data?.joined ?? [];
+  const total = owned.length + joined.length;
+
+  return (
+    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="font-display font-bold flex items-center gap-2">
+          <Users className="h-4 w-4 text-violet" />
+          Turmas
+        </h3>
+      </div>
+      {total === 0 ? (
+        <p className="text-xs text-muted-foreground">
+          Crie uma turma para acompanhar o progresso de outros alunos, ou entre numa turma com um
+          código de convite.
+        </p>
+      ) : (
+        <ul className="space-y-1.5 text-sm">
+          {owned.map((c) => (
+            <li
+              key={c.id}
+              className="flex items-center justify-between rounded-xl bg-background px-3 py-2"
+            >
+              <span className="font-medium">{c.name}</span>
+              <span className="text-xs text-muted-foreground">
+                {c.member_count} aluno{c.member_count === 1 ? "" : "s"}
+              </span>
+            </li>
+          ))}
+          {joined.map((c) => (
+            <li
+              key={c.id}
+              className="flex items-center justify-between rounded-xl bg-background px-3 py-2"
+            >
+              <span className="font-medium">{c.name}</span>
+              <span className="text-xs text-muted-foreground">{c.owner_name}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Button asChild size="sm" variant="outline" className="mt-4 w-full">
+        <Link to="/classes">Gerir turmas</Link>
+      </Button>
+    </div>
+  );
+}
+
+/* -------- Study reminder (shared by adults/teens dashboards) -------- */
+export function ReminderCard({
+  reminder,
+  locale,
+}: {
+  reminder: ReturnType<typeof useStudyReminder>;
+  locale: "pt" | "en";
+}) {
+  const r = reminder.data ?? { interval_minutes: 30, enabled: false };
+  const options = [15, 30, 45, 60, 90];
+  return (
+    <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-display text-sm font-bold text-[var(--ink)] flex items-center gap-2">
+          {r.enabled ? (
+            <Bell className="w-4 h-4 text-[var(--violet)]" />
+          ) : (
+            <BellOff className="w-4 h-4 text-gray-400" />
+          )}
+          {locale === "pt" ? "Lembrete de estudo" : "Study reminder"}
+        </h3>
+        <button
+          onClick={() => {
+            reminder.save.mutate({ interval_minutes: r.interval_minutes, enabled: !r.enabled });
+            if (
+              !r.enabled &&
+              typeof Notification !== "undefined" &&
+              Notification.permission === "default"
+            ) {
+              Notification.requestPermission().then((p) => {
+                if (p !== "granted")
+                  toast.error(
+                    locale === "pt"
+                      ? "Permita notificações no navegador"
+                      : "Please allow notifications",
+                  );
+              });
+            }
+          }}
+          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${r.enabled ? "bg-[var(--violet)] text-white" : "border border-gray-200 text-gray-500"}`}
+        >
+          {r.enabled ? (locale === "pt" ? "Ativo" : "On") : locale === "pt" ? "Desativado" : "Off"}
+        </button>
+      </div>
+      <div className="flex gap-2">
+        {options.map((m) => (
+          <button
+            key={m}
+            onClick={() => reminder.save.mutate({ interval_minutes: m, enabled: r.enabled })}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${
+              r.interval_minutes === m
+                ? "bg-[var(--violet)] text-white"
+                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+            }`}
+          >
+            {m < 60 ? `${m}m` : `1h`}
+          </button>
+        ))}
+      </div>
+      <p className="mt-3 text-xs text-gray-400">
+        {locale === "pt"
+          ? `Notificação a cada ${r.interval_minutes} min`
+          : `Notify every ${r.interval_minutes} min`}
+      </p>
     </div>
   );
 }

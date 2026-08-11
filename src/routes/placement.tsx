@@ -137,8 +137,6 @@ function DiagnosticPage() {
     }
     setSection("loading");
     setSaveError(null);
-    console.log("[placement] submitting evaluation…");
-
 
     // Profile context for personalization (grading itself happens server-side) —
     // already available from the session, no extra fetch needed.

@@ -2,6 +2,13 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 export type AgeTheme = "kids" | "teens" | "adults";
 
+export function ageToRoom(age: number | null | undefined): AgeTheme {
+  if (age == null) return "adults";
+  if (age < 13) return "kids";
+  if (age < 18) return "teens";
+  return "adults";
+}
+
 const AgeThemeContext = createContext<{
   theme: AgeTheme;
   setTheme: (t: AgeTheme) => void;

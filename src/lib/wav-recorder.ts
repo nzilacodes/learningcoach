@@ -86,10 +86,14 @@ export async function startWavRecording(): Promise<WavRecorder> {
   const cleanup = () => {
     try {
       node.disconnect();
-    } catch {}
+    } catch (err) {
+      console.warn("[wav-recorder] failed to disconnect processor node", err);
+    }
     try {
       source.disconnect();
-    } catch {}
+    } catch (err) {
+      console.warn("[wav-recorder] failed to disconnect audio source", err);
+    }
     stream.getTracks().forEach((t) => t.stop());
     void ctx.close();
   };

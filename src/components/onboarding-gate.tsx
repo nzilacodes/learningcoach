@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
-import { useAgeTheme } from "@/lib/age-theme";
+import { ageToRoom, useAgeTheme } from "@/lib/age-theme";
 
 // Routes that are always accessible (no login required for content).
 const PUBLIC_PATHS = new Set([
@@ -17,11 +17,11 @@ const PUBLIC_PATHS = new Set([
 // Route where the mandatory onboarding wizard lives.
 const ONBOARDING_PATH = "/onboarding";
 
-function ageToRoom(age: number): "kids" | "teens" | "adults" {
-  if (age < 13) return "kids";
-  if (age < 18) return "teens";
-  return "adults";
-}
+// The full diagnostic test lives on its own route. It doubles as a public
+// marketing CTA for logged-out visitors, but for an authenticated user it's
+// also reachable as the onboarding wizard's "placement" step — allow it
+// through the gate in that case instead of bouncing back to /onboarding.
+const PLACEMENT_PATH = "/placement";
 
 export function OnboardingGate() {
   const { user, loading, isAdmin } = useAuth();
@@ -39,10 +39,11 @@ export function OnboardingGate() {
     const status = user.onboardingStatus ?? "profile";
     const isPublic = PUBLIC_PATHS.has(path);
     const isOnboarding = path === ONBOARDING_PATH;
+    const isPlacementStep = path === PLACEMENT_PATH && status === "placement";
 
     // Mandatory flow: while onboarding isn't complete, force user to /onboarding.
     if (status !== "complete") {
-      if (!isOnboarding && !isPublic) {
+      if (!isOnboarding && !isPublic && !isPlacementStep) {
         navigate({ to: ONBOARDING_PATH });
       }
       return;

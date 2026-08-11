@@ -36,11 +36,21 @@ function csvDownload(name: string, rows: Record<string, any>[]) {
 }
 
 /* -------- Subscriptions manager -------- */
+type AdminSubscription = {
+  id: string;
+  status: string;
+  starts_at: string | null;
+  expires_at: string | null;
+  activation_code: string | null;
+  profiles?: { full_name: string | null; email: string | null } | null;
+  subscription_plans?: { tier: string; billing_cycle: string } | null;
+};
+
 export function SubscriptionsSection() {
   const { data = [], refetch } = useQuery({
     queryKey: ["admin_subscriptions"],
     queryFn: async () => {
-      const res = await apiFetch<{ items: any[] }>("/v1/admin/subscriptions?limit=200");
+      const res = await apiFetch<{ items: AdminSubscription[] }>("/v1/admin/subscriptions?limit=200");
       return res.items;
     },
   });
@@ -62,7 +72,7 @@ export function SubscriptionsSection() {
           onClick={() =>
             csvDownload(
               "subscriptions",
-              data.map((s: any) => ({
+              data.map((s: AdminSubscription) => ({
                 learner: s.profiles?.full_name,
                 email: s.profiles?.email,
                 tier: s.subscription_plans?.tier,
@@ -99,7 +109,7 @@ export function SubscriptionsSection() {
                 </TableCell>
               </TableRow>
             )}
-            {data.map((s: any) => (
+            {data.map((s: AdminSubscription) => (
               <TableRow key={s.id}>
                 <TableCell>
                   <div className="font-medium">{s.profiles?.full_name ?? "—"}</div>

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
+import { ageToRoom, type AgeTheme } from "@/lib/age-theme";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SITE_URL } from "@/lib/site-url";
@@ -35,20 +36,13 @@ export const Route = createFileRoute("/community")({
   }),
 });
 
-type Room = "kids" | "teens" | "adults";
+type Room = AgeTheme;
 
 const roomsMeta: Record<Room, { pt: string; en: string; range: string; icon: typeof Baby; gradient: string }> = {
   kids: { pt: "Sala Crianças", en: "Kids Room", range: "6–12", icon: Baby, gradient: "from-amber to-sunset" },
   teens: { pt: "Sala Adolescentes", en: "Teen Room", range: "13–17", icon: GraduationCap, gradient: "from-sunset to-magenta" },
   adults: { pt: "Sala Adultos", en: "Adult Room", range: "18+", icon: User, gradient: "from-magenta to-violet" },
 };
-
-function ageToRoom(age: number | null | undefined): Room {
-  if (age == null) return "adults";
-  if (age < 13) return "kids";
-  if (age < 18) return "teens";
-  return "adults";
-}
 
 type Message = { id: string; user_id: string; display_name: string; content: string; kind: string; created_at: string };
 
@@ -196,7 +190,7 @@ function CommunityPage() {
 
   if (!room) return null;
   const meta = roomsMeta[room];
-  const onlineCount = new Set(messages.slice(-30).map((m: any) => m.user_id)).size || 1;
+  const onlineCount = new Set(messages.slice(-30).map((m) => m.user_id)).size || 1;
 
   return (
     <div className="min-h-screen">
@@ -250,7 +244,7 @@ function CommunityPage() {
                   {locale === "pt" ? "Seja o primeiro a escrever 👋" : "Be the first to say hi 👋"}
                 </div>
               )}
-              {messages.map((m: any) => {
+              {messages.map((m) => {
                 const me = m.user_id === user.id;
                 return (
                   <div key={m.id} className={`flex ${me ? "justify-end" : "justify-start"}`}>

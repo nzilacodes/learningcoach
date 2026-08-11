@@ -26,6 +26,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CurriculumRouteImport } from './routes/curriculum'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CommunityRouteImport } from './routes/community'
+import { Route as ClassesRouteImport } from './routes/classes'
 import { Route as CertificatesRouteImport } from './routes/certificates'
 import { Route as CefrLevelsRouteImport } from './routes/cefr-levels'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -126,6 +127,11 @@ const CommunityRoute = CommunityRouteImport.update({
   path: '/community',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClassesRoute = ClassesRouteImport.update({
+  id: '/classes',
+  path: '/classes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CertificatesRoute = CertificatesRouteImport.update({
   id: '/certificates',
   path: '/certificates',
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cefr-levels': typeof CefrLevelsRoute
   '/certificates': typeof CertificatesRoute
+  '/classes': typeof ClassesRoute
   '/community': typeof CommunityRoute
   '/contact': typeof ContactRoute
   '/curriculum': typeof CurriculumRoute
@@ -240,6 +247,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cefr-levels': typeof CefrLevelsRoute
   '/certificates': typeof CertificatesRoute
+  '/classes': typeof ClassesRoute
   '/community': typeof CommunityRoute
   '/contact': typeof ContactRoute
   '/curriculum': typeof CurriculumRoute
@@ -274,6 +282,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cefr-levels': typeof CefrLevelsRoute
   '/certificates': typeof CertificatesRoute
+  '/classes': typeof ClassesRoute
   '/community': typeof CommunityRoute
   '/contact': typeof ContactRoute
   '/curriculum': typeof CurriculumRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cefr-levels'
     | '/certificates'
+    | '/classes'
     | '/community'
     | '/contact'
     | '/curriculum'
@@ -342,6 +352,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cefr-levels'
     | '/certificates'
+    | '/classes'
     | '/community'
     | '/contact'
     | '/curriculum'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cefr-levels'
     | '/certificates'
+    | '/classes'
     | '/community'
     | '/contact'
     | '/curriculum'
@@ -409,6 +421,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CefrLevelsRoute: typeof CefrLevelsRoute
   CertificatesRoute: typeof CertificatesRoute
+  ClassesRoute: typeof ClassesRoute
   CommunityRoute: typeof CommunityRoute
   ContactRoute: typeof ContactRoute
   CurriculumRoute: typeof CurriculumRoute
@@ -554,6 +567,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/classes': {
+      id: '/classes'
+      path: '/classes'
+      fullPath: '/classes'
+      preLoaderRoute: typeof ClassesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/certificates': {
       id: '/certificates'
       path: '/certificates'
@@ -665,6 +685,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CefrLevelsRoute: CefrLevelsRoute,
   CertificatesRoute: CertificatesRoute,
+  ClassesRoute: ClassesRoute,
   CommunityRoute: CommunityRoute,
   ContactRoute: ContactRoute,
   CurriculumRoute: CurriculumRoute,
