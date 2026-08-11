@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useLocale } from "@/lib/i18n";
 import { apiFetch, ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
+import { passwordError } from "@/lib/password";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -205,8 +206,8 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 8)
-      return toast.error(locale === "pt" ? "Senha mínima: 8 caracteres" : "Password: min 8 chars");
+    const pwError = passwordError(password, locale);
+    if (pwError) return toast.error(pwError);
     if (password !== confirm)
       return toast.error(locale === "pt" ? "Senhas não coincidem" : "Passwords don't match");
     if (!terms || !privacy)

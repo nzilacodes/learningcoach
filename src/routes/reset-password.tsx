@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLocale } from "@/lib/i18n";
 import { apiFetch, ApiError } from "@/lib/api/client";
+import { passwordError } from "@/lib/password";
 
 export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
@@ -34,7 +35,8 @@ function ResetPasswordPage() {
         locale === "pt" ? "Link inválido — peça um novo email de recuperação." : "Invalid link — request a new reset email.",
       );
     }
-    if (password.length < 8) return toast.error(locale === "pt" ? "Senha mínima 8 caracteres" : "Password min 8 chars");
+    const pwError = passwordError(password, locale);
+    if (pwError) return toast.error(pwError);
     if (password !== confirm) return toast.error(locale === "pt" ? "Senhas não coincidem" : "Passwords don't match");
     setLoading(true);
     try {

@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useClickOutside } from "@/hooks/use-click-outside";
 import {
   Trophy,
   Flame,
@@ -91,8 +92,10 @@ type RankScope = "world" | "national" | "friends";
 function RewardsPage() {
   const { locale } = useLocale();
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
+  useClickOutside(avatarRef, setAvatarMenuOpen);
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [missions, setMissions] = useState<Mission[]>([]);
@@ -106,87 +109,86 @@ function RewardsPage() {
   });
   const [friendEmail, setFriendEmail] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [claiming, setClaiming] = useState<string | null>(null);
+  const [buying, setBuying] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("missions");
   const [rankScope, setRankScope] = useState<RankScope>("world");
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
-        setAvatarMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   const refresh = async () => {
     if (!user) {
       setLoading(false);
       return;
     }
+    setLoading(true);
+    setError(null);
 
-    const [stats, ms, si, inv, ev, world] = await Promise.all([
-      apiFetch<{ xp: number; level: number; coins: number; streak: number; avatar_url: string | null; avatar_config: Record<string, unknown> }>(
-        "/v1/me/gamification-stats",
-      ),
-      apiFetch<Mission[]>("/v1/me/missions"),
-      apiFetch<ShopItem[]>("/v1/shop-items"),
-      apiFetch<{ item_id: string; equipped: boolean }[]>("/v1/me/inventory"),
-      apiFetch<XpEvent[]>("/v1/me/xp-events?days=90"),
-      apiFetch<{ user_id: string; display_name: string; xp: number; streak: number; cefr_level: string | null }[]>(
-        "/v1/leaderboard?limit=50",
-      ),
-    ]);
+    try {
+      const [stats, ms, si, inv, ev, world] = await Promise.all([
+        apiFetch<{ xp: number; level: number; coins: number; streak: number; avatar_url: string | null; avatar_config: Record<string, unknown> }>(
+          "/v1/me/gamification-stats",
+        ),
+        apiFetch<Mission[]>("/v1/me/missions"),
+        apiFetch<ShopItem[]>("/v1/shop-items"),
+        apiFetch<{ item_id: string; equipped: boolean }[]>("/v1/me/inventory"),
+        apiFetch<XpEvent[]>("/v1/me/xp-events?days=90"),
+        apiFetch<{ user_id: string; display_name: string; xp: number; streak: number; cefr_level: string | null }[]>(
+          "/v1/leaderboard?limit=50",
+        ),
+      ]);
 
-    setProfile({
-      id: user.id,
-      full_name: user.fullName,
-      country: user.country,
-      avatar_url: stats.avatar_url,
-      avatar_config: stats.avatar_config,
-      xp: stats.xp,
-      level: stats.level,
-      coins: stats.coins,
-      streak: stats.streak,
-    });
-    setMissions(ms);
-    setShop(si);
-    setInventory(inv);
-    setEvents(ev);
+      setProfile({
+        id: user.id,
+        full_name: user.fullName,
+        country: user.country,
+        avatar_url: stats.avatar_url,
+        avatar_config: stats.avatar_config,
+        xp: stats.xp,
+        level: stats.level,
+        coins: stats.coins,
+        streak: stats.streak,
+      });
+      setMissions(ms);
+      setShop(si);
+      setInventory(inv);
+      setEvents(ev);
 
-    const worldRows: RankRow[] = world.map((r) => ({
-      id: r.user_id,
-      name: r.display_name,
-      avatar_url: null,
-      xp: r.xp,
-      sublabel: `${r.cefr_level ?? "—"} · 🔥${r.streak}`,
-    }));
-    const national = user.country
-      ? await apiFetch<typeof world>(`/v1/leaderboard?limit=50&country=${encodeURIComponent(user.country)}`)
-      : [];
-    const nationalRows: RankRow[] = national.map((r) => ({
-      id: r.user_id,
-      name: r.display_name,
-      avatar_url: null,
-      xp: r.xp,
-      sublabel: `${r.cefr_level ?? "—"} · 🔥${r.streak}`,
-    }));
-    const friendsList = await apiFetch<{ id: string; full_name: string | null; avatar_url: string | null; xp: number; level: number; country: string | null }[]>(
-      "/v1/me/friends",
-    );
-    const friendsRows: RankRow[] = [...friendsList, { id: user.id, full_name: user.fullName, avatar_url: stats.avatar_url, xp: stats.xp, level: stats.level, country: user.country }]
-      .sort((a, b) => b.xp - a.xp)
-      .map((f) => ({
-        id: f.id,
-        name: f.full_name ?? "—",
-        avatar_url: f.avatar_url,
-        xp: f.xp,
-        sublabel: `${locale === "pt" ? "Nível" : "Level"} ${f.level} · ${f.country ?? "🌍"}`,
+      const worldRows: RankRow[] = world.map((r) => ({
+        id: r.user_id,
+        name: r.display_name,
+        avatar_url: null,
+        xp: r.xp,
+        sublabel: `${r.cefr_level ?? "—"} · 🔥${r.streak}`,
       }));
+      const national = user.country
+        ? await apiFetch<typeof world>(`/v1/leaderboard?limit=50&country=${encodeURIComponent(user.country)}`)
+        : [];
+      const nationalRows: RankRow[] = national.map((r) => ({
+        id: r.user_id,
+        name: r.display_name,
+        avatar_url: null,
+        xp: r.xp,
+        sublabel: `${r.cefr_level ?? "—"} · 🔥${r.streak}`,
+      }));
+      const friendsList = await apiFetch<{ id: string; full_name: string | null; avatar_url: string | null; xp: number; level: number; country: string | null }[]>(
+        "/v1/me/friends",
+      );
+      const friendsRows: RankRow[] = [...friendsList, { id: user.id, full_name: user.fullName, avatar_url: stats.avatar_url, xp: stats.xp, level: stats.level, country: user.country }]
+        .sort((a, b) => b.xp - a.xp)
+        .map((f) => ({
+          id: f.id,
+          name: f.full_name ?? "—",
+          avatar_url: f.avatar_url,
+          xp: f.xp,
+          sublabel: `${locale === "pt" ? "Nível" : "Level"} ${f.level} · ${f.country ?? "🌍"}`,
+        }));
 
-    setRanks({ world: worldRows, national: nationalRows, friends: friendsRows });
-    setLoading(false);
+      setRanks({ world: worldRows, national: nationalRows, friends: friendsRows });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : locale === "pt" ? "Erro ao carregar recompensas" : "Failed to load rewards");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -210,6 +212,7 @@ function RewardsPage() {
   };
 
   const buy = async (itemId: string) => {
+    setBuying(itemId);
     try {
       await apiFetch(`/v1/shop-items/${itemId}/purchase`, { method: "POST" });
       toast.success("Item comprado!");
@@ -217,6 +220,8 @@ function RewardsPage() {
       await refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro");
+    } finally {
+      setBuying(null);
     }
   };
 
@@ -262,26 +267,49 @@ function RewardsPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
-            <button className="bg-[var(--ink)] text-white px-3 md:px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity">
+            <Link
+              to="/pricing"
+              className="bg-[var(--ink)] text-white px-3 md:px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
               <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <span className="hidden sm:inline">Upgrade</span>
-            </button>
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex">
+            </Link>
+            <Link
+              to="/contact"
+              title={locale === "pt" ? "Ajuda" : "Help"}
+              className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex"
+            >
               <HelpCircle className="w-5 h-5" />
-            </button>
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex">
+            </Link>
+            <Link
+              to="/rewards"
+              title={locale === "pt" ? "Recompensas" : "Rewards"}
+              className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex"
+            >
               <Gift className="w-5 h-5" />
-            </button>
+            </Link>
             <div className="relative md:hidden" ref={avatarRef}>
               {avatarMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
                   <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                    <button
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        navigate({ to: "/profile" });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                    >
                       <User className="w-4 h-4 text-[var(--violet)]" />
                       {locale === "pt" ? "Ver perfil" : "View profile"}
                     </button>
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                    <button
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        navigate({ to: "/settings" });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                    >
                       <Settings className="w-4 h-4 text-gray-400" />
                       {locale === "pt" ? "Definições" : "Settings"}
                     </button>
@@ -306,14 +334,14 @@ function RewardsPage() {
                 <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
               </button>
             </div>
-            <div className="hidden md:block">
+            <Link to="/profile" className="hidden md:block" title={locale === "pt" ? "Ver perfil" : "View profile"}>
               <div className="relative inline-flex">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
                   <User className="w-4 h-4 text-gray-600" />
                 </div>
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
               </div>
-            </div>
+            </Link>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">{content}</main>
@@ -326,6 +354,23 @@ function RewardsPage() {
     return shell(
       <div className="flex items-center justify-center py-24">
         <Loader2 className="h-8 w-8 animate-spin text-[var(--violet)]" />
+      </div>,
+    );
+  }
+
+  if (error) {
+    return shell(
+      <div className="max-w-lg mx-auto px-4 py-16 text-center">
+        <h2 className="font-display text-xl font-bold text-[var(--ink)]">
+          {locale === "pt" ? "Não foi possível carregar as recompensas" : "Couldn't load rewards"}
+        </h2>
+        <p className="mt-2 text-sm text-gray-500">{error}</p>
+        <button
+          onClick={() => refresh()}
+          className="mt-6 inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+        >
+          {locale === "pt" ? "Tentar novamente" : "Try again"}
+        </button>
       </div>,
     );
   }
@@ -669,11 +714,13 @@ function RewardsPage() {
                       </button>
                     ) : (
                       <button
-                        disabled={!canAfford}
+                        disabled={!canAfford || buying === it.id}
                         onClick={() => buy(it.id)}
                         className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                       >
-                        {locale === "pt" ? "Comprar" : "Buy"}
+                        {buying === it.id
+                          ? locale === "pt" ? "A comprar…" : "Buying…"
+                          : locale === "pt" ? "Comprar" : "Buy"}
                       </button>
                     )}
                   </div>

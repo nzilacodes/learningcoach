@@ -1,16 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, useRef, useEffect } from "react";
 import {
   Search,
-  Bell,
   Play,
   Flame,
   MoreVertical,
-  ListPlus,
   CheckCircle,
   Share2,
-  ThumbsDown,
   User,
   Settings,
   LogOut,
@@ -23,6 +20,8 @@ import { AGE_TRACKS } from "@/lib/age-tracks";
 import { extractYouTubeId, youtubeThumb, videoPoolForAge } from "@/lib/youtube";
 import { useUserStats, useWeeklyStudy } from "@/lib/learning";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { toast } from "sonner";
+import { useClickOutside } from "@/hooks/use-click-outside";
 
 export const Route = createFileRoute("/videos")({
   component: VideosPage,
@@ -54,22 +53,15 @@ const FILTERS = ["All Videos", "Grammar", "Business English", "Listening", "Pron
 
 function VideosPage() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
   const { group } = useAgeGroup();
   const { locale } = useLocale();
   const [activeFilter, setActiveFilter] = useState("All Videos");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
-        setAvatarMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  useClickOutside(avatarRef, setAvatarMenuOpen);
 
   const { data: recent } = useQuery({
     queryKey: ["video_history_list", user?.id],
@@ -118,21 +110,29 @@ function VideosPage() {
 
           {/* Right side */}
           <div className="flex items-center gap-5">
-            <button className="w-11 h-11 flex items-center justify-center text-gray-500 hover:bg-gray-50 rounded-2xl transition-all relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-[var(--magenta)] rounded-full border-2 border-white" />
-            </button>
             {/* Avatar with dropdown — mobile only */}
             <div className="relative md:hidden" ref={avatarRef}>
               {avatarMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
                   <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                    <button
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        navigate({ to: "/profile" });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                    >
                       <User className="w-4 h-4 text-[var(--violet)]" />
                       {locale === "pt" ? "Ver perfil" : "View profile"}
                     </button>
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                    <button
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        navigate({ to: "/settings" });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                    >
                       <Settings className="w-4 h-4 text-gray-400" />
                       {locale === "pt" ? "Definições" : "Settings"}
                     </button>
@@ -156,12 +156,12 @@ function VideosPage() {
                 </div>
               </button>
             </div>
-            {/* Avatar — desktop only (no dropdown, sidebar handles it) */}
-            <div className="hidden md:block h-10 w-10 rounded-full border-2 border-white shadow-sm overflow-hidden">
+            {/* Avatar — desktop only (sidebar's own menu covers desktop; this just links straight to the profile page) */}
+            <Link to="/profile" className="hidden md:block h-10 w-10 rounded-full border-2 border-white shadow-sm overflow-hidden hover:border-[var(--violet)] transition-all">
               <div className="w-full h-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-white text-sm font-bold">
                 {user?.email?.charAt(0).toUpperCase() || "U"}
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 
@@ -380,21 +380,50 @@ function VideosPage() {
                       <>
                         <div className="fixed inset-0 z-30" onClick={() => setOpenMenuId(null)} />
                         <div className="absolute right-0 top-10 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                          <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
-                            <ListPlus className="w-4 h-4 text-(--violet)" />
-                            {locale === "pt" ? "Salvar na playlist" : "Save to playlist"}
-                          </button>
-                          <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                          <button
+                            onClick={async () => {
+                              setOpenMenuId(null);
+                              try {
+                                await apiFetch(`/v1/me/video-history/${video.videoId}`, {
+                                  method: "PUT",
+                                  body: JSON.stringify({
+                                    videoUrl: video.url,
+                                    title: video.title,
+                                    channel: video.channel,
+                                    positionSeconds: 0,
+                                    completed: true,
+                                  }),
+                                });
+                                toast.success(locale === "pt" ? "Marcado como concluído" : "Marked as completed");
+                                qc.invalidateQueries({ queryKey: ["video_history_list", user?.id] });
+                              } catch (e) {
+                                toast.error(e instanceof Error ? e.message : "Erro");
+                              }
+                            }}
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                          >
                             <CheckCircle className="w-4 h-4 text-green-500" />
                             {locale === "pt" ? "Marcar como concluído" : "Mark as completed"}
                           </button>
-                          <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left border-b border-gray-50">
+                          <button
+                            onClick={async () => {
+                              setOpenMenuId(null);
+                              const shareUrl = `${window.location.origin}/watch/${video.videoId}`;
+                              if (navigator.share) {
+                                try {
+                                  await navigator.share({ title: video.title, url: shareUrl });
+                                } catch {
+                                  /* user cancelled the share sheet — not an error */
+                                }
+                              } else {
+                                await navigator.clipboard.writeText(shareUrl);
+                                toast.success(locale === "pt" ? "Link copiado" : "Link copied");
+                              }
+                            }}
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                          >
                             <Share2 className="w-4 h-4 text-blue-500" />
                             {locale === "pt" ? "Compartilhar" : "Share"}
-                          </button>
-                          <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left">
-                            <ThumbsDown className="w-4 h-4" />
-                            {locale === "pt" ? "Não tenho interesse" : "Not interested"}
                           </button>
                         </div>
                       </>

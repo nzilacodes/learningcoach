@@ -68,8 +68,6 @@ function GamesPage() {
   const ageLabel = AGE_GROUP_LABEL[group];
   const qc = useQueryClient();
 
-  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
-  const avatarRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
   const [activeCat, setActiveCat] = useState<"all" | GameEntry["cat"]>("all");
   const [activeGame, setActiveGame] = useState<GameEntry | null>(null);
@@ -78,16 +76,6 @@ function GamesPage() {
     setActiveCat("all");
     setSearch("");
   }, [group]);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
-        setAvatarMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   const { data: profileStats } = useQuery({
     queryKey: ["games-profile-stats", user?.id],
@@ -159,60 +147,9 @@ function GamesPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button className="bg-[var(--ink)] text-white px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
-              Upgrade
-            </button>
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
-              <HelpCircle className="w-5 h-5" />
-            </button>
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
-              <Gift className="w-5 h-5" />
-            </button>
-            {/* Avatar — mobile */}
-            <div className="relative md:hidden" ref={avatarRef}>
-              {avatarMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
-                      <User className="w-4 h-4 text-(--violet)" />
-                      {locale === "pt" ? "Ver perfil" : "View profile"}
-                    </button>
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
-                      <Settings className="w-4 h-4 text-gray-400" />
-                      {locale === "pt" ? "Definições" : "Settings"}
-                    </button>
-                    <div className="mx-3 my-1 h-px bg-gray-50" />
-                    <button
-                      onClick={() => signOut()}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {locale === "pt" ? "Sair da conta" : "Sign out"}
-                    </button>
-                  </div>
-                </>
-              )}
-              <button
-                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
-                className="relative inline-flex"
-              >
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
-                <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-              </button>
-            </div>
-            {/* Avatar — desktop */}
-            <div className="hidden md:block">
-              <div className="relative inline-flex">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
-              </div>
-            </div>
+            <HeaderActionLinks />
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
           </div>
         </header>
 

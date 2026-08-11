@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Send,
   Mic,
+  Square,
   BookOpen,
   Pencil,
   MessageSquare,
@@ -15,16 +16,18 @@ import {
   LogOut,
   Plus,
   ChevronRight,
-  Paperclip,
-  Compass,
   Loader2,
 } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { useClickOutside } from "@/hooks/use-click-outside";
+import { startRecording, transcribe, type Recorder } from "@/lib/voice";
 import { SITE_URL } from "@/lib/site-url";
 import { toast } from "sonner";
+
+const MAX_MESSAGE_LENGTH = 4000; // matches sendCoachMessageSchema.content.max(4000) on the backend
 
 export const Route = createFileRoute("/ai-coach")({
   component: AICoachPage,
@@ -70,28 +73,22 @@ function useCoachMessages(conversationId: string | null) {
 function AICoachPage() {
   const { locale } = useLocale();
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [input, setInput] = useState("");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const [projectsSidebarOpen, setProjectsSidebarOpen] = useState(true);
+  const [recorder, setRecorder] = useState<Recorder | null>(null);
+  const [transcribing, setTranscribing] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
+  useClickOutside(avatarRef, setAvatarMenuOpen);
 
   const { data: conversations = [] } = useConversations(user?.id);
   const { data: transcript = [], isLoading: transcriptLoading } = useCoachMessages(activeId);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
-        setAvatarMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -133,6 +130,28 @@ function AICoachPage() {
     }
   };
 
+  const toggleVoice = async () => {
+    if (recorder) {
+      setTranscribing(true);
+      try {
+        const blob = await recorder.stop();
+        setRecorder(null);
+        const text = await transcribe(blob);
+        if (text.trim()) setInput((prev) => (prev ? `${prev} ${text}` : text));
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : locale === "pt" ? "Falha ao transcrever áudio" : "Failed to transcribe audio");
+      } finally {
+        setTranscribing(false);
+      }
+      return;
+    }
+    try {
+      setRecorder(await startRecording());
+    } catch {
+      toast.error(locale === "pt" ? "Permita acesso ao microfone" : "Please allow microphone access");
+    }
+  };
+
   const suggestions = [
     {
       icon: BookOpen,
@@ -163,29 +182,44 @@ function AICoachPage() {
           </div>
           <div className="flex items-center gap-3">
             {/* Upgrade button */}
-            <button className="bg-[var(--ink)] text-white px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity">
+            <Link
+              to="/pricing"
+              className="bg-[var(--ink)] text-white px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
               <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
               Upgrade
-            </button>
+            </Link>
             {/* Help */}
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
+            <Link to="/contact" title={locale === "pt" ? "Ajuda" : "Help"} className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
               <HelpCircle className="w-5 h-5" />
-            </button>
+            </Link>
             {/* Gift */}
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
+            <Link to="/rewards" title={locale === "pt" ? "Recompensas" : "Rewards"} className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
               <Gift className="w-5 h-5" />
-            </button>
+            </Link>
             {/* Avatar — mobile dropdown */}
             <div className="relative md:hidden" ref={avatarRef}>
               {avatarMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
                   <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                    <button
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        navigate({ to: "/profile" });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                    >
                       <User className="w-4 h-4 text-(--violet)" />
                       {locale === "pt" ? "Ver perfil" : "View profile"}
                     </button>
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
+                    <button
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        navigate({ to: "/settings" });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                    >
                       <Settings className="w-4 h-4 text-gray-400" />
                       {locale === "pt" ? "Definições" : "Settings"}
                     </button>
@@ -209,14 +243,14 @@ function AICoachPage() {
               </button>
             </div>
             {/* Avatar — desktop */}
-            <div className="hidden md:block">
+            <Link to="/profile" className="hidden md:block" title={locale === "pt" ? "Ver perfil" : "View profile"}>
               <div className="relative inline-flex">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
                   <User className="w-4 h-4 text-gray-600" />
                 </div>
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 
@@ -295,6 +329,7 @@ function AICoachPage() {
                   <textarea
                     ref={textareaRef}
                     value={input}
+                    maxLength={MAX_MESSAGE_LENGTH}
                     onChange={(e) => {
                       setInput(e.target.value);
                       e.target.style.height = "auto";
@@ -306,7 +341,12 @@ function AICoachPage() {
                         send();
                       }
                     }}
-                    placeholder={locale === "pt" ? "Digite sua pergunta..." : "Ask anything..."}
+                    placeholder={
+                      transcribing
+                        ? locale === "pt" ? "Transcrevendo áudio…" : "Transcribing audio…"
+                        : locale === "pt" ? "Digite sua pergunta..." : "Ask anything..."
+                    }
+                    disabled={transcribing}
                     rows={1}
                     className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm text-[var(--ink)] placeholder:text-gray-400 max-h-40 outline-none"
                   />
@@ -324,28 +364,32 @@ function AICoachPage() {
                 </div>
                 <div className="flex items-center justify-between px-4 py-3 bg-gray-50/30 border-t border-gray-100/50">
                   <div className="flex items-center gap-2">
-                    <button className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-gray-200/50 hover:bg-gray-50 transition-colors">
-                      <Paperclip className="w-4 h-4 text-gray-500" />
-                      <span className="text-[11px] font-medium text-gray-500">Attach</span>
-                    </button>
-                    <button className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-gray-200/50 hover:bg-gray-50 transition-colors">
-                      <Mic className="w-4 h-4 text-gray-500" />
-                      <span className="text-[11px] font-medium text-gray-500">Voice Message</span>
-                    </button>
-                    <button className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-gray-200/50 hover:bg-gray-50 transition-colors">
-                      <Compass className="w-4 h-4 text-gray-500" />
-                      <span className="text-[11px] font-medium text-gray-500">Browse Prompts</span>
+                    <button
+                      onClick={toggleVoice}
+                      disabled={transcribing}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full border transition-colors disabled:opacity-50 ${
+                        recorder
+                          ? "bg-red-50 border-red-200 text-red-600"
+                          : "bg-white border-gray-200/50 hover:bg-gray-50 text-gray-500"
+                      }`}
+                    >
+                      {recorder ? <Square className="w-4 h-4 fill-current" /> : <Mic className="w-4 h-4" />}
+                      <span className="text-[11px] font-medium">
+                        {recorder
+                          ? locale === "pt" ? "Parar" : "Stop"
+                          : locale === "pt" ? "Mensagem de voz" : "Voice Message"}
+                      </span>
                     </button>
                   </div>
                   <div className="text-[11px] font-medium text-gray-400">
-                    {input.length} / 3,000
+                    {input.length} / {MAX_MESSAGE_LENGTH.toLocaleString()}
                   </div>
                 </div>
               </div>
               <p className="text-[10px] text-center mt-3 text-gray-400">
                 {locale === "pt"
-                  ? "O Coach pode gerar informações imprecisas. Modelo: Script AI v1.3"
-                  : "Coach may generate inaccurate information. Model: Script AI v1.3"}
+                  ? "O Coach pode gerar informações imprecisas."
+                  : "Coach may generate inaccurate information."}
               </p>
             </div>
           </main>

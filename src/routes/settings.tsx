@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
+import { passwordError } from "@/lib/password";
 
 export const Route = createFileRoute("/settings")({
   component: SettingsPage,
@@ -48,16 +49,26 @@ function SettingsPage() {
     if (newPassword !== confirmPassword) {
       return toast.error(locale === "pt" ? "As palavras-passe não coincidem" : "Passwords don't match");
     }
+    const pwError = passwordError(newPassword, locale);
+    if (pwError) return toast.error(pwError);
+
     setSaving(true);
     try {
       await apiFetch("/v1/auth/change-password", {
         method: "POST",
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      toast.success(locale === "pt" ? "Palavra-passe alterada" : "Password changed");
+      // The backend revokes every refresh token (this session included) when
+      // the password changes, so the current session is already dead server-
+      // side — sign out locally and send the user to log back in explicitly,
+      // rather than let them hit a confusing 401 on the next silent refresh.
+      toast.success(
+        locale === "pt"
+          ? "Palavra-passe alterada. Entre novamente."
+          : "Password changed. Please sign in again.",
+      );
+      await signOut();
+      navigate({ to: "/auth" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro");
     } finally {
