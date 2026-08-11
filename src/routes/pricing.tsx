@@ -12,8 +12,16 @@ import { useAuth } from "@/lib/auth";
 import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/pricing")({
+  // Fetched only so head()'s JSON-LD reflects live prices instead of a
+  // hardcoded snapshot that silently drifted whenever an admin changed a
+  // plan's price — the page body still uses its own useQuery for the actual
+  // pricing cards/interactivity.
+  loader: async () => {
+    const plans = await apiFetch<Plan[]>("/v1/plans").catch(() => []);
+    return { monthlyPlans: plans.filter((p) => p.billing_cycle === "monthly") };
+  },
   component: PricingPage,
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
       { title: "Planos e preços — Learning English with Coach" },
       {
@@ -40,11 +48,12 @@ export const Route = createFileRoute("/pricing")({
           name: "Learning English with Coach — Assinatura",
           description: "Plataforma de inglês com AI Coach 24/7 e certificados CEFR A1–C2.",
           brand: { "@type": "Brand", name: "Learning English with Coach" },
-          offers: [
-            { "@type": "Offer", name: "Essencial Mensal", price: "10000", priceCurrency: "AOA" },
-            { "@type": "Offer", name: "Premium Mensal", price: "15000", priceCurrency: "AOA" },
-            { "@type": "Offer", name: "VIP Mensal", price: "25000", priceCurrency: "AOA" },
-          ],
+          offers: (loaderData?.monthlyPlans ?? []).map((p) => ({
+            "@type": "Offer",
+            name: `${TIER_META[p.tier].label.pt} Mensal`,
+            price: String(p.price_kz),
+            priceCurrency: "AOA",
+          })),
         }),
       },
     ],

@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useClickOutside } from "@/hooks/use-click-outside";
 import {
   Flame,
   Trophy,
@@ -39,6 +40,13 @@ import {
   ReminderCard,
 } from "@/components/dashboard/extras";
 
+const QUICK_PRACTICE = (locale: "pt" | "en") => [
+  { icon: Mic, label: locale === "pt" ? "Falar" : "Speak", to: "/pronunciation" as const, accent: "hover:bg-[var(--violet)]/5" },
+  { icon: BookOpen, label: locale === "pt" ? "Ler" : "Read", to: "/reading" as const, accent: "hover:bg-[var(--magenta)]/5" },
+  { icon: Gamepad2, label: locale === "pt" ? "Jogar" : "Play", to: "/games" as const, accent: "hover:bg-amber-50" },
+  { icon: Target, label: locale === "pt" ? "Quiz" : "Quiz", to: "/curriculum" as const, accent: "hover:bg-emerald-50" },
+];
+
 /** Adult layout: dense bento grid, full subscription management, configurable
  * study reminder — the original dashboard layout, unchanged in substance. */
 export function AdultsDashboard(data: DashboardData) {
@@ -47,16 +55,7 @@ export function AdultsDashboard(data: DashboardData) {
   const navigate = useNavigate();
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
-        setAvatarMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  useClickOutside(avatarRef, setAvatarMenuOpen);
 
   const { sub, daysLeft, pct: subPct, billingCycle } = data.subscription;
   const planLabel = billingCycle
@@ -72,6 +71,7 @@ export function AdultsDashboard(data: DashboardData) {
   const { units, currentUnit, currentPct, completedLessonCount, nextLessonId, week, reminder } =
     data;
   const goalDays = week.goalDays;
+  const daysToGo = Math.max(0, goalDays - week.days);
 
   const stats = [
     {
@@ -118,16 +118,27 @@ export function AdultsDashboard(data: DashboardData) {
             </h1>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
-            <button className="bg-[var(--ink)] text-white px-3 md:px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity">
+            <Link
+              to="/pricing"
+              className="bg-[var(--ink)] text-white px-3 md:px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
               <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
               <span className="hidden sm:inline">Upgrade</span>
-            </button>
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex">
+            </Link>
+            <Link
+              to="/contact"
+              title={locale === "pt" ? "Ajuda" : "Help"}
+              className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex"
+            >
               <HelpCircle className="w-5 h-5" />
-            </button>
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex">
+            </Link>
+            <Link
+              to="/rewards"
+              title={locale === "pt" ? "Recompensas" : "Rewards"}
+              className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex"
+            >
               <Gift className="w-5 h-5" />
-            </button>
+            </Link>
             <div className="relative md:hidden" ref={avatarRef}>
               {avatarMenuOpen && (
                 <>
@@ -213,10 +224,13 @@ export function AdultsDashboard(data: DashboardData) {
                         <Sparkles className="w-3.5 h-3.5" />
                         {user?.cefrLevel ?? "A1"}
                       </span>
-                      <button className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-semibold hover:bg-gray-50 transition-colors">
+                      <Link
+                        to="/ai-coach"
+                        className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-semibold hover:bg-gray-50 transition-colors"
+                      >
                         <MessageCircle className="w-4 h-4" />
                         {locale === "pt" ? "Falar com Professor" : "Talk to Teacher"}
-                      </button>
+                      </Link>
                     </div>
                   </div>
 
@@ -297,35 +311,15 @@ export function AdultsDashboard(data: DashboardData) {
                       {locale === "pt" ? "Prática Rápida" : "Quick Practice"}
                     </h3>
                     <div className="grid grid-cols-4 gap-4">
-                      {[
-                        {
-                          icon: Mic,
-                          label: locale === "pt" ? "Falar" : "Speak",
-                          accent: "hover:bg-[var(--violet)]/5",
-                        },
-                        {
-                          icon: BookOpen,
-                          label: locale === "pt" ? "Ler" : "Read",
-                          accent: "hover:bg-[var(--magenta)]/5",
-                        },
-                        {
-                          icon: Gamepad2,
-                          label: locale === "pt" ? "Jogar" : "Play",
-                          accent: "hover:bg-amber-50",
-                        },
-                        {
-                          icon: Target,
-                          label: locale === "pt" ? "Quiz" : "Quiz",
-                          accent: "hover:bg-emerald-50",
-                        },
-                      ].map((a) => (
-                        <button
+                      {QUICK_PRACTICE(locale).map((a) => (
+                        <Link
                           key={a.label}
+                          to={a.to}
                           className={`flex flex-col items-center gap-3 bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-2xl p-5 shadow-sm transition-all ${a.accent} hover:shadow-md active:scale-95`}
                         >
                           <a.icon className="w-7 h-7 text-[var(--violet)]" />
                           <span className="text-xs font-bold text-gray-700">{a.label}</span>
-                        </button>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -348,7 +342,7 @@ export function AdultsDashboard(data: DashboardData) {
                       style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}
                     >
                       {units.map((u) => (
-                        <div key={u.id} className="relative group cursor-pointer">
+                        <Link key={u.id} to="/curriculum" className="relative group block">
                           <div
                             className={`aspect-square rounded-2xl overflow-hidden mb-2 border ${
                               u.current
@@ -408,7 +402,7 @@ export function AdultsDashboard(data: DashboardData) {
                           >
                             {u.title}
                           </p>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -466,9 +460,13 @@ export function AdultsDashboard(data: DashboardData) {
                   </div>
                 </div>
                 <p className="text-xs text-center text-gray-500">
-                  {locale === "pt"
-                    ? `Falta${goalDays - week.days === 1 ? " 1 dia" : `m ${goalDays - week.days} dias`} para bater sua meta!`
-                    : `${goalDays - week.days} day${goalDays - week.days === 1 ? "" : "s"} to go!`}
+                  {daysToGo === 0
+                    ? locale === "pt"
+                      ? "Meta da semana atingida! 🎉"
+                      : "Weekly goal reached! 🎉"
+                    : locale === "pt"
+                      ? `Falta${daysToGo === 1 ? " 1 dia" : `m ${daysToGo} dias`} para bater sua meta!`
+                      : `${daysToGo} day${daysToGo === 1 ? "" : "s"} to go!`}
                 </p>
                 <div className="flex gap-1 mt-3">
                   {Array.from({ length: goalDays }).map((_, i) => (
@@ -485,27 +483,6 @@ export function AdultsDashboard(data: DashboardData) {
 
               {/* Turmas */}
               <ClassesCard />
-
-              {/* Recent Achievements */}
-              <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
-                <h4 className="text-sm font-bold text-[var(--ink)] mb-4">
-                  {locale === "pt" ? "Conquistas Recentes" : "Recent Achievements"}
-                </h4>
-                <div className="flex gap-3">
-                  <div className="w-11 h-11 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 border border-orange-200">
-                    <Flame className="w-5 h-5" />
-                  </div>
-                  <div className="w-11 h-11 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 border border-violet-200">
-                    <Award className="w-5 h-5" />
-                  </div>
-                  <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 border border-blue-200">
-                    <Trophy className="w-5 h-5" />
-                  </div>
-                  <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 border border-gray-200 opacity-50">
-                    <span className="text-lg font-bold">...</span>
-                  </div>
-                </div>
-              </div>
 
               {/* Subscription */}
               <SubscriptionCard
@@ -606,21 +583,17 @@ export function AdultsDashboard(data: DashboardData) {
                   {locale === "pt" ? "Prática Rápida" : "Quick Practice"}
                 </h3>
                 <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-                  {[
-                    { icon: Mic, label: locale === "pt" ? "Falar" : "Speak" },
-                    { icon: BookOpen, label: locale === "pt" ? "Ler" : "Read" },
-                    { icon: Gamepad2, label: locale === "pt" ? "Jogar" : "Play" },
-                    { icon: Target, label: locale === "pt" ? "Quiz" : "Quiz" },
-                  ].map((a) => (
-                    <button
+                  {QUICK_PRACTICE(locale).map((a) => (
+                    <Link
                       key={a.label}
+                      to={a.to}
                       className="flex-shrink-0 w-20 flex flex-col items-center gap-2 active:scale-90 transition-transform"
                     >
                       <div className="w-14 h-14 rounded-2xl bg-[var(--violet)]/10 flex items-center justify-center text-[var(--violet)] shadow-sm">
                         <a.icon className="w-6 h-6" />
                       </div>
                       <span className="text-[11px] font-semibold text-gray-600">{a.label}</span>
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -658,9 +631,13 @@ export function AdultsDashboard(data: DashboardData) {
                     {locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
                   </h4>
                   <p className="text-xs text-gray-500">
-                    {locale === "pt"
-                      ? `Falta${goalDays - week.days === 1 ? " 1 dia" : `m ${goalDays - week.days} dias`} para completar!`
-                      : `${goalDays - week.days} day${goalDays - week.days === 1 ? "" : "s"} to go!`}
+                    {daysToGo === 0
+                      ? locale === "pt"
+                        ? "Meta da semana atingida! 🎉"
+                        : "Weekly goal reached! 🎉"
+                      : locale === "pt"
+                        ? `Falta${daysToGo === 1 ? " 1 dia" : `m ${daysToGo} dias`} para completar!`
+                        : `${daysToGo} day${daysToGo === 1 ? "" : "s"} to go!`}
                   </p>
                   <div className="flex gap-1 pt-1">
                     {Array.from({ length: goalDays }).map((_, i) => (
@@ -742,6 +719,7 @@ export function AdultsDashboard(data: DashboardData) {
               <div className="space-y-4">
                 <ActivityCalendar />
                 <LeaderboardCard />
+                <ReminderCard reminder={reminder} locale={locale} />
                 <ClassesCard />
                 <GoalsCard />
                 <CertificatesCard />

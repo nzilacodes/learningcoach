@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Volume2, Mic, Check, X, Trophy, Loader2, CheckCircle2 } from "lucide-react";
@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/lib/i18n";
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, ApiError } from "@/lib/api/client";
 import { useCurriculum, useLessonProgress } from "@/lib/learning";
 import {
   speak,
@@ -433,6 +433,7 @@ function LessonPage() {
 
 function LessonPageInner({ lessonId }: { lessonId: string }) {
   const { locale } = useLocale();
+  const navigate = useNavigate();
   const qc = useQueryClient();
 
   const { data: lesson, isLoading } = useLesson(lessonId);
@@ -467,13 +468,22 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
       qc.invalidateQueries({ queryKey: ["user_stats"] });
       qc.invalidateQueries({ queryKey: ["curriculum"] });
     } catch (e) {
-      toast.error(
-        e instanceof Error
-          ? e.message
-          : locale === "pt"
-            ? "Erro ao concluir lição"
-            : "Failed to finish lesson",
-      );
+      if (e instanceof ApiError && e.status === 402) {
+        toast.error(e.message, {
+          action: {
+            label: locale === "pt" ? "Ver planos" : "See plans",
+            onClick: () => navigate({ to: "/pricing" }),
+          },
+        });
+      } else {
+        toast.error(
+          e instanceof Error
+            ? e.message
+            : locale === "pt"
+              ? "Erro ao concluir lição"
+              : "Failed to finish lesson",
+        );
+      }
     } finally {
       setCompleting(false);
     }

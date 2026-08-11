@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Users, Plus, Copy, Trash2, LogIn, ArrowLeft, GraduationCap } from "lucide-react";
+import { Users, Plus, Copy, Trash2, LogIn, LogOut, ArrowLeft, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -16,6 +16,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
@@ -76,7 +87,7 @@ function ClassesPage() {
     queryFn: () => apiFetch<MyClasses>("/v1/me/classes"),
   });
 
-  const { data: roster = [] } = useQuery({
+  const { data: roster = [], isLoading: rosterLoading } = useQuery({
     queryKey: ["class_roster", selectedClass?.id],
     enabled: !!selectedClass,
     queryFn: () => apiFetch<RosterRow[]>(`/v1/classes/${selectedClass!.id}/roster`),
@@ -117,7 +128,19 @@ function ClassesPage() {
   const removeMember = useMutation({
     mutationFn: (studentId: string) =>
       apiFetch(`/v1/classes/${selectedClass!.id}/members/${studentId}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["class_roster", selectedClass?.id] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["class_roster", selectedClass?.id] });
+      qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+  });
+
+  const leaveClass = useMutation({
+    mutationFn: (classId: string) => apiFetch(`/v1/classes/${classId}/leave`, { method: "DELETE" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
+      toast.success(locale === "pt" ? "Você saiu da turma" : "You left the class");
+    },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
   });
 
@@ -162,18 +185,39 @@ function ClassesPage() {
                   </button>
                 </p>
               </div>
-              <Button
-                variant="outline"
-                className="text-red-500 hover:bg-red-50"
-                onClick={() => {
-                  if (confirm(locale === "pt" ? "Apagar esta turma?" : "Delete this class?")) {
-                    deleteClass.mutate(selectedClass.id);
-                  }
-                }}
-              >
-                <Trash2 className="mr-1.5 h-4 w-4" />
-                {locale === "pt" ? "Apagar turma" : "Delete class"}
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={deleteClass.isPending}
+                    className="text-red-500 hover:bg-red-50"
+                  >
+                    <Trash2 className="mr-1.5 h-4 w-4" />
+                    {locale === "pt" ? "Apagar turma" : "Delete class"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {locale === "pt" ? "Apagar esta turma?" : "Delete this class?"}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {locale === "pt"
+                        ? "Esta ação não pode ser desfeita. Todos os alunos serão removidos da turma."
+                        : "This action can't be undone. All students will be removed from the class."}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{locale === "pt" ? "Cancelar" : "Cancel"}</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => deleteClass.mutate(selectedClass.id)}
+                      className="bg-red-500 hover:bg-red-600"
+                    >
+                      {locale === "pt" ? "Apagar" : "Delete"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
 
             <div className="mt-8 rounded-2xl border border-border bg-card shadow-card">
@@ -191,7 +235,17 @@ function ClassesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {roster.length === 0 && (
+                    {rosterLoading && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={7}
+                          className="py-10 text-center text-sm text-muted-foreground"
+                        >
+                          {locale === "pt" ? "A carregar…" : "Loading…"}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {!rosterLoading && roster.length === 0 && (
                       <TableRow>
                         <TableCell
                           colSpan={7}
@@ -203,7 +257,7 @@ function ClassesPage() {
                         </TableCell>
                       </TableRow>
                     )}
-                    {roster.map((r) => (
+                    {!rosterLoading && roster.map((r) => (
                       <TableRow key={r.student_id}>
                         <TableCell className="font-medium">{r.full_name || "—"}</TableCell>
                         <TableCell>{r.age ?? "—"}</TableCell>
@@ -214,22 +268,34 @@ function ClassesPage() {
                         <TableCell>{r.streak_days}</TableCell>
                         <TableCell>{r.completed_lessons}</TableCell>
                         <TableCell>
-                          <button
-                            onClick={() => {
-                              if (
-                                confirm(
-                                  locale === "pt"
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                disabled={removeMember.isPending}
+                                className="text-xs font-semibold text-red-400 hover:text-red-600 disabled:opacity-50"
+                              >
+                                {locale === "pt" ? "Remover" : "Remove"}
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  {locale === "pt"
                                     ? `Remover ${r.full_name || "aluno"} da turma?`
-                                    : `Remove ${r.full_name || "student"} from class?`,
-                                )
-                              ) {
-                                removeMember.mutate(r.student_id);
-                              }
-                            }}
-                            className="text-xs font-semibold text-red-400 hover:text-red-600"
-                          >
-                            {locale === "pt" ? "Remover" : "Remove"}
-                          </button>
+                                    : `Remove ${r.full_name || "student"} from class?`}
+                                </AlertDialogTitle>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{locale === "pt" ? "Cancelar" : "Cancel"}</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => removeMember.mutate(r.student_id)}
+                                  className="bg-red-500 hover:bg-red-600"
+                                >
+                                  {locale === "pt" ? "Remover" : "Remove"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -350,10 +416,20 @@ function ClassesPage() {
                     {joined.map((c) => (
                       <div
                         key={c.id}
-                        className="flex items-center justify-between rounded-xl border border-border bg-background p-3 text-sm"
+                        className="flex items-center justify-between gap-2 rounded-xl border border-border bg-background p-3 text-sm"
                       >
-                        <span className="font-medium">{c.name}</span>
-                        <span className="text-xs text-muted-foreground">{c.owner_name}</span>
+                        <div className="min-w-0">
+                          <div className="truncate font-medium">{c.name}</div>
+                          <div className="truncate text-xs text-muted-foreground">{c.owner_name}</div>
+                        </div>
+                        <button
+                          onClick={() => leaveClass.mutate(c.id)}
+                          disabled={leaveClass.isPending}
+                          title={locale === "pt" ? "Sair da turma" : "Leave class"}
+                          className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                        >
+                          <LogOut className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     ))}
                   </div>

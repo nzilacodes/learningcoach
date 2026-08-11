@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   Volume2,
   Gauge,
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, ApiError } from "@/lib/api/client";
 import { toast } from "sonner";
 
 type Props = {
@@ -181,6 +182,7 @@ function PracticeDialog({
   ipa: string;
   lessonId: string | null;
 }) {
+  const navigate = useNavigate();
   const [recorder, setRecorder] = useState<Recorder | null>(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<PronScore | null>(null);
@@ -220,7 +222,13 @@ function PracticeDialog({
         feedback: score.feedback ?? "",
       });
     } catch (e) {
-      toast.error(`Falha: ${(e as Error).message}`);
+      if (e instanceof ApiError && e.status === 402) {
+        toast.error(e.message, {
+          action: { label: "Ver planos", onClick: () => navigate({ to: "/pricing" }) },
+        });
+      } else {
+        toast.error(`Falha: ${(e as Error).message}`);
+      }
     } finally {
       setBusy(false);
     }

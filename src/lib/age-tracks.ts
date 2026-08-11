@@ -1,13 +1,11 @@
-import type { AgeTheme } from "@/lib/age-theme";
+import { ageToRoom, type AgeTheme } from "@/lib/age-theme";
 
 export type AgeGroup = AgeTheme; // "kids" | "teens" | "adults"
 
-export const ageFromYears = (age: number | null | undefined): AgeGroup => {
-  if (age == null) return "adults";
-  if (age <= 12) return "kids";
-  if (age <= 17) return "teens";
-  return "adults";
-};
+// Single source of truth for age bucketing lives in age-theme.tsx's
+// ageToRoom() — this is kept as an alias so existing call sites don't need
+// to change, but there is only one place the 13/18 boundaries are defined.
+export const ageFromYears = ageToRoom;
 
 export const AGE_GROUP_LABEL: Record<AgeGroup, { pt: string; en: string; range: string }> = {
   kids: { pt: "Crianças", en: "Kids", range: "6–12 anos" },

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Award, Download, ShieldCheck, QrCode, Loader2, ExternalLink } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, ApiError } from "@/lib/api/client";
 import { generateCertificatePdf, downloadBlob } from "@/lib/certificate-pdf";
 
 type CertificateRow = {
@@ -37,6 +37,7 @@ export const Route = createFileRoute("/certificates")({
 });
 
 function CertificatesPage() {
+  const navigate = useNavigate();
   const [items, setItems] = useState<CertificateRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [issuing, setIssuing] = useState<string | null>(null);
@@ -68,7 +69,13 @@ function CertificatesPage() {
       toast.success(`Certificado ${cert.level} emitido!`);
       await refresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao emitir (concluíste este nível?)");
+      if (e instanceof ApiError && e.status === 402) {
+        toast.error(e.message, {
+          action: { label: "Ver planos", onClick: () => navigate({ to: "/pricing" }) },
+        });
+      } else {
+        toast.error(e instanceof Error ? e.message : "Erro ao emitir (concluíste este nível?)");
+      }
     } finally {
       setIssuing(null);
     }

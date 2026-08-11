@@ -130,6 +130,11 @@ export function useStudyHeartbeat() {
       await apiFetch("/v1/me/study-time", {
         method: "POST",
         body: JSON.stringify({ seconds: s }),
+        // On tab close, a plain fetch is routinely aborted mid-flight before
+        // it reaches the server. `keepalive` lets the browser complete it in
+        // the background after unload (sendBeacon can't be used here — it
+        // doesn't support the X-CSRF-Token header the backend requires).
+        keepalive: true,
       }).catch(() => {});
     };
     const iv = setInterval(flush, 30_000);
@@ -231,7 +236,7 @@ export function useDashboardData() {
   const daysLeft = sub?.expires_at
     ? Math.max(0, Math.ceil((new Date(sub.expires_at).getTime() - Date.now()) / 86400000))
     : null;
-  const totalDays = sub?.subscription_plans?.duration_days ?? 30;
+  const totalDays = sub?.subscription_plans?.duration_days || 30;
   const subscriptionPct =
     daysLeft != null ? Math.min(100, Math.round((daysLeft / totalDays) * 100)) : 0;
   const billingCycle: string | null = sub?.subscription_plans?.billing_cycle ?? null;
@@ -270,51 +275,54 @@ export function useDashboardData() {
     [progress],
   );
 
-  const baseUnits: DashboardUnit[] = previewUnits.map((u, i) => {
-    const lessons = lessonsByUnit.get(u.id) ?? [];
-    const total = lessons.length;
-    const done = lessons.filter((l) => doneLessonIds.has(l.id)).length;
-    const p = total ? Math.round((done / total) * 100) : 0;
-    const prevLessons = i === 0 ? [] : (lessonsByUnit.get(previewUnits[i - 1].id) ?? []);
-    // .every() on an empty array is vacuously true — a predecessor unit with
-    // no published lessons yet shouldn't permanently lock everything after it.
-    const prevDone = i === 0 || prevLessons.every((l) => doneLessonIds.has(l.id));
-    return {
-      id: u.id,
-      index: i + 1,
-      title: u.title,
-      image: UNIT_IMAGES[i],
-      progress: p,
-      done: p >= 100 && total > 0,
-      locked: !prevDone && p === 0,
-      current: false,
+  const { units, currentUnit, nextLessonId } = useMemo(() => {
+    const baseUnits: DashboardUnit[] = previewUnits.map((u, i) => {
+      const lessons = lessonsByUnit.get(u.id) ?? [];
+      const total = lessons.length;
+      const done = lessons.filter((l) => doneLessonIds.has(l.id)).length;
+      const p = total ? Math.round((done / total) * 100) : 0;
+      const prevLessons = i === 0 ? [] : (lessonsByUnit.get(previewUnits[i - 1].id) ?? []);
+      // .every() on an empty array is vacuously true — a predecessor unit with
+      // no published lessons yet shouldn't permanently lock everything after it.
+      const prevDone = i === 0 || prevLessons.every((l) => doneLessonIds.has(l.id));
+      return {
+        id: u.id,
+        index: i + 1,
+        title: u.title,
+        image: UNIT_IMAGES[i],
+        progress: p,
+        done: p >= 100 && total > 0,
+        locked: !prevDone && p === 0,
+        current: false,
+      };
+    });
+    // Exactly one "current" unit: the first unlocked one that isn't finished yet
+    // (falls back to the last unit once everything in the preview is done).
+    const currentIndex = baseUnits.findIndex((u) => !u.done && !u.locked);
+    const units: DashboardUnit[] = baseUnits.map((u, i) => ({
+      ...u,
+      current: currentIndex === -1 ? i === baseUnits.length - 1 : i === currentIndex,
+    }));
+    const currentUnit: DashboardUnit = units[
+      currentIndex === -1 ? units.length - 1 : currentIndex
+    ] ?? {
+      id: "",
+      index: 1,
+      title: "",
+      image: UNIT_IMAGES[0],
+      progress: 0,
+      done: false,
+      locked: false,
+      current: true,
     };
-  });
-  // Exactly one "current" unit: the first unlocked one that isn't finished yet
-  // (falls back to the last unit once everything in the preview is done).
-  const currentIndex = baseUnits.findIndex((u) => !u.done && !u.locked);
-  const units: DashboardUnit[] = baseUnits.map((u, i) => ({
-    ...u,
-    current: currentIndex === -1 ? i === baseUnits.length - 1 : i === currentIndex,
-  }));
-  const currentUnit: DashboardUnit = units[
-    currentIndex === -1 ? units.length - 1 : currentIndex
-  ] ?? {
-    id: "",
-    index: 1,
-    title: "",
-    image: UNIT_IMAGES[0],
-    progress: 0,
-    done: false,
-    locked: false,
-    current: true,
-  };
+    const currentUnitLessons = currentUnit.id ? (lessonsByUnit.get(currentUnit.id) ?? []) : [];
+    const nextLessonId = (
+      currentUnitLessons.find((l) => !doneLessonIds.has(l.id)) ?? currentUnitLessons[0]
+    )?.id;
+    return { units, currentUnit, nextLessonId };
+  }, [previewUnits, lessonsByUnit, doneLessonIds]);
   const currentPct = currentUnit.progress;
   const completedLessonCount = doneLessonIds.size;
-  const currentUnitLessons = currentUnit.id ? (lessonsByUnit.get(currentUnit.id) ?? []) : [];
-  const nextLessonId = (
-    currentUnitLessons.find((l) => !doneLessonIds.has(l.id)) ?? currentUnitLessons[0]
-  )?.id;
 
   return {
     user,
