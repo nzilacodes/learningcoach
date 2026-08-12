@@ -218,13 +218,13 @@ export function useDashboardData() {
   useStudyHeartbeat();
 
   const { data: userStats } = useUserStats();
-  const { data: progress = [] } = useLessonProgress();
+  const { data: progress = [], isLoading: progressLoading } = useLessonProgress();
   const { data: week } = useWeeklyStudy();
   const reminder = useStudyReminder();
   const { data: unlockedLevel } = useMaxUnlockedLevel();
-  const { data: curriculum } = useCurriculum();
+  const { data: curriculum, isLoading: curriculumLoading } = useCurriculum();
 
-  const { data: sub } = useQuery({
+  const { data: sub, isLoading: subLoading } = useQuery({
     queryKey: ["my_subscription", user?.id],
     enabled: !!user,
     queryFn: async () => {
@@ -324,8 +324,17 @@ export function useDashboardData() {
   const currentPct = currentUnit.progress;
   const completedLessonCount = doneLessonIds.size;
 
+  // While curriculum/progress/sub are still in flight, `progress` and `sub`
+  // fall back to `[]`/`undefined` above — which the unit-lock math and
+  // subscription-gated UI below can't tell apart from "genuinely nothing
+  // done yet" / "no active plan". Callers gate their loading spinner on this
+  // so they never render already-unlocked units as locked or flash a
+  // no-subscription state for an active subscriber.
+  const isLoading = curriculumLoading || progressLoading || subLoading;
+
   return {
     user,
+    isLoading,
     userStats,
     progress,
     week: { seconds: weekSeconds, label: weekLabel, days: weekDays, goalDays, pct: weekPct },

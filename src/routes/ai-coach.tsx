@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -8,12 +8,6 @@ import {
   BookOpen,
   Pencil,
   MessageSquare,
-  Zap,
-  HelpCircle,
-  Gift,
-  User,
-  Settings,
-  LogOut,
   Plus,
   ChevronRight,
   Loader2,
@@ -22,10 +16,10 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
-import { useClickOutside } from "@/hooks/use-click-outside";
+import { HeaderActionLinks, MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
 import { startRecording, transcribe, type Recorder } from "@/lib/voice";
 import { SITE_URL } from "@/lib/site-url";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 
 const MAX_MESSAGE_LENGTH = 4000; // matches sendCoachMessageSchema.content.max(4000) on the backend
 
@@ -72,20 +66,22 @@ function useCoachMessages(conversationId: string | null) {
 
 function AICoachPage() {
   const { locale } = useLocale();
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const qc = useQueryClient();
+  const notify = useNotification();
   const [input, setInput] = useState("");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const [projectsSidebarOpen, setProjectsSidebarOpen] = useState(true);
   const [recorder, setRecorder] = useState<Recorder | null>(null);
   const [transcribing, setTranscribing] = useState(false);
-  const avatarRef = useRef<HTMLDivElement>(null);
+  // Messages whose AI reply failed server-side — the user's message is still
+  // safely persisted (see backend sendCoachMessage's partial-success shape),
+  // so we offer a per-message retry instead of losing it or failing loudly.
+  const [failedMessageIds, setFailedMessageIds] = useState<Set<string>>(new Set());
+  const [retryingId, setRetryingId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
-  useClickOutside(avatarRef, setAvatarMenuOpen);
 
   const { data: conversations = [] } = useConversations(user?.id);
   const { data: transcript = [], isLoading: transcriptLoading } = useCoachMessages(activeId);
@@ -110,23 +106,58 @@ function AICoachPage() {
         conversationId = conversation.id;
         setActiveId(conversationId);
       }
-      await apiFetch(`/v1/ai/conversations/${conversationId}/messages`, {
-        method: "POST",
-        body: JSON.stringify({ content }),
-      });
+      // Always 201 now — a failed AI reply is reported as status:"failed" with
+      // the user's message still persisted (see backend sendCoachMessage),
+      // never thrown as an HTTP error that would make it look lost.
+      const result = await apiFetch<{ userMessage: CoachMessage; assistantMessage: CoachMessage | null; status: "ok" | "failed" }>(
+        `/v1/ai/conversations/${conversationId}/messages`,
+        { method: "POST", body: JSON.stringify({ content }) },
+      );
       qc.invalidateQueries({ queryKey: ["ai_messages", conversationId] });
       qc.invalidateQueries({ queryKey: ["ai_conversations", user?.id] });
+      if (result.status === "failed") {
+        setFailedMessageIds((prev) => new Set(prev).add(result.userMessage.id));
+        notify.warning(locale === "pt" ? "O Coach está temporariamente indisponível" : "Coach is temporarily unavailable", {
+          description:
+            locale === "pt"
+              ? "Não conseguimos processar a sua mensagem agora. A sua mensagem não foi perdida."
+              : "We couldn't process your message right now. Your message wasn't lost.",
+          dedupeKey: "ai-coach:reply-failed",
+        });
+      }
     } catch (e) {
       setInput(content);
-      toast.error(
-        e instanceof Error
-          ? e.message
-          : locale === "pt"
-            ? "Falha ao enviar mensagem"
-            : "Failed to send message",
-      );
+      notify.fromError(e, { dedupeKey: "ai-coach:send", onRetry: () => send() });
     } finally {
       setSending(false);
+    }
+  };
+
+  const retry = async (messageId: string) => {
+    if (!activeId || retryingId) return;
+    setRetryingId(messageId);
+    try {
+      const result = await apiFetch<{ assistantMessage: CoachMessage | null; status: "ok" | "failed" }>(
+        `/v1/ai/conversations/${activeId}/messages/${messageId}/retry`,
+        { method: "POST" },
+      );
+      qc.invalidateQueries({ queryKey: ["ai_messages", activeId] });
+      if (result.status === "ok") {
+        setFailedMessageIds((prev) => {
+          const next = new Set(prev);
+          next.delete(messageId);
+          return next;
+        });
+      } else {
+        notify.warning(locale === "pt" ? "Ainda sem resposta do Coach" : "Still no reply from Coach", {
+          description: locale === "pt" ? "Tente novamente em instantes." : "Please try again shortly.",
+          dedupeKey: "ai-coach:retry-failed",
+        });
+      }
+    } catch (e) {
+      notify.fromError(e, { dedupeKey: "ai-coach:retry" });
+    } finally {
+      setRetryingId(null);
     }
   };
 
@@ -139,7 +170,7 @@ function AICoachPage() {
         const text = await transcribe(blob);
         if (text.trim()) setInput((prev) => (prev ? `${prev} ${text}` : text));
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : locale === "pt" ? "Falha ao transcrever áudio" : "Failed to transcribe audio");
+        notify.fromError(e, { dedupeKey: "ai-coach:transcribe" });
       } finally {
         setTranscribing(false);
       }
@@ -148,7 +179,10 @@ function AICoachPage() {
     try {
       setRecorder(await startRecording());
     } catch {
-      toast.error(locale === "pt" ? "Permita acesso ao microfone" : "Please allow microphone access");
+      notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
+        description: locale === "pt" ? "Permita acesso ao microfone nas definições do navegador." : "Please allow microphone access in your browser settings.",
+        dedupeKey: "ai-coach:mic-permission",
+      });
     }
   };
 
@@ -181,76 +215,9 @@ function AICoachPage() {
             <h1 className="font-display text-xl font-bold text-[var(--ink)]">AI Coach</h1>
           </div>
           <div className="flex items-center gap-3">
-            {/* Upgrade button */}
-            <Link
-              to="/pricing"
-              className="bg-[var(--ink)] text-white px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity"
-            >
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
-              Upgrade
-            </Link>
-            {/* Help */}
-            <Link to="/contact" title={locale === "pt" ? "Ajuda" : "Help"} className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
-              <HelpCircle className="w-5 h-5" />
-            </Link>
-            {/* Gift */}
-            <Link to="/rewards" title={locale === "pt" ? "Recompensas" : "Rewards"} className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
-              <Gift className="w-5 h-5" />
-            </Link>
-            {/* Avatar — mobile dropdown */}
-            <div className="relative md:hidden" ref={avatarRef}>
-              {avatarMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        navigate({ to: "/profile" });
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-                    >
-                      <User className="w-4 h-4 text-(--violet)" />
-                      {locale === "pt" ? "Ver perfil" : "View profile"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        navigate({ to: "/settings" });
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-                    >
-                      <Settings className="w-4 h-4 text-gray-400" />
-                      {locale === "pt" ? "Definições" : "Settings"}
-                    </button>
-                    <div className="mx-3 my-1 h-px bg-gray-50" />
-                    <button
-                      onClick={() => signOut()}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {locale === "pt" ? "Sair da conta" : "Sign out"}
-                    </button>
-                  </div>
-                </>
-              )}
-              <button
-                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
-                className="relative w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"
-              >
-                <User className="w-4 h-4 text-gray-600" />
-                <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-              </button>
-            </div>
-            {/* Avatar — desktop */}
-            <Link to="/profile" className="hidden md:block" title={locale === "pt" ? "Ver perfil" : "View profile"}>
-              <div className="relative inline-flex">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
-              </div>
-            </Link>
+            <HeaderActionLinks />
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
           </div>
         </header>
 
@@ -294,10 +261,7 @@ function AICoachPage() {
                   </div>
                 ) : (
                   transcript.map((m) => (
-                    <div
-                      key={m.id}
-                      className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-                    >
+                    <div key={m.id} className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}>
                       <div
                         className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
                           m.role === "user"
@@ -307,6 +271,21 @@ function AICoachPage() {
                       >
                         {m.content}
                       </div>
+                      {m.role === "user" && failedMessageIds.has(m.id) && (
+                        <div className="mt-1.5 flex items-center gap-2 text-xs text-amber-600">
+                          <span>{locale === "pt" ? "Sem resposta do Coach." : "No reply from Coach."}</span>
+                          <button
+                            type="button"
+                            onClick={() => retry(m.id)}
+                            disabled={retryingId === m.id}
+                            className="font-semibold underline underline-offset-2 hover:no-underline disabled:opacity-50"
+                          >
+                            {retryingId === m.id
+                              ? locale === "pt" ? "A tentar…" : "Retrying…"
+                              : locale === "pt" ? "Tentar novamente" : "Try again"}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}

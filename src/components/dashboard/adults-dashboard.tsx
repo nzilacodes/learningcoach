@@ -9,7 +9,6 @@ import {
   BookOpen,
   Mic,
   Gamepad2,
-  Award,
   Lock,
   Check,
   Target,
@@ -778,9 +777,13 @@ function SubscriptionCard({
         </div>
         {activationCode && (
           <button
-            onClick={() => {
-              navigator.clipboard.writeText(activationCode);
-              toast.success(locale === "pt" ? "Código copiado" : "Code copied");
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(activationCode);
+                toast.success(locale === "pt" ? "Código copiado" : "Code copied");
+              } catch {
+                toast.error(locale === "pt" ? "Falha ao copiar o código" : "Failed to copy code");
+              }
             }}
             className="text-[10px] font-mono bg-white/10 rounded-full px-2 py-0.5 mb-3 block"
           >

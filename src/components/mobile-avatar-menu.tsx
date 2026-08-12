@@ -4,8 +4,12 @@ import { User, Settings, LogOut, Zap, HelpCircle, Gift } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useClickOutside } from "@/hooks/use-click-outside";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
-/** The Upgrade/Help/Gift trio at the start of every VideosSidebar page header — also duplicated, also dead in every copy. */
+/** The Upgrade/Help/Gift/Notifications cluster at the start of every
+ * VideosSidebar page header — was duplicated (and the bell absent) across
+ * every copy; extracting one shared component rolls the bell out everywhere
+ * that already adopted this component in one change. */
 export function HeaderActionLinks() {
   const { locale } = useLocale();
   return (
@@ -31,6 +35,7 @@ export function HeaderActionLinks() {
       >
         <Gift className="w-5 h-5" />
       </Link>
+      <NotificationBell />
     </>
   );
 }

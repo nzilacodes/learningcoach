@@ -20,8 +20,12 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
-import { apiFetch, ApiError } from "@/lib/api/client";
-import { toast } from "sonner";
+import { apiFetch } from "@/lib/api/client";
+import { useLocale } from "@/lib/i18n";
+import { useNotification } from "@/lib/notifications/notification-provider";
+import { normalizeApiError, type NormalizedError } from "@/lib/errors/normalize-api-error";
+import { InlineStatusFromError } from "@/components/feedback/inline-status";
+import { StagedLoader } from "@/components/feedback/staged-loader";
 
 type Props = {
   word: string;
@@ -55,24 +59,32 @@ type PronScore = {
 };
 
 export function WordCard({ word, lessonId = null, showTranslation = true }: Props) {
+  const { locale } = useLocale();
+  const notify = useNotification();
   const [data, setData] = useState<WordEntry | null>(null);
   const [loading, setLoading] = useState(true);
+  const [analyzeError, setAnalyzeError] = useState<NormalizedError | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [practiceOpen, setPracticeOpen] = useState(false);
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
+    setAnalyzeError(null);
     apiFetch<WordEntry>(`/v1/dictionary/${encodeURIComponent(word)}`)
       .then((d) => alive && setData(d))
-      .catch((e) => alive && toast.error(`Erro: ${e.message ?? e}`))
+      .catch((e) => alive && setAnalyzeError(normalizeApiError(e, locale)))
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
     };
-  }, [word]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reloadKey deliberately forces a refetch without changing `word`
+  }, [word, reloadKey, locale]);
 
   const play = (accent: "us" | "uk", slow = false) =>
-    speak(word, { accent, speed: slow ? 0.7 : 1 }).catch(() => toast.error("Áudio indisponível"));
+    speak(word, { accent, speed: slow ? 0.7 : 1 }).catch(() =>
+      notify.warning(locale === "pt" ? "Áudio indisponível" : "Audio unavailable", { dedupeKey: "word-card:play" }),
+    );
 
   return (
     <Card>
@@ -84,6 +96,18 @@ export function WordCard({ word, lessonId = null, showTranslation = true }: Prop
           )}
           {loading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
         </div>
+
+        {/* Inline, not a toast — a disappearing toast would lose context on
+            which word's analysis actually failed. */}
+        {analyzeError && !loading && (
+          <InlineStatusFromError
+            error={analyzeError}
+            action={{
+              label: locale === "pt" ? "Tentar novamente" : "Try again",
+              onClick: () => setReloadKey((k) => k + 1),
+            }}
+          />
+        )}
 
         {data && (
           <div className="grid gap-2 text-sm">
@@ -182,16 +206,18 @@ function PracticeDialog({
   ipa: string;
   lessonId: string | null;
 }) {
+  const { locale } = useLocale();
+  const notify = useNotification();
   const navigate = useNavigate();
   const [recorder, setRecorder] = useState<Recorder | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [stage, setStage] = useState<"transcribing" | "assessing" | null>(null);
   const [result, setResult] = useState<PronScore | null>(null);
 
   useEffect(() => {
     if (!open) {
       setRecorder(null);
       setResult(null);
-      setBusy(false);
+      setStage(null);
     }
   }, [open]);
 
@@ -201,17 +227,24 @@ function PracticeDialog({
       setRecorder(r);
       setResult(null);
     } catch {
-      toast.error("Permita acesso ao microfone");
+      notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
+        description:
+          locale === "pt"
+            ? "Permita acesso ao microfone nas definições do navegador."
+            : "Please allow microphone access in your browser settings.",
+        dedupeKey: "word-card:mic-permission",
+      });
     }
   };
 
   const stopRec = async () => {
     if (!recorder) return;
-    setBusy(true);
+    setStage("transcribing");
     try {
       const blob = await recorder.stop();
       setRecorder(null);
       const transcribed = await transcribe(blob);
+      setStage("assessing");
       const score = await apiFetch<PronScore>("/v1/pronunciation/assess", {
         method: "POST",
         body: JSON.stringify({ word, transcribed, ipa, lessonId }),
@@ -222,15 +255,11 @@ function PracticeDialog({
         feedback: score.feedback ?? "",
       });
     } catch (e) {
-      if (e instanceof ApiError && e.status === 402) {
-        toast.error(e.message, {
-          action: { label: "Ver planos", onClick: () => navigate({ to: "/pricing" }) },
-        });
-      } else {
-        toast.error(`Falha: ${(e as Error).message}`);
-      }
+      // Consolidates what used to be a bespoke 402 branch here — any
+      // PAYMENT_REQUIRED error now gets the "Ver planos" CTA centrally.
+      notify.fromError(e, { dedupeKey: "word-card:assess", onUpgrade: () => navigate({ to: "/pricing" }) });
     } finally {
-      setBusy(false);
+      setStage(null);
     }
   };
 
@@ -260,9 +289,9 @@ function PracticeDialog({
             </Button>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex items-center gap-3">
             {!recorder ? (
-              <Button onClick={startRec} disabled={busy}>
+              <Button onClick={startRec} disabled={stage !== null}>
                 <Mic className="w-4 h-4 mr-1" /> Gravar
               </Button>
             ) : (
@@ -270,8 +299,15 @@ function PracticeDialog({
                 <Square className="w-4 h-4 mr-1" /> Parar e avaliar
               </Button>
             )}
-            {busy && <Loader2 className="w-5 h-5 animate-spin self-center" />}
           </div>
+
+          {stage && (
+            <StagedLoader
+              stages={locale === "pt" ? ["A transcrever…", "A analisar pronúncia…"] : ["Transcribing…", "Analyzing pronunciation…"]}
+              currentStage={stage === "transcribing" ? 0 : 1}
+              status="running"
+            />
+          )}
 
           {result && <ScorePanel score={result} />}
         </div>

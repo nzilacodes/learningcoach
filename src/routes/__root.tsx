@@ -16,6 +16,7 @@ import { WhatsAppFloat } from "@/components/whatsapp-float";
 import { AuthProvider } from "@/lib/auth";
 import { OnboardingGate } from "@/components/onboarding-gate";
 import { Toaster } from "@/components/ui/sonner";
+import { NotificationProvider } from "@/lib/notifications/notification-provider";
 
 function NotFoundComponent() {
   return (
@@ -161,14 +162,16 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <LocaleProvider>
-          <AgeThemeProvider>
-            <OnboardingGate />
-            <main id="main-content">
-              <Outlet />
-            </main>
-            <WhatsAppFloat />
-            <Toaster richColors position="top-right" />
-          </AgeThemeProvider>
+          <NotificationProvider>
+            <AgeThemeProvider>
+              <OnboardingGate />
+              <main id="main-content">
+                <Outlet />
+              </main>
+              <WhatsAppFloat />
+              <Toaster richColors position="top-right" />
+            </AgeThemeProvider>
+          </NotificationProvider>
         </LocaleProvider>
       </AuthProvider>
     </QueryClientProvider>

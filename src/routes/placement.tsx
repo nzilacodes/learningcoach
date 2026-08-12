@@ -17,21 +17,19 @@ import {
   Target,
   Trophy,
   AlertCircle,
-  HelpCircle,
-  Gift,
-  User,
-  Settings,
-  LogOut,
-  Zap,
 } from "lucide-react";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { HeaderActionLinks, MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { awardActivity } from "@/lib/gamification";
 import { apiFetch, apiFetchFormData } from "@/lib/api/client";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
+import { normalizeApiError, type NormalizedError } from "@/lib/errors/normalize-api-error";
+import { InlineStatusFromError } from "@/components/feedback/inline-status";
+import { StagedLoader } from "@/components/feedback/staged-loader";
 import {
   GRAMMAR,
   VOCABULARY,
@@ -90,7 +88,7 @@ interface Report {
 
 function DiagnosticPage() {
   const { locale } = useLocale();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [section, setSection] = useState<Section>("intro");
@@ -106,9 +104,8 @@ function DiagnosticPage() {
   const [speakingAns, setSpeakingAns] = useState<string[]>(SPEAKING.map(() => ""));
   const [pronAns, setPronAns] = useState<string[]>(PRONUNCIATION.map(() => ""));
   const [report, setReport] = useState<Report | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
-  const avatarRef = useRef<HTMLDivElement>(null);
+  const [saveError, setSaveError] = useState<NormalizedError | null>(null);
+  const notify = useNotification();
 
   // Load latest saved report if it exists.
   useEffect(() => {
@@ -119,19 +116,11 @@ function DiagnosticPage() {
     })();
   }, [user]);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
-        setAvatarMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
   const submit = async () => {
     if (!user) {
-      toast.error(locale === "pt" ? "Sessão expirada. Entre novamente para submeter." : "Session expired. Sign in to submit.");
+      notify.warning(locale === "pt" ? "A sua sessão expirou" : "Your session expired", {
+        description: locale === "pt" ? "Entre novamente para submeter." : "Sign in again to submit.",
+      });
       navigate({ to: "/auth" });
       return;
     }
@@ -169,12 +158,11 @@ function DiagnosticPage() {
       awardActivity("diagnostic_complete", { silent: true }).catch(() => {});
       setReport(data);
       setSection("report");
-      toast.success(locale === "pt" ? `Nível ${data.cefr_level} identificado!` : `Level ${data.cefr_level} identified!`);
+      notify.success(locale === "pt" ? `Nível ${data.cefr_level} identificado!` : `Level ${data.cefr_level} identified!`);
     } catch (e) {
-      console.error("[placement] submit failed", e);
-      setSaveError((e as Error).message);
+      setSaveError(normalizeApiError(e, locale));
       setSection("report");
-      toast.error(locale === "pt" ? "Falha ao avaliar. Tente novamente." : "Evaluation failed. Try again.");
+      notify.fromError(e, { dedupeKey: "placement:evaluate", onRetry: submit });
     }
   };
 
@@ -190,70 +178,9 @@ function DiagnosticPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
-            <button className="bg-[var(--ink)] text-white px-3 md:px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
-              <span className="hidden sm:inline">Upgrade</span>
-            </button>
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex">
-              <HelpCircle className="w-5 h-5" />
-            </button>
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex">
-              <Gift className="w-5 h-5" />
-            </button>
-            <div className="relative md:hidden" ref={avatarRef}>
-              {avatarMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        navigate({ to: "/profile" });
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-                    >
-                      <User className="w-4 h-4 text-[var(--violet)]" />
-                      {locale === "pt" ? "Ver perfil" : "View profile"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        navigate({ to: "/settings" });
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-                    >
-                      <Settings className="w-4 h-4 text-gray-400" />
-                      {locale === "pt" ? "Definições" : "Settings"}
-                    </button>
-                    <div className="mx-3 my-1 h-px bg-gray-50" />
-                    <button
-                      onClick={() => signOut()}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {locale === "pt" ? "Sair da conta" : "Sign out"}
-                    </button>
-                  </div>
-                </>
-              )}
-              <button
-                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
-                className="relative inline-flex"
-              >
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
-                <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-              </button>
-            </div>
-            <div className="hidden md:block">
-              <div className="relative inline-flex">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
-              </div>
-            </div>
+            <HeaderActionLinks />
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
           </div>
         </header>
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
@@ -620,6 +547,7 @@ function ListeningSection({
   onBack: () => void;
 }) {
   const { locale } = useLocale();
+  const notify = useNotification();
   const complete = answers.every((a) => a !== null);
   const [playingIdx, setPlayingIdx] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -641,7 +569,7 @@ function ListeningSection({
       };
       await audio.play();
     } catch (e) {
-      toast.error((e as Error).message || "TTS failed");
+      notify.fromError(e, { dedupeKey: "placement:listen" });
       setPlayingIdx(null);
     }
   };
@@ -810,6 +738,7 @@ function RecordSection({
 
 function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
   const { locale } = useLocale();
+  const notify = useNotification();
   const [state, setState] = useState<"idle" | "recording" | "processing">("idle");
   const [elapsed, setElapsed] = useState(0);
   const recorderRef = useRef<import("@/lib/wav-recorder").WavRecorder | null>(null);
@@ -826,8 +755,13 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
         setElapsed(Math.floor((Date.now() - startedAt) / 1000));
       }, 250);
       setState("recording");
-    } catch (e) {
-      toast.error((e as Error).message || (locale === "pt" ? "Microfone indisponível — verifique as permissões." : "Microphone unavailable — check permissions."));
+    } catch {
+      // A getUserMedia/permission failure, not a backend error — canned copy,
+      // not the raw DOMException message.
+      notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
+        description: locale === "pt" ? "Verifique as permissões do navegador." : "Check your browser permissions.",
+        dedupeKey: "placement:mic-permission",
+      });
     }
   };
 
@@ -842,7 +776,10 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
       const blob = await recorderRef.current.stop();
       recorderRef.current = null;
       if (blob.size < 4096) {
-        toast.error(locale === "pt" ? "Áudio muito curto ou silencioso. Fale mais alto e tente novamente." : "Audio too short or silent. Please try again.");
+        notify.warning(
+          locale === "pt" ? "Áudio muito curto ou silencioso" : "Audio too short or silent",
+          { description: locale === "pt" ? "Fale mais alto e tente novamente." : "Please speak louder and try again." },
+        );
         setState("idle");
         return;
       }
@@ -851,12 +788,15 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
       const data = await apiFetchFormData<{ text: string }>("/v1/audio/transcriptions", fd);
       const text = (data.text ?? "").trim();
       if (!text) {
-        toast.error(locale === "pt" ? "Não conseguimos ouvir a sua voz. Tente novamente mais perto do microfone." : "We couldn't hear your voice. Try again closer to the mic.");
+        notify.warning(
+          locale === "pt" ? "Não conseguimos ouvir a sua voz" : "We couldn't hear your voice",
+          { description: locale === "pt" ? "Tente novamente mais perto do microfone." : "Try again closer to the mic." },
+        );
       } else {
         onTranscript(text);
       }
     } catch (e) {
-      toast.error((e as Error).message || "STT failed");
+      notify.fromError(e, { dedupeKey: "placement:transcribe" });
     } finally {
       setState("idle");
     }
@@ -949,16 +889,20 @@ function SectionHeader({ icon: Icon, title }: { icon: typeof BookOpen; title: st
 
 function Loading() {
   const { locale } = useLocale();
+  const stages =
+    locale === "pt"
+      ? ["A preparar a análise…", "A analisar as suas respostas…", "A finalizar a avaliação…"]
+      : ["Preparing analysis…", "Analyzing your answers…", "Finalizing the evaluation…"];
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center premium-shadow">
-      <Loader2 className="mx-auto h-10 w-10 animate-spin text-[var(--violet)]" />
-      <h2 className="mt-6 font-display text-2xl font-bold text-[var(--ink)]">
+      <h2 className="font-display text-2xl font-bold text-[var(--ink)]">
         {locale === "pt" ? "Coach a avaliar o seu inglês…" : "Coach is evaluating your English…"}
       </h2>
-      <p className="mt-2 text-sm text-gray-500">
-        {locale === "pt"
-          ? "A gerar o seu nível CEFR, pontos fortes/fracos e plano personalizado. Pode levar até 30 segundos."
-          : "Generating your CEFR level, strengths/weaknesses and personalized plan. May take up to 30 seconds."}
+      <div className="mt-6">
+        <StagedLoader stages={stages} status="running" autoAdvanceMs={[2500, 12000]} />
+      </div>
+      <p className="mt-4 text-xs text-gray-400">
+        {locale === "pt" ? "Pode levar até 30 segundos." : "May take up to 30 seconds."}
       </p>
     </div>
   );
@@ -983,7 +927,7 @@ function SubmitFailedView({
   onRetry,
   onBack,
 }: {
-  error: string | null;
+  error: NormalizedError | null;
   onRetry: () => void;
   onBack: () => void;
 }) {
@@ -1001,8 +945,8 @@ function SubmitFailedView({
             : "Your answers are still saved in this session. You can try submitting again."}
         </p>
         {error && (
-          <div className="mx-auto mt-4 flex max-w-md items-start gap-2 rounded-xl bg-destructive/10 p-3 text-left text-xs text-destructive">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> {error}
+          <div className="mx-auto mt-4 max-w-md text-left">
+            <InlineStatusFromError error={error} />
           </div>
         )}
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
@@ -1025,7 +969,7 @@ function ReportView({
   onContinue,
 }: {
   report: Report;
-  error: string | null;
+  error: NormalizedError | null;
   onRetake: () => void;
   onContinue: () => void;
 }) {
@@ -1045,8 +989,8 @@ function ReportView({
         </div>
         {report.feedback && <p className="mx-auto mt-4 max-w-2xl text-sm text-gray-500">{report.feedback}</p>}
         {error && (
-          <div className="mx-auto mt-4 flex max-w-xl items-start gap-2 rounded-xl bg-destructive/10 p-3 text-left text-xs text-destructive">
-            <AlertCircle className="mt-0.5 h-4 w-4" /> {error}
+          <div className="mx-auto mt-4 max-w-xl text-left">
+            <InlineStatusFromError error={error} />
           </div>
         )}
       </div>

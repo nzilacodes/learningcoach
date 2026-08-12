@@ -36,7 +36,7 @@ function DashboardPage() {
   // so it's safe to call before the auth check below resolves.
   const data = useDashboardData();
 
-  if (loading || !user) {
+  if (loading || !user || data.isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" /> A carregar…

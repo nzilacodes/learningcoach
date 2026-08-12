@@ -3,11 +3,45 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || process.env.VITE_API_URL ||
 
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
+// Mirrors learningcoachbackEnd's src/lib/errors.ts ErrorCode (minus NETWORK_ERROR,
+// which only the frontend ever produces — a fetch-level failure, not a backend response).
+export type ErrorCode =
+  | "VALIDATION_ERROR"
+  | "AUTH_SESSION_EXPIRED"
+  | "PERMISSION_DENIED"
+  | "NOT_FOUND"
+  | "CONFLICT"
+  | "RATE_LIMITED"
+  | "PAYMENT_REQUIRED"
+  | "AI_SERVICE_UNAVAILABLE"
+  | "AI_SERVICE_TIMEOUT"
+  | "AI_SERVICE_LIMIT_REACHED"
+  | "AI_EVALUATION_FAILED"
+  | "NETWORK_ERROR"
+  | "SERVER_ERROR"
+  | "UNKNOWN_ERROR";
+
 export class ApiError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  code: ErrorCode;
+  retryable: boolean;
+  requestId?: string;
+  fields?: Array<{ path: string; message: string }>;
+
+  constructor(
+    message: string,
+    status: number,
+    code: ErrorCode = "UNKNOWN_ERROR",
+    retryable = false,
+    requestId?: string,
+    fields?: Array<{ path: string; message: string }>,
+  ) {
     super(message);
     this.status = status;
+    this.code = code;
+    this.retryable = retryable;
+    this.requestId = requestId;
+    this.fields = fields;
   }
 }
 
@@ -23,12 +57,22 @@ function csrfHeaders(method: string | undefined): HeadersInit {
   return token ? { "X-CSRF-Token": token } : {};
 }
 
-async function parseErrorBody(res: Response): Promise<string> {
+/** Reads the backend's { success: false, error: {...} } envelope (see
+ * learningcoachbackEnd's plugins/error-handler.ts). Falls back to UNKNOWN_ERROR
+ * for any unexpected shape (e.g. a proxy's raw 502 HTML page) — that fallback
+ * text is only ever used for logging, never as primary UI copy; see
+ * lib/errors/normalize-api-error.ts, the one place allowed to turn this into
+ * something the user sees. */
+async function parseErrorEnvelope(res: Response): Promise<ApiError> {
   try {
     const body = await res.json();
-    return body.detail || body.title || res.statusText;
+    const err = body?.error;
+    if (err && typeof err.code === "string" && typeof err.message === "string") {
+      return new ApiError(err.message, res.status, err.code, Boolean(err.retryable), err.request_id, err.fields);
+    }
+    return new ApiError(res.statusText || "Request failed", res.status, "UNKNOWN_ERROR");
   } catch {
-    return res.statusText;
+    return new ApiError(res.statusText || "Request failed", res.status, "UNKNOWN_ERROR");
   }
 }
 
@@ -51,19 +95,29 @@ function refreshSession(): Promise<boolean> {
   return refreshInFlight;
 }
 
+/** Wraps fetch() itself failing (offline, DNS, CORS) as a NETWORK_ERROR ApiError
+ * instead of letting a raw, browser-specific TypeError propagate uncontrolled. */
+async function fetchOrNetworkError(input: string, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(input, init);
+  } catch {
+    throw new ApiError("Network request failed", 0, "NETWORK_ERROR", true);
+  }
+}
+
 /** JSON request/response helper for the learningcoachbackEnd API. Session lives in
  * HttpOnly cookies (set by the backend), so there's no token to attach here —
  * just credentials + a CSRF header on mutating requests. */
 export async function apiFetch<T>(path: string, init: RequestInit = {}, _retried = false): Promise<T> {
   const headers = { "Content-Type": "application/json", ...csrfHeaders(init.method), ...(init.headers ?? {}) };
-  const res = await fetch(`${API_BASE_URL}${path}`, { ...init, credentials: "include", headers });
+  const res = await fetchOrNetworkError(`${API_BASE_URL}${path}`, { ...init, credentials: "include", headers });
 
   if (res.status === 401 && !_retried && !path.startsWith("/v1/auth/")) {
     const refreshed = await refreshSession();
     if (refreshed) return apiFetch<T>(path, init, true);
   }
 
-  if (!res.ok) throw new ApiError(await parseErrorBody(res), res.status);
+  if (!res.ok) throw await parseErrorEnvelope(res);
   if (res.status === 204) return undefined as T;
   const contentType = res.headers.get("content-type") ?? "";
   return contentType.includes("application/json") ? ((await res.json()) as T) : ((await res.blob()) as unknown as T);
@@ -71,7 +125,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}, _retried
 
 /** multipart/form-data helper (audio uploads) — do not set Content-Type, fetch sets the boundary. */
 export async function apiFetchFormData<T>(path: string, formData: FormData, _retried = false): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
+  const res = await fetchOrNetworkError(`${API_BASE_URL}${path}`, {
     method: "POST",
     credentials: "include",
     headers: csrfHeaders("POST"),
@@ -83,6 +137,6 @@ export async function apiFetchFormData<T>(path: string, formData: FormData, _ret
     if (refreshed) return apiFetchFormData<T>(path, formData, true);
   }
 
-  if (!res.ok) throw new ApiError(await parseErrorBody(res), res.status);
+  if (!res.ok) throw await parseErrorEnvelope(res);
   return res.json() as Promise<T>;
 }

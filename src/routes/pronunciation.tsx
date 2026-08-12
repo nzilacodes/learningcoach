@@ -15,6 +15,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { WordCard } from "@/components/word-card";
 import { apiFetch } from "@/lib/api/client";
+import { useLocale } from "@/lib/i18n";
+import { normalizeApiError } from "@/lib/errors/normalize-api-error";
+import { InlineStatusFromError } from "@/components/feedback/inline-status";
+
+function PronunciationRouteError({ error }: { error: Error }) {
+  const { locale } = useLocale();
+  return (
+    <div className="p-8 max-w-lg mx-auto">
+      <InlineStatusFromError error={normalizeApiError(error, locale)} />
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/pronunciation")({
   component: PronunciationPage,
@@ -28,7 +40,7 @@ export const Route = createFileRoute("/pronunciation")({
       },
     ],
   }),
-  errorComponent: ({ error }) => <div className="p-8">Erro: {error.message}</div>,
+  errorComponent: ({ error }) => <PronunciationRouteError error={error} />,
   notFoundComponent: () => <div className="p-8">Página não encontrada.</div>,
 });
 
