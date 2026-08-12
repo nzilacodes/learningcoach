@@ -31,15 +31,30 @@ export function OnboardingGate() {
   const themeInitialized = useRef(false);
 
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading) return;
+
+    const isPublic = PUBLIC_PATHS.has(path);
+    const isPlacement = path === PLACEMENT_PATH;
+
+    // Logged out (including right after signOut()): bounce back to /auth from
+    // any non-public route. Previously this redirect was only hand-rolled
+    // locally on a handful of routes (dashboard, settings, profile, ...) —
+    // routes without their own copy (rewards, ai-coach, curriculum, games,
+    // reading, videos) kept rendering their last-fetched protected data after
+    // logout until a full page refresh re-ran auth from scratch.
+    if (!user) {
+      if (!isPublic && !isPlacement) {
+        navigate({ to: "/auth" });
+      }
+      return;
+    }
 
     // Admin bypasses onboarding entirely.
     if (isAdmin) return;
 
     const status = user.onboardingStatus ?? "profile";
-    const isPublic = PUBLIC_PATHS.has(path);
     const isOnboarding = path === ONBOARDING_PATH;
-    const isPlacementStep = path === PLACEMENT_PATH && status === "placement";
+    const isPlacementStep = isPlacement && status === "placement";
 
     // Mandatory flow: while onboarding isn't complete, force user to /onboarding.
     if (status !== "complete") {

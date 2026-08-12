@@ -50,7 +50,6 @@ const QUICK_PRACTICE = (locale: "pt" | "en") => [
  * study reminder — the original dashboard layout, unchanged in substance. */
 export function AdultsDashboard(data: DashboardData) {
   const { locale } = useLocale();
-  const notify = useNotification();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
