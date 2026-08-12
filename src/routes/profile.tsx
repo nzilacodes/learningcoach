@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { User, Globe, Cake, Languages, Heart, Target, Loader2, Check, Mail, GraduationCap } from "lucide-react";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ export const Route = createFileRoute("/profile")({
 
 function ProfilePage() {
   const { locale } = useLocale();
+  const notify = useNotification();
   const { user, loading, refresh } = useAuth();
   const navigate = useNavigate();
 
@@ -64,9 +65,9 @@ function ProfilePage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const ageNum = parseInt(age, 10);
-    if (!fullName.trim()) return toast.error(locale === "pt" ? "Nome obrigatório" : "Name required");
+    if (!fullName.trim()) return notify.warning(locale === "pt" ? "Nome obrigatório" : "Name required");
     if (!Number.isFinite(ageNum) || ageNum < 4 || ageNum > 120)
-      return toast.error(locale === "pt" ? "Idade inválida (4–120)" : "Invalid age (4–120)");
+      return notify.warning(locale === "pt" ? "Idade inválida (4–120)" : "Invalid age (4–120)");
 
     setSaving(true);
     try {
@@ -82,9 +83,9 @@ function ProfilePage() {
         }),
       });
       await refresh();
-      toast.success(locale === "pt" ? "Perfil atualizado" : "Profile updated");
+      notify.success(locale === "pt" ? "Perfil atualizado" : "Profile updated");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro");
+      notify.fromError(err, { dedupeKey: "profile:save" });
     } finally {
       setSaving(false);
     }

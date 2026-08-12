@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Languages, KeyRound, LogOut, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ export const Route = createFileRoute("/settings")({
 
 function SettingsPage() {
   const { locale, setLocale } = useLocale();
+  const notify = useNotification();
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -47,10 +48,10 @@ function SettingsPage() {
   const changePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      return toast.error(locale === "pt" ? "As palavras-passe não coincidem" : "Passwords don't match");
+      return notify.warning(locale === "pt" ? "As palavras-passe não coincidem" : "Passwords don't match");
     }
     const pwError = passwordError(newPassword, locale);
-    if (pwError) return toast.error(pwError);
+    if (pwError) return notify.warning(pwError);
 
     setSaving(true);
     try {
@@ -62,7 +63,7 @@ function SettingsPage() {
       // the password changes, so the current session is already dead server-
       // side — sign out locally and send the user to log back in explicitly,
       // rather than let them hit a confusing 401 on the next silent refresh.
-      toast.success(
+      notify.success(
         locale === "pt"
           ? "Palavra-passe alterada. Entre novamente."
           : "Password changed. Please sign in again.",
@@ -70,7 +71,7 @@ function SettingsPage() {
       await signOut();
       navigate({ to: "/auth" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro");
+      notify.fromError(err, { dedupeKey: "settings:change-password" });
     } finally {
       setSaving(false);
     }

@@ -15,7 +15,7 @@ import { useAuth } from "@/lib/auth";
 import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
 import { apiFetch } from "@/lib/api/client";
 import { awardActivity } from "@/lib/gamification";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import {
   LineChart,
   Line,
@@ -125,6 +125,7 @@ type ReadingReport = {
 
 function ReadingPage() {
   const { locale } = useLocale();
+  const notify = useNotification();
   const { user } = useAuth();
   const [idx, setIdx] = useState(0);
   const passage = PASSAGES[idx];
@@ -155,8 +156,8 @@ function ReadingPage() {
     try {
       setPlaying(true);
       await speak(passage.text, { accent: "uk" });
-    } catch {
-      toast.error("Áudio indisponível");
+    } catch (e) {
+      notify.fromError(e, { dedupeKey: "reading:play" });
     } finally {
       setPlaying(false);
     }
@@ -172,7 +173,10 @@ function ReadingPage() {
         setReport(null);
         setTranscript("");
       } catch {
-        toast.error("Permite o acesso ao microfone");
+        notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
+          description: locale === "pt" ? "Permite o acesso ao microfone." : "Please allow microphone access.",
+          dedupeKey: "reading:mic-permission",
+        });
       }
       return;
     }
@@ -197,7 +201,7 @@ function ReadingPage() {
       setAttempts((n) => n + 1);
       awardActivity("reading", { meta: { overall: r.overall ?? 0 } }).catch(() => {});
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha na análise");
+      notify.fromError(e, { dedupeKey: "reading:assess" });
     } finally {
       setProcessing(false);
     }

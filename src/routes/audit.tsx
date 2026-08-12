@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ShieldCheck, ShieldAlert, Lock, AlertTriangle, Activity, Ban, Search } from "lucide-react";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 
 export type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
 
@@ -81,6 +81,7 @@ function fmtDate(s: string) {
 function AuditPage() {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const notify = useNotification();
   const [summary, setSummary] = useState<SecuritySummary | null>(null);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [attempts, setAttempts] = useState<LoginAttempt[]>([]);
@@ -114,7 +115,7 @@ function AuditPage() {
         if (k.status === "fulfilled") setLockouts(k.value);
         if ([s, l, a, k].some((r) => r.status === "rejected")) {
           setLoadError(true);
-          toast.error("Falha ao carregar alguns dados de auditoria.");
+          notify.error("Falha ao carregar alguns dados de auditoria.");
         }
       })
       .finally(() => setDataLoading(false));

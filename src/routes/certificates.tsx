@@ -7,9 +7,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { apiFetch, ApiError } from "@/lib/api/client";
+import { apiFetch } from "@/lib/api/client";
 import { generateCertificatePdf, downloadBlob } from "@/lib/certificate-pdf";
+import { useNotification } from "@/lib/notifications/notification-provider";
 
 type CertificateRow = {
   id: string;
@@ -38,6 +38,7 @@ export const Route = createFileRoute("/certificates")({
 
 function CertificatesPage() {
   const navigate = useNavigate();
+  const notify = useNotification();
   const [items, setItems] = useState<CertificateRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [issuing, setIssuing] = useState<string | null>(null);
@@ -48,7 +49,7 @@ function CertificatesPage() {
       const rows = await apiFetch<CertificateRow[]>("/v1/me/certificates");
       setItems(rows);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro a carregar certificados");
+      notify.fromError(e, { dedupeKey: "certificates:list" });
     } finally {
       setLoading(false);
     }
@@ -66,16 +67,12 @@ function CertificatesPage() {
         method: "POST",
         body: JSON.stringify({ level }),
       });
-      toast.success(`Certificado ${cert.level} emitido!`);
+      notify.success(`Certificado ${cert.level} emitido!`);
       await refresh();
     } catch (e) {
-      if (e instanceof ApiError && e.status === 402) {
-        toast.error(e.message, {
-          action: { label: "Ver planos", onClick: () => navigate({ to: "/pricing" }) },
-        });
-      } else {
-        toast.error(e instanceof Error ? e.message : "Erro ao emitir (concluíste este nível?)");
-      }
+      // PAYMENT_REQUIRED gets the "Ver planos" CTA centrally now, instead of
+      // this call site hand-checking e.status === 402.
+      notify.fromError(e, { dedupeKey: "certificates:issue", onUpgrade: () => navigate({ to: "/pricing" }) });
     } finally {
       setIssuing(null);
     }
@@ -96,7 +93,7 @@ function CertificatesPage() {
       });
       downloadBlob(blob, `Certificate-${cert.verification_code}.pdf`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao gerar PDF");
+      notify.fromError(e, { dedupeKey: "certificates:pdf" });
     }
   }
 

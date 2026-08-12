@@ -20,7 +20,7 @@ import { AGE_TRACKS } from "@/lib/age-tracks";
 import { extractYouTubeId, youtubeThumb, videoPoolForAge } from "@/lib/youtube";
 import { useUserStats, useWeeklyStudy } from "@/lib/learning";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { useClickOutside } from "@/hooks/use-click-outside";
 
 export const Route = createFileRoute("/videos")({
@@ -57,6 +57,7 @@ function VideosPage() {
   const qc = useQueryClient();
   const { group } = useAgeGroup();
   const { locale } = useLocale();
+  const notify = useNotification();
   const [activeFilter, setActiveFilter] = useState("All Videos");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
@@ -394,10 +395,10 @@ function VideosPage() {
                                     completed: true,
                                   }),
                                 });
-                                toast.success(locale === "pt" ? "Marcado como concluído" : "Marked as completed");
+                                notify.success(locale === "pt" ? "Marcado como concluído" : "Marked as completed");
                                 qc.invalidateQueries({ queryKey: ["video_history_list", user?.id] });
                               } catch (e) {
-                                toast.error(e instanceof Error ? e.message : "Erro");
+                                notify.fromError(e, { dedupeKey: "videos:mark-complete" });
                               }
                             }}
                             className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
@@ -417,7 +418,7 @@ function VideosPage() {
                                 }
                               } else {
                                 await navigator.clipboard.writeText(shareUrl);
-                                toast.success(locale === "pt" ? "Link copiado" : "Link copied");
+                                notify.success(locale === "pt" ? "Link copiado" : "Link copied");
                               }
                             }}
                             className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"

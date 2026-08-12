@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Sparkles, CheckCircle2, Crown, Zap, Star } from "lucide-react";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -120,6 +120,7 @@ const CYCLE_LABEL: Record<Cycle, { pt: string; en: string }> = {
 
 function PricingPage() {
   const { locale } = useLocale();
+  const notify = useNotification();
   const [cycle, setCycle] = useState<Cycle>("monthly");
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -136,7 +137,7 @@ function PricingPage() {
 
   const handleSubscribe = (plan: Plan) => {
     if (!user) {
-      toast.info(locale === "pt" ? "Precisa iniciar sessão" : "Sign in required");
+      notify.info(locale === "pt" ? "Precisa iniciar sessão" : "Sign in required");
       navigate({ to: "/auth" });
       return;
     }

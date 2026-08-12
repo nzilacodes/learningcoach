@@ -26,7 +26,7 @@ import {
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import type { DashboardData, SubscriptionRow } from "@/lib/learning";
 import {
   ProfileHeader,
@@ -50,6 +50,7 @@ const QUICK_PRACTICE = (locale: "pt" | "en") => [
  * study reminder — the original dashboard layout, unchanged in substance. */
 export function AdultsDashboard(data: DashboardData) {
   const { locale } = useLocale();
+  const notify = useNotification();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
@@ -756,6 +757,7 @@ function SubscriptionCard({
   pct: number;
   locale: "pt" | "en";
 }) {
+  const notify = useNotification();
   if (sub?.status === "active") {
     const activationCode = sub.activation_code;
     return (
@@ -780,9 +782,9 @@ function SubscriptionCard({
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(activationCode);
-                toast.success(locale === "pt" ? "Código copiado" : "Code copied");
+                notify.success(locale === "pt" ? "Código copiado" : "Code copied");
               } catch {
-                toast.error(locale === "pt" ? "Falha ao copiar o código" : "Failed to copy code");
+                notify.error(locale === "pt" ? "Falha ao copiar o código" : "Failed to copy code");
               }
             }}
             className="text-[10px] font-mono bg-white/10 rounded-full px-2 py-0.5 mb-3 block"

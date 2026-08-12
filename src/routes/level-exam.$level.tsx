@@ -14,7 +14,7 @@ import {
   useMinExamScore,
 } from "@/lib/level-access";
 import { apiFetch } from "@/lib/api/client";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { CheckCircle2, Lock, Trophy, XCircle, ArrowLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -36,6 +36,7 @@ function LevelExamPage() {
   const level = raw.toUpperCase() as CefrLevel;
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const notify = useNotification();
   const { user, loading } = useAuth();
   const { data: unlocked, isLoading: uLoading } = useMaxUnlockedLevel();
   const { data: exam, isLoading: eLoading } = useLevelExam(level);
@@ -98,11 +99,11 @@ function LevelExamPage() {
 
   const submit = async () => {
     if (questions.length === 0) {
-      toast.error("Não foi possível carregar as perguntas do exame. Tente recarregar a página.");
+      notify.warning("Não foi possível carregar as perguntas do exame. Tente recarregar a página.");
       return;
     }
     if (Object.keys(answers).length !== questions.length) {
-      toast.error("Responda a todas as perguntas.");
+      notify.warning("Responda a todas as perguntas.");
       return;
     }
     setSubmitting(true);
@@ -112,9 +113,9 @@ function LevelExamPage() {
         `/v1/assessments/level-exam/${level}`,
         { method: "POST", body: JSON.stringify({ answers }) },
       );
-    } catch {
+    } catch (e) {
       setSubmitting(false);
-      toast.error("Falha ao guardar tentativa.");
+      notify.fromError(e, { dedupeKey: "level-exam:submit", onRetry: submit });
       return;
     }
     setSubmitting(false);
@@ -124,8 +125,8 @@ function LevelExamPage() {
     // under (a silent no-op) — the real query key lives in level-access.ts,
     // exported precisely so this can't drift out of sync again.
     qc.invalidateQueries({ queryKey: levelAccessQueryKey(user?.id) });
-    if (passed) toast.success(`Aprovado com ${score}%! Próximo nível desbloqueado.`);
-    else toast.error(`Nota ${score}% — mínimo ${minScore}%. Pode tentar novamente.`);
+    if (passed) notify.success(`Aprovado com ${score}%! Próximo nível desbloqueado.`);
+    else notify.warning(`Nota ${score}% — mínimo ${minScore}%. Pode tentar novamente.`);
   };
 
   return (

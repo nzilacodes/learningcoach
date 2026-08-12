@@ -19,7 +19,7 @@ import {
   CreditCard,
   Loader2,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -129,6 +129,7 @@ function OnboardingWizard() {
 
 function UnknownStatusStep({ onDone }: { onDone: () => Promise<void> }) {
   const { locale } = useLocale();
+  const notify = useNotification();
   const [resetting, setResetting] = useState(false);
 
   const reset = async () => {
@@ -137,7 +138,7 @@ function UnknownStatusStep({ onDone }: { onDone: () => Promise<void> }) {
       await apiFetch("/v1/me", { method: "PATCH", body: JSON.stringify({ onboardingStatus: "profile" }) });
     } catch (e) {
       setResetting(false);
-      return toast.error(e instanceof Error ? e.message : "Erro");
+      return notify.fromError(e, { dedupeKey: "onboarding:reset" });
     }
     setResetting(false);
     await onDone();
@@ -170,6 +171,7 @@ function ProfileStep({
   onDone: () => Promise<void>;
 }) {
   const { locale } = useLocale();
+  const notify = useNotification();
   const { setTheme } = useAgeTheme();
   const [fullName, setFullName] = useState(user.fullName ?? "");
   const [age, setAge] = useState<string>(user.age?.toString() ?? "");
@@ -185,14 +187,14 @@ function ProfileStep({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const ageNum = parseInt(age, 10);
-    if (!fullName.trim()) return toast.error(locale === "pt" ? "Nome obrigatório" : "Name required");
+    if (!fullName.trim()) return notify.warning(locale === "pt" ? "Nome obrigatório" : "Name required");
     if (!Number.isFinite(ageNum) || ageNum < 4 || ageNum > 120)
-      return toast.error(locale === "pt" ? "Idade inválida (4–120)" : "Invalid age (4–120)");
-    if (!country.trim()) return toast.error(locale === "pt" ? "País obrigatório" : "Country required");
-    if (!nativeLang.trim()) return toast.error(locale === "pt" ? "Língua materna obrigatória" : "Native language required");
-    if (!goal) return toast.error(locale === "pt" ? "Escolha um objetivo" : "Choose a goal");
+      return notify.warning(locale === "pt" ? "Idade inválida (4–120)" : "Invalid age (4–120)");
+    if (!country.trim()) return notify.warning(locale === "pt" ? "País obrigatório" : "Country required");
+    if (!nativeLang.trim()) return notify.warning(locale === "pt" ? "Língua materna obrigatória" : "Native language required");
+    if (!goal) return notify.warning(locale === "pt" ? "Escolha um objetivo" : "Choose a goal");
     if (interests.length === 0)
-      return toast.error(locale === "pt" ? "Escolha pelo menos 1 interesse" : "Pick at least 1 interest");
+      return notify.warning(locale === "pt" ? "Escolha pelo menos 1 interesse" : "Pick at least 1 interest");
 
     setSaving(true);
     try {
@@ -210,7 +212,7 @@ function ProfileStep({
       });
     } catch (e) {
       setSaving(false);
-      return toast.error(e instanceof Error ? e.message : "Erro");
+      return notify.fromError(e, { dedupeKey: "onboarding:profile" });
     }
     setSaving(false);
     setTheme(ageToRoom(ageNum));
@@ -370,6 +372,7 @@ const PLAN_BY_LEVEL: Record<string, { pt: string[]; en: string[] }> = {
 
 function PlanStep({ user, onDone }: { user: AuthUser; onDone: () => Promise<void> }) {
   const { locale } = useLocale();
+  const notify = useNotification();
   const [advancing, setAdvancing] = useState(false);
   const level = (user.cefrLevel as keyof typeof PLAN_BY_LEVEL) ?? "A1";
   const plan = PLAN_BY_LEVEL[level] ?? PLAN_BY_LEVEL.A1;
@@ -380,7 +383,7 @@ function PlanStep({ user, onDone }: { user: AuthUser; onDone: () => Promise<void
       await apiFetch("/v1/me", { method: "PATCH", body: JSON.stringify({ onboardingStatus: "demo" }) });
     } catch (e) {
       setAdvancing(false);
-      return toast.error(e instanceof Error ? e.message : "Erro");
+      return notify.fromError(e, { dedupeKey: "onboarding:plan" });
     }
     setAdvancing(false);
     await onDone();
@@ -430,6 +433,7 @@ const DEMO_CARDS = [
 
 function DemoStep({ onDone }: { onDone: () => Promise<void> }) {
   const { locale } = useLocale();
+  const notify = useNotification();
   const [i, setI] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -454,7 +458,7 @@ function DemoStep({ onDone }: { onDone: () => Promise<void> }) {
       });
     } catch (e) {
       setSaving(false);
-      return toast.error(e instanceof Error ? e.message : "Erro");
+      return notify.fromError(e, { dedupeKey: "onboarding:demo" });
     }
     setSaving(false);
     await onDone();
@@ -545,6 +549,7 @@ const PLANS: { key: PlanKey; icon: typeof Rocket; pt: { name: string; price: str
 
 function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
   const { locale } = useLocale();
+  const notify = useNotification();
   const [selected, setSelected] = useState<PlanKey>("pro");
   const [processing, setProcessing] = useState(false);
 
@@ -561,10 +566,10 @@ function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
       });
     } catch (e) {
       setProcessing(false);
-      return toast.error(e instanceof Error ? e.message : "Erro");
+      return notify.fromError(e, { dedupeKey: "onboarding:checkout" });
     }
     setProcessing(false);
-    toast.success(locale === "pt" ? "Bem-vindo à plataforma!" : "Welcome to the platform!");
+    notify.success(locale === "pt" ? "Bem-vindo à plataforma!" : "Welcome to the platform!");
     await onDone();
   };
 

@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Users, Plus, Copy, Trash2, LogIn, LogOut, ArrowLeft, GraduationCap } from "lucide-react";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -70,6 +70,7 @@ type RosterRow = {
 
 function ClassesPage() {
   const { locale } = useLocale();
+  const notify = useNotification();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -99,9 +100,9 @@ function ClassesPage() {
     onSuccess: () => {
       setName("");
       qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
-      toast.success(locale === "pt" ? "Turma criada!" : "Class created!");
+      notify.success(locale === "pt" ? "Turma criada!" : "Class created!");
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+    onError: (e) => notify.fromError(e, { dedupeKey: "classes:create" }),
   });
 
   const joinClass = useMutation({
@@ -110,9 +111,9 @@ function ClassesPage() {
     onSuccess: () => {
       setCode("");
       qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
-      toast.success(locale === "pt" ? "Você entrou na turma!" : "You joined the class!");
+      notify.success(locale === "pt" ? "Você entrou na turma!" : "You joined the class!");
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+    onError: (e) => notify.fromError(e, { dedupeKey: "classes:join" }),
   });
 
   const deleteClass = useMutation({
@@ -120,9 +121,9 @@ function ClassesPage() {
     onSuccess: () => {
       setSelectedClass(null);
       qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
-      toast.success(locale === "pt" ? "Turma apagada" : "Class deleted");
+      notify.success(locale === "pt" ? "Turma apagada" : "Class deleted");
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+    onError: (e) => notify.fromError(e, { dedupeKey: "classes:delete" }),
   });
 
   const removeMember = useMutation({
@@ -132,16 +133,16 @@ function ClassesPage() {
       qc.invalidateQueries({ queryKey: ["class_roster", selectedClass?.id] });
       qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+    onError: (e) => notify.fromError(e, { dedupeKey: "classes:remove-member" }),
   });
 
   const leaveClass = useMutation({
     mutationFn: (classId: string) => apiFetch(`/v1/classes/${classId}/leave`, { method: "DELETE" }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
-      toast.success(locale === "pt" ? "Você saiu da turma" : "You left the class");
+      notify.success(locale === "pt" ? "Você saiu da turma" : "You left the class");
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+    onError: (e) => notify.fromError(e, { dedupeKey: "classes:leave" }),
   });
 
   if (loading || !user) {
@@ -177,7 +178,7 @@ function ClassesPage() {
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(selectedClass.invite_code);
-                      toast.success(locale === "pt" ? "Código copiado" : "Code copied");
+                      notify.success(locale === "pt" ? "Código copiado" : "Code copied");
                     }}
                     className="inline-flex items-center gap-1 font-mono font-bold text-magenta"
                   >

@@ -32,7 +32,7 @@ export type AnalyticsData = {
   plans: { name: string; tier: string; orders: number; revenue: number }[];
   methods: { method: string; count: number; revenue: number }[];
 };
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 
@@ -55,6 +55,7 @@ function fmtKz(n: number) {
 function AnalyticsPage() {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const notify = useNotification();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -70,7 +71,7 @@ function AnalyticsPage() {
       .then((d) => setData(d))
       .catch((e) => {
         setError(true);
-        toast.error(e?.message ?? "Erro ao carregar analytics");
+        notify.fromError(e, { dedupeKey: "analytics:load" });
       })
       .finally(() => setLoading(false));
   };
@@ -103,7 +104,7 @@ function AnalyticsPage() {
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.plans), "Planos");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.methods), "Métodos");
     XLSX.writeFile(wb, `analytics_${new Date().toISOString().slice(0, 10)}.xlsx`);
-    toast.success("Excel exportado");
+    notify.success("Excel exportado");
   }
 
   function exportPDF() {
@@ -149,7 +150,7 @@ function AnalyticsPage() {
     });
 
     doc.save(`analytics_${new Date().toISOString().slice(0, 10)}.pdf`);
-    toast.success("PDF exportado");
+    notify.success("PDF exportado");
   }
 
   if (authLoading) return <div className="p-10 text-center">...</div>;

@@ -11,7 +11,7 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,6 +67,7 @@ export const Route = createFileRoute("/admin")({
 
 function AdminPage() {
   const { locale } = useLocale();
+  const notify = useNotification();
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -120,14 +121,14 @@ function AdminPage() {
     onSuccess: ({ activationCode }) => {
       if (activationCode) {
         navigator.clipboard?.writeText(activationCode).catch(() => {});
-        toast.success(
+        notify.success(
           locale === "pt"
             ? `Ativada. Código: ${activationCode} (copiado)`
             : `Activated. Code: ${activationCode} (copied)`,
           { duration: 8000 },
         );
       } else {
-        toast.success(locale === "pt" ? "Pagamento ativado" : "Payment activated");
+        notify.success(locale === "pt" ? "Pagamento ativado" : "Payment activated");
       }
       qc.invalidateQueries({ queryKey: ["admin_payments"] });
       qc.invalidateQueries({ queryKey: ["admin_stats"] });
@@ -136,20 +137,20 @@ function AdminPage() {
       // pre-activation state until an unrelated refetch.
       qc.invalidateQueries({ queryKey: ["admin_subscriptions"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e) => notify.fromError(e, { dedupeKey: "admin:activate-payment" }),
   });
 
   const cancel = useMutation({
     mutationFn: async (payment: AdminPayment) =>
       apiFetch(`/v1/admin/payments/${payment.id}/cancel`, { method: "POST" }),
     onSuccess: () => {
-      toast.success(locale === "pt" ? "Pagamento cancelado" : "Payment cancelled");
+      notify.success(locale === "pt" ? "Pagamento cancelado" : "Payment cancelled");
       qc.invalidateQueries({ queryKey: ["admin_payments"] });
       // The "Pendentes" stat card reads admin_stats — cancelling a pending
       // payment used to leave it stale until an unrelated refetch.
       qc.invalidateQueries({ queryKey: ["admin_stats"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e) => notify.fromError(e, { dedupeKey: "admin:cancel-payment" }),
   });
 
   if (loading) return <div className="p-10 text-center">...</div>;

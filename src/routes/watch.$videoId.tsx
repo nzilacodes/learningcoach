@@ -23,7 +23,7 @@ import {
   CheckCircle2,
   Sparkles,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 
 const searchSchema = z.object({
   lesson: z.string().optional(),
@@ -72,6 +72,7 @@ function WatchPage() {
   const { user } = useAuth();
   const { group } = useAgeGroup();
   const qc = useQueryClient();
+  const notify = useNotification();
 
   const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
   const title = search.title ?? "YouTube lesson";
@@ -146,7 +147,7 @@ function WatchPage() {
     upsertHistory.mutateAsync({ position }).catch(() => {
       if (!saveErrorShownRef.current) {
         saveErrorShownRef.current = true;
-        toast.error("Não foi possível guardar o seu progresso neste vídeo.");
+        notify.error("Não foi possível guardar o seu progresso neste vídeo.");
       }
     });
   };
@@ -166,9 +167,9 @@ function WatchPage() {
   const markCompleted = async () => {
     try {
       await upsertHistory.mutateAsync({ position: positionRef.current, completed: true });
-      toast.success("Aula em vídeo concluída!");
+      notify.success("Aula em vídeo concluída!");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao marcar a aula como concluída.");
+      notify.fromError(e, { dedupeKey: "watch:mark-complete" });
     }
   };
 

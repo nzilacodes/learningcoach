@@ -13,7 +13,7 @@ import {
   type Recorder,
 } from "@/lib/voice";
 import type { AgeTrack } from "@/lib/age-tracks";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 
 type GameEntry = AgeTrack["games"][number];
 
@@ -89,6 +89,7 @@ function MultipleChoiceGame({
       }));
   }, [track]);
 
+  const notify = useNotification();
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [score, setScore] = useState(0);
@@ -111,7 +112,7 @@ function MultipleChoiceGame({
     try {
       onFinish(await awardGameXp(game.id));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro");
+      notify.fromError(e, { dedupeKey: "game:xp" });
       setFinishing(false);
     }
   };
@@ -197,6 +198,7 @@ function ListeningGame({
       }));
   }, [track]);
 
+  const notify = useNotification();
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [score, setScore] = useState(0);
@@ -208,8 +210,8 @@ function ListeningGame({
     setPlaying(true);
     try {
       await speak(round.correct.word);
-    } catch {
-      toast.error(locale === "pt" ? "Falha ao reproduzir áudio" : "Failed to play audio");
+    } catch (e) {
+      notify.fromError(e, { dedupeKey: "game:play-audio" });
     } finally {
       setPlaying(false);
     }
@@ -231,7 +233,7 @@ function ListeningGame({
     try {
       onFinish(await awardGameXp(game.id));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro");
+      notify.fromError(e, { dedupeKey: "game:xp" });
       setFinishing(false);
     }
   };
@@ -306,6 +308,7 @@ function SpeakingGame({
   locale: "pt" | "en";
   onFinish: (result: XpResult) => void;
 }) {
+  const notify = useNotification();
   const target = useMemo(() => shuffle(track.examples)[0], [track]);
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -333,9 +336,10 @@ function SpeakingGame({
         setTranscript("");
         setScore(null);
       } catch {
-        toast.error(
-          locale === "pt" ? "Permita o acesso ao microfone" : "Please allow microphone access",
-        );
+        notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
+          description: locale === "pt" ? "Permita o acesso ao microfone." : "Please allow microphone access.",
+          dedupeKey: "game:mic-permission",
+        });
       }
       return;
     }
@@ -347,8 +351,8 @@ function SpeakingGame({
       const text = await transcribe(blob);
       setTranscript(text);
       setScore(scorePronunciation(target.en, text));
-    } catch {
-      toast.error(locale === "pt" ? "Falha na transcrição" : "Transcription failed");
+    } catch (e) {
+      notify.fromError(e, { dedupeKey: "game:transcribe" });
     } finally {
       setProcessing(false);
     }
@@ -359,7 +363,7 @@ function SpeakingGame({
     try {
       onFinish(await awardGameXp(game.id));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro");
+      notify.fromError(e, { dedupeKey: "game:xp" });
       setFinishing(false);
     }
   };
@@ -424,6 +428,7 @@ function WritingGame({
   locale: "pt" | "en";
   onFinish: (result: XpResult) => void;
 }) {
+  const notify = useNotification();
   const theme = useMemo(() => shuffle(track.themes)[0], [track]);
   const [text, setText] = useState("");
   const [finishing, setFinishing] = useState(false);
@@ -435,7 +440,7 @@ function WritingGame({
     try {
       onFinish(await awardGameXp(game.id));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro");
+      notify.fromError(e, { dedupeKey: "game:xp" });
       setFinishing(false);
     }
   };

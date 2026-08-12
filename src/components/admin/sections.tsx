@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Download, BarChart3, CreditCard, BookOpen, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 
 function csvDownload(name: string, rows: Record<string, any>[]) {
   if (!rows.length) return;
@@ -49,6 +49,7 @@ type AdminSubscription = {
 
 export function SubscriptionsSection() {
   const { user, isAdmin } = useAuth();
+  const notify = useNotification();
   const { data = [], refetch } = useQuery({
     queryKey: ["admin_subscriptions"],
     queryFn: async () => {
@@ -65,7 +66,7 @@ export function SubscriptionsSection() {
       await apiFetch(`/v1/admin/subscriptions/${id}/cancel`, { method: "POST" });
       refetch();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao cancelar a assinatura.");
+      notify.fromError(e, { dedupeKey: "admin:cancel-subscription" });
     } finally {
       setCancelingId(null);
     }
@@ -266,6 +267,7 @@ export function AnalyticsSection() {
 
 /* -------- Reports (CSV exports) -------- */
 export function ReportsSection() {
+  const notify = useNotification();
   const [pending, setPending] = useState<"users" | "payments" | "diagnostics" | null>(null);
 
   const runExport = async (
@@ -276,7 +278,7 @@ export function ReportsSection() {
     try {
       csvDownload(kind, await apiFetch<Record<string, any>[]>(path));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao exportar o relatório.");
+      notify.fromError(e, { dedupeKey: "admin:export-report" });
     } finally {
       setPending(null);
     }
@@ -442,6 +444,7 @@ export function CurriculumSection() {
 
 function LessonEditor({ lessonId }: { lessonId: string }) {
   const qc = useQueryClient();
+  const notify = useNotification();
   const { data: lesson, isLoading } = useQuery({
     queryKey: ["admin_lesson", lessonId],
     queryFn: () => apiFetch<AdminLessonDetail>(`/v1/lessons/${lessonId}`),
@@ -482,10 +485,10 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
       });
     },
     onSuccess: () => {
-      toast.success("Lição atualizada");
+      notify.success("Lição atualizada");
       invalidateLesson();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e) => notify.fromError(e, { dedupeKey: "admin:save-lesson" }),
   });
 
   if (isLoading || !lesson)
@@ -560,6 +563,7 @@ function ExerciseEditor({
   exercises: AdminExercise[];
   onChanged: () => void;
 }) {
+  const notify = useNotification();
   const addExercise = useMutation({
     mutationFn: () =>
       apiFetch(`/v1/admin/lessons/${lessonId}/exercises`, {
@@ -574,13 +578,13 @@ function ExerciseEditor({
         }),
       }),
     onSuccess: onChanged,
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e) => notify.fromError(e, { dedupeKey: "admin:add-exercise" }),
   });
 
   const deleteExercise = useMutation({
     mutationFn: (id: string) => apiFetch(`/v1/admin/exercises/${id}`, { method: "DELETE" }),
     onSuccess: onChanged,
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e) => notify.fromError(e, { dedupeKey: "admin:delete-exercise" }),
   });
 
   return (
@@ -620,6 +624,7 @@ function ExerciseRow({
   onDeleted: () => void;
   onSaved: () => void;
 }) {
+  const notify = useNotification();
   const [prompt, setPrompt] = useState(exercise.prompt);
   const [options, setOptions] = useState((exercise.data?.options ?? []).join(" | "));
   const [correctIndex, setCorrectIndex] = useState(exercise.correct_answer?.index ?? 0);
@@ -642,11 +647,6 @@ function ExerciseRow({
         .split("|")
         .map((s) => s.trim())
         .filter(Boolean);
-      if (correctIndex < 0 || correctIndex >= parsedOptions.length) {
-        throw new Error(
-          `Índice da resposta correta (${correctIndex}) precisa estar entre 0 e ${parsedOptions.length - 1}.`,
-        );
-      }
       return apiFetch(`/v1/admin/exercises/${exercise.id}`, {
         method: "PATCH",
         body: JSON.stringify({
@@ -658,11 +658,20 @@ function ExerciseRow({
       });
     },
     onSuccess: () => {
-      toast.success("Exercício salvo");
+      notify.success("Exercício salvo");
       onSaved();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e) => notify.fromError(e, { dedupeKey: "admin:save-exercise" }),
   });
+
+  const handleSave = () => {
+    const parsedOptions = options.split("|").map((s) => s.trim()).filter(Boolean);
+    if (correctIndex < 0 || correctIndex >= parsedOptions.length) {
+      notify.warning(`Índice da resposta correta (${correctIndex}) precisa estar entre 0 e ${parsedOptions.length - 1}.`);
+      return;
+    }
+    save.mutate();
+  };
 
   return (
     <div className="space-y-2 rounded-xl border border-border p-3">
@@ -697,7 +706,7 @@ function ExerciseRow({
         />
       </div>
       <div className="flex gap-2">
-        <Button size="sm" onClick={() => save.mutate()} disabled={save.isPending}>
+        <Button size="sm" onClick={handleSave} disabled={save.isPending}>
           Salvar
         </Button>
         <Button size="sm" variant="outline" onClick={onDeleted}>

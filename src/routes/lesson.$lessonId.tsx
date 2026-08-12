@@ -7,7 +7,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/lib/i18n";
-import { apiFetch, ApiError } from "@/lib/api/client";
+import { apiFetch } from "@/lib/api/client";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { useCurriculum, useLessonProgress } from "@/lib/learning";
 import {
   speak,
@@ -17,7 +18,6 @@ import {
   feedbackFor,
   type Recorder,
 } from "@/lib/voice";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/lesson/$lessonId")({
   component: LessonPage,
@@ -91,6 +91,7 @@ function BulletList({ items }: { items: string[] }) {
 }
 
 function SpeakButton({ text, locale }: { text: string; locale: "pt" | "en" }) {
+  const notify = useNotification();
   const [playing, setPlaying] = useState(false);
   if (!text) return null;
   return (
@@ -102,8 +103,8 @@ function SpeakButton({ text, locale }: { text: string; locale: "pt" | "en" }) {
         setPlaying(true);
         try {
           await speak(text);
-        } catch {
-          toast.error(locale === "pt" ? "Falha ao reproduzir áudio" : "Failed to play audio");
+        } catch (e) {
+          notify.fromError(e, { dedupeKey: "lesson:speak" });
         } finally {
           setPlaying(false);
         }
@@ -148,6 +149,7 @@ function SpeakingPractice({
   content: Record<string, unknown>;
   locale: "pt" | "en";
 }) {
+  const notify = useNotification();
   const target =
     str(content.prompt) ||
     (locale === "pt" ? "Fale sobre o tema desta lição." : "Talk about this lesson's topic.");
@@ -166,9 +168,10 @@ function SpeakingPractice({
         setTranscript("");
         setScore(null);
       } catch {
-        toast.error(
-          locale === "pt" ? "Permita o acesso ao microfone" : "Please allow microphone access",
-        );
+        notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
+          description: locale === "pt" ? "Permita o acesso ao microfone." : "Please allow microphone access.",
+          dedupeKey: "lesson:mic-permission",
+        });
       }
       return;
     }
@@ -180,8 +183,8 @@ function SpeakingPractice({
       const text = await transcribe(blob);
       setTranscript(text);
       setScore(scorePronunciation(target, text));
-    } catch {
-      toast.error(locale === "pt" ? "Falha na transcrição" : "Transcription failed");
+    } catch (e) {
+      notify.fromError(e, { dedupeKey: "lesson:transcribe" });
     } finally {
       setProcessing(false);
     }
@@ -434,6 +437,7 @@ function LessonPage() {
 function LessonPageInner({ lessonId }: { lessonId: string }) {
   const { locale } = useLocale();
   const navigate = useNavigate();
+  const notify = useNotification();
   const qc = useQueryClient();
 
   const { data: lesson, isLoading } = useLesson(lessonId);
@@ -457,7 +461,7 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
       });
       setJustCompleted(true);
       if (!result.alreadyCompleted) {
-        toast.success(
+        notify.success(
           locale === "pt"
             ? `+${result.gained ?? 0} XP! ${result.level_up ? `Subiu para o nível ${result.level}! 🎉` : ""}`
             : `+${result.gained ?? 0} XP! ${result.level_up ? `Leveled up to ${result.level}! 🎉` : ""}`,
@@ -468,22 +472,8 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
       qc.invalidateQueries({ queryKey: ["user_stats"] });
       qc.invalidateQueries({ queryKey: ["curriculum"] });
     } catch (e) {
-      if (e instanceof ApiError && e.status === 402) {
-        toast.error(e.message, {
-          action: {
-            label: locale === "pt" ? "Ver planos" : "See plans",
-            onClick: () => navigate({ to: "/pricing" }),
-          },
-        });
-      } else {
-        toast.error(
-          e instanceof Error
-            ? e.message
-            : locale === "pt"
-              ? "Erro ao concluir lição"
-              : "Failed to finish lesson",
-        );
-      }
+      // Consolidates the 402/"Ver planos" branch that used to be hand-checked here.
+      notify.fromError(e, { dedupeKey: "lesson:complete", onUpgrade: () => navigate({ to: "/pricing" }) });
     } finally {
       setCompleting(false);
     }

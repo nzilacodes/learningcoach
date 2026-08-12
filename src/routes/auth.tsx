@@ -1,13 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Sparkles, Mail, Lock, User, ArrowRight, Check } from "lucide-react";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLocale } from "@/lib/i18n";
-import { apiFetch, ApiError } from "@/lib/api/client";
+import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { passwordError } from "@/lib/password";
 
@@ -116,6 +116,7 @@ function AuthPage() {
 
 function SignInForm({ onForgot }: { onForgot: () => void }) {
   const { locale } = useLocale();
+  const notify = useNotification();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -130,12 +131,10 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
         body: JSON.stringify({ email, password }),
       });
       await refresh();
-      toast.success(locale === "pt" ? "Sessão iniciada" : "Signed in");
+      notify.success(locale === "pt" ? "Sessão iniciada" : "Signed in");
       // Route handled by AuthPage's useEffect based on profile completeness.
     } catch (e) {
-      toast.error(
-        e instanceof ApiError ? e.message : locale === "pt" ? "Falha ao entrar" : "Sign-in failed",
-      );
+      notify.fromError(e, { dedupeKey: "auth:signin" });
     } finally {
       setLoading(false);
     }
@@ -195,6 +194,7 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
 
 function SignUpForm({ onDone }: { onDone: () => void }) {
   const { locale } = useLocale();
+  const notify = useNotification();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -207,13 +207,11 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const pwError = passwordError(password, locale);
-    if (pwError) return toast.error(pwError);
+    if (pwError) return notify.warning(pwError);
     if (password !== confirm)
-      return toast.error(locale === "pt" ? "Senhas não coincidem" : "Passwords don't match");
+      return notify.warning(locale === "pt" ? "Senhas não coincidem" : "Passwords don't match");
     if (!terms || !privacy)
-      return toast.error(
-        locale === "pt" ? "Aceite os termos e a política" : "Accept terms & privacy",
-      );
+      return notify.warning(locale === "pt" ? "Aceite os termos e a política" : "Accept terms & privacy");
     setLoading(true);
     try {
       await apiFetch("/v1/auth/register", {
@@ -221,16 +219,10 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
         body: JSON.stringify({ email, password, fullName }),
       });
       await refresh();
-      toast.success(locale === "pt" ? "Conta criada!" : "Account created!");
+      notify.success(locale === "pt" ? "Conta criada!" : "Account created!");
       onDone();
     } catch (e) {
-      toast.error(
-        e instanceof ApiError
-          ? e.message
-          : locale === "pt"
-            ? "Falha ao criar conta"
-            : "Failed to create account",
-      );
+      notify.fromError(e, { dedupeKey: "auth:signup" });
     } finally {
       setLoading(false);
     }
@@ -324,6 +316,7 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
 
 function ForgotForm({ onBack }: { onBack: () => void }) {
   const { locale } = useLocale();
+  const notify = useNotification();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -335,12 +328,10 @@ function ForgotForm({ onBack }: { onBack: () => void }) {
         method: "POST",
         body: JSON.stringify({ email }),
       });
-      toast.success(locale === "pt" ? "Verifique o seu email" : "Check your email");
+      notify.success(locale === "pt" ? "Verifique o seu email" : "Check your email");
       onBack();
     } catch (e) {
-      toast.error(
-        e instanceof ApiError ? e.message : locale === "pt" ? "Falha ao enviar" : "Failed to send",
-      );
+      notify.fromError(e, { dedupeKey: "auth:forgot-password" });
     } finally {
       setLoading(false);
     }

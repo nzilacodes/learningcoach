@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiFetch, ApiError } from "@/lib/api/client";
+import { normalizeApiError } from "@/lib/errors/normalize-api-error";
+import { InlineStatusFromError } from "@/components/feedback/inline-status";
 
 type VerifiedCertificate = {
   verification_code: string;
@@ -36,8 +38,9 @@ export const Route = createFileRoute("/verify/$code")({
       <div className="mx-auto max-w-2xl px-6 py-16 text-center">
         <ShieldAlert className="mx-auto h-10 w-10 text-destructive" />
         <h1 className="mt-4 font-display text-2xl font-bold">Erro na verificação</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
-        <Button className="mt-4" onClick={reset}>Tentar novamente</Button>
+        <div className="mx-auto mt-4 max-w-md text-left">
+          <InlineStatusFromError error={normalizeApiError(error)} action={{ label: "Tentar novamente", onClick: reset }} />
+        </div>
       </div>
       <SiteFooter />
     </div>

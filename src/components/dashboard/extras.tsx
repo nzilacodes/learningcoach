@@ -17,7 +17,7 @@ import {
   BellOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import type { useStudyReminder } from "@/lib/learning";
 
 /* -------- Profile header -------- */
@@ -448,6 +448,7 @@ export function ReminderCard({
   reminder: ReturnType<typeof useStudyReminder>;
   locale: "pt" | "en";
 }) {
+  const notify = useNotification();
   const r = reminder.data ?? { interval_minutes: 30, enabled: false };
   const options = [15, 30, 45, 60, 90];
   return (
@@ -470,7 +471,7 @@ export function ReminderCard({
             // reminders were on when no notification could ever fire.
             if (turningOn && typeof Notification !== "undefined") {
               if (Notification.permission === "denied") {
-                toast.error(
+                notify.warning(
                   locale === "pt"
                     ? "Notificações bloqueadas — permita-as nas definições do navegador"
                     : "Notifications blocked — allow them in your browser settings",
@@ -480,11 +481,7 @@ export function ReminderCard({
               if (Notification.permission === "default") {
                 const p = await Notification.requestPermission();
                 if (p !== "granted") {
-                  toast.error(
-                    locale === "pt"
-                      ? "Permita notificações no navegador"
-                      : "Please allow notifications",
-                  );
+                  notify.warning(locale === "pt" ? "Permita notificações no navegador" : "Please allow notifications");
                   return;
                 }
               }

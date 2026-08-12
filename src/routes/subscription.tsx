@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import {
   Crown, Calendar, FileText, Receipt, Clock, CheckCircle2,
-  XCircle, Loader2, Download, AlertCircle,
+  XCircle, Loader2, Download,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiFetch } from "@/lib/api/client";
 import type { PaymentRow, SubscriptionRow, PlanRow } from "@/lib/api/billing-types";
+import { normalizeApiError, type NormalizedError } from "@/lib/errors/normalize-api-error";
+import { InlineStatusFromError } from "@/components/feedback/inline-status";
 
 export const Route = createFileRoute("/subscription")({
   component: SubscriptionPage,
@@ -30,7 +32,7 @@ function SubscriptionPage() {
   const [subs, setSubs] = useState<SubWithPlan[]>([]);
   const [pays, setPays] = useState<PayWithPlan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<NormalizedError | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -43,7 +45,7 @@ function SubscriptionPage() {
       setSubs(s);
       setPays(p);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erro ao carregar a assinatura");
+      setError(normalizeApiError(e));
     } finally {
       setLoading(false);
     }
@@ -73,11 +75,9 @@ function SubscriptionPage() {
           ) : error ? (
             <Card className="mt-10 border-dashed">
               <CardContent className="p-10 text-center">
-                <AlertCircle className="mx-auto h-10 w-10 text-destructive" />
-                <p className="mt-3 text-sm text-muted-foreground">{error}</p>
-                <Button onClick={() => void load()} className="mt-4 bg-gradient-sunset text-white">
-                  Tentar novamente
-                </Button>
+                <div className="mx-auto max-w-md text-left">
+                  <InlineStatusFromError error={error} action={{ label: "Tentar novamente", onClick: () => void load() }} />
+                </div>
               </CardContent>
             </Card>
           ) : (

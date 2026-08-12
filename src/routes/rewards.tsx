@@ -1,6 +1,5 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useClickOutside } from "@/hooks/use-click-outside";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Trophy,
   Flame,
@@ -16,19 +15,14 @@ import {
   Check,
   Loader2,
   Star,
-  Zap,
-  HelpCircle,
-  Gift,
-  User,
-  Settings,
-  LogOut,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { celebrate, levelProgress, xpForLevel } from "@/lib/gamification";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { HeaderActionLinks, MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
 
 export const Route = createFileRoute("/rewards")({
   component: RewardsPage,
@@ -91,11 +85,8 @@ type RankScope = "world" | "national" | "friends";
 
 function RewardsPage() {
   const { locale } = useLocale();
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
-  const avatarRef = useRef<HTMLDivElement>(null);
-  useClickOutside(avatarRef, setAvatarMenuOpen);
+  const notify = useNotification();
+  const { user } = useAuth();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [missions, setMissions] = useState<Mission[]>([]);
@@ -201,11 +192,11 @@ function RewardsPage() {
     setClaiming(missionId);
     try {
       const r = await apiFetch<{ xp: number; coins: number }>(`/v1/me/missions/${missionId}/claim`, { method: "POST" });
-      toast.success(`Recompensa: +${r.xp} XP · +${r.coins} 🪙`);
+      notify.success(`Recompensa: +${r.xp} XP · +${r.coins} 🪙`);
       celebrate();
       await refresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro");
+      notify.fromError(e, { dedupeKey: "rewards:claim" });
     } finally {
       setClaiming(null);
     }
@@ -215,11 +206,11 @@ function RewardsPage() {
     setBuying(itemId);
     try {
       await apiFetch(`/v1/shop-items/${itemId}/purchase`, { method: "POST" });
-      toast.success("Item comprado!");
+      notify.success("Item comprado!");
       celebrate();
       await refresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro");
+      notify.fromError(e, { dedupeKey: "rewards:buy" });
     } finally {
       setBuying(null);
     }
@@ -228,10 +219,10 @@ function RewardsPage() {
   const equip = async (itemId: string) => {
     try {
       await apiFetch(`/v1/me/inventory/${itemId}/equip`, { method: "PUT", body: JSON.stringify({ equipped: true }) });
-      toast.success("Equipado!");
+      notify.success("Equipado!");
       await refresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro");
+      notify.fromError(e, { dedupeKey: "rewards:equip" });
     }
   };
 
@@ -239,11 +230,11 @@ function RewardsPage() {
     if (!friendEmail.trim()) return;
     try {
       await apiFetch("/v1/me/friends", { method: "POST", body: JSON.stringify({ email: friendEmail.trim() }) });
-      toast.success("Amigo adicionado!");
+      notify.success("Amigo adicionado!");
       setFriendEmail("");
       await refresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro");
+      notify.fromError(e, { dedupeKey: "rewards:add-friend" });
     }
   };
 
@@ -267,81 +258,9 @@ function RewardsPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
-            <Link
-              to="/pricing"
-              className="bg-[var(--ink)] text-white px-3 md:px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity"
-            >
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
-              <span className="hidden sm:inline">Upgrade</span>
-            </Link>
-            <Link
-              to="/contact"
-              title={locale === "pt" ? "Ajuda" : "Help"}
-              className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex"
-            >
-              <HelpCircle className="w-5 h-5" />
-            </Link>
-            <Link
-              to="/rewards"
-              title={locale === "pt" ? "Recompensas" : "Rewards"}
-              className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex"
-            >
-              <Gift className="w-5 h-5" />
-            </Link>
-            <div className="relative md:hidden" ref={avatarRef}>
-              {avatarMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        navigate({ to: "/profile" });
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-                    >
-                      <User className="w-4 h-4 text-[var(--violet)]" />
-                      {locale === "pt" ? "Ver perfil" : "View profile"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        navigate({ to: "/settings" });
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-                    >
-                      <Settings className="w-4 h-4 text-gray-400" />
-                      {locale === "pt" ? "Definições" : "Settings"}
-                    </button>
-                    <div className="mx-3 my-1 h-px bg-gray-50" />
-                    <button
-                      onClick={() => signOut()}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {locale === "pt" ? "Sair da conta" : "Sign out"}
-                    </button>
-                  </div>
-                </>
-              )}
-              <button
-                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
-                className="relative inline-flex"
-              >
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
-                <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-              </button>
-            </div>
-            <Link to="/profile" className="hidden md:block" title={locale === "pt" ? "Ver perfil" : "View profile"}>
-              <div className="relative inline-flex">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
-              </div>
-            </Link>
+            <HeaderActionLinks />
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
           </div>
         </header>
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">{content}</main>

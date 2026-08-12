@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { apiFetch } from "@/lib/api/client";
 import type { PlanRow, PaymentMethod, OrderInfo } from "@/lib/api/billing-types";
 
@@ -100,6 +100,7 @@ const METHODS: {
 function CheckoutPage() {
   const { plan, sandboxPaymentsEnabled } = Route.useLoaderData();
   const navigate = useNavigate();
+  const notify = useNotification();
 
   const [method, setMethod] = useState<PaymentMethod>("reference");
   const [phone, setPhone] = useState("");
@@ -115,9 +116,9 @@ function CheckoutPage() {
         body: JSON.stringify({ planId: plan.id, method, phone: phone || undefined }),
       });
       setOrder(o);
-      toast.success("Pedido criado. Complete o pagamento.");
+      notify.success("Pedido criado. Complete o pagamento.");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao criar pedido");
+      notify.fromError(e, { dedupeKey: "checkout:create-order" });
     } finally {
       setLoading(false);
     }
@@ -128,10 +129,10 @@ function CheckoutPage() {
     setConfirming(true);
     try {
       await apiFetch(`/v1/payments/${order.payment_id}/simulate`, { method: "POST" });
-      toast.success("Pagamento confirmado — cursos liberados!");
+      notify.success("Pagamento confirmado — cursos liberados!");
       navigate({ to: "/subscription" });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro");
+      notify.fromError(e, { dedupeKey: "checkout:confirm" });
     } finally {
       setConfirming(false);
     }

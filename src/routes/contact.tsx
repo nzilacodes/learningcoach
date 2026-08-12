@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mail, MessageSquare, Phone, MapPin, Send, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useLocale } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/site-url";
-import { apiFetch, ApiError } from "@/lib/api/client";
+import { apiFetch } from "@/lib/api/client";
 
 export const Route = createFileRoute("/contact")({
   component: ContactPage,
@@ -35,6 +35,7 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   const { locale } = useLocale();
+  const notify = useNotification();
   const pt = locale === "pt";
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
@@ -42,9 +43,7 @@ function ContactPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
-      toast.error(
-        pt ? "Preencha todos os campos obrigatórios." : "Please fill all required fields.",
-      );
+      notify.warning(pt ? "Preencha todos os campos obrigatórios." : "Please fill all required fields.");
       return;
     }
     setSubmitting(true);
@@ -59,19 +58,11 @@ function ContactPage() {
         }),
       });
       setForm({ name: "", email: "", subject: "", message: "" });
-      toast.success(
-        pt ? "Mensagem enviada! Respondemos em breve." : "Message sent! We'll reply soon.",
-      );
+      notify.success(pt ? "Mensagem enviada! Respondemos em breve." : "Message sent! We'll reply soon.");
     } catch (err) {
-      const msg =
-        err instanceof ApiError && err.status === 429
-          ? pt
-            ? "Muitas tentativas. Tente novamente em alguns minutos."
-            : "Too many attempts. Please try again in a few minutes."
-          : pt
-            ? "Não foi possível enviar. Tente novamente."
-            : "Couldn't send your message. Please try again.";
-      toast.error(msg);
+      // RATE_LIMITED (429) and the generic fallback are already well-covered
+      // by ErrorCodeMap — no need to hand-check the status here anymore.
+      notify.fromError(err, { dedupeKey: "contact:submit" });
     } finally {
       setSubmitting(false);
     }

@@ -1,12 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLocale } from "@/lib/i18n";
-import { apiFetch, ApiError } from "@/lib/api/client";
+import { apiFetch } from "@/lib/api/client";
 import { passwordError } from "@/lib/password";
 
 export const Route = createFileRoute("/reset-password")({
@@ -22,6 +22,7 @@ export const Route = createFileRoute("/reset-password")({
 
 function ResetPasswordPage() {
   const { locale } = useLocale();
+  const notify = useNotification();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,23 +32,23 @@ function ResetPasswordPage() {
     e.preventDefault();
     const token = new URLSearchParams(window.location.search).get("token");
     if (!token) {
-      return toast.error(
+      return notify.warning(
         locale === "pt" ? "Link inválido — peça um novo email de recuperação." : "Invalid link — request a new reset email.",
       );
     }
     const pwError = passwordError(password, locale);
-    if (pwError) return toast.error(pwError);
-    if (password !== confirm) return toast.error(locale === "pt" ? "Senhas não coincidem" : "Passwords don't match");
+    if (pwError) return notify.warning(pwError);
+    if (password !== confirm) return notify.warning(locale === "pt" ? "Senhas não coincidem" : "Passwords don't match");
     setLoading(true);
     try {
       await apiFetch("/v1/auth/reset-password", {
         method: "POST",
         body: JSON.stringify({ token, newPassword: password }),
       });
-      toast.success(locale === "pt" ? "Senha atualizada — inicie sessão." : "Password updated — please sign in.");
+      notify.success(locale === "pt" ? "Senha atualizada — inicie sessão." : "Password updated — please sign in.");
       navigate({ to: "/auth" });
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : locale === "pt" ? "Falha ao redefinir senha" : "Failed to reset password");
+      notify.fromError(e, { dedupeKey: "reset-password:submit" });
     } finally {
       setLoading(false);
     }

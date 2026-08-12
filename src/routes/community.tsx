@@ -11,7 +11,7 @@ import { apiFetch } from "@/lib/api/client";
 import { ageToRoom, type AgeTheme } from "@/lib/age-theme";
 import { startRecording, transcribe, type Recorder } from "@/lib/voice";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useNotification } from "@/lib/notifications/notification-provider";
 import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/community")({
@@ -49,6 +49,7 @@ type Message = { id: string; user_id: string; display_name: string; content: str
 
 function CommunityPage() {
   const { locale } = useLocale();
+  const notify = useNotification();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -100,7 +101,7 @@ function CommunityPage() {
       setInput("");
       await qc.invalidateQueries({ queryKey: ["community_messages", room] });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro");
+      notify.fromError(e, { dedupeKey: "community:send" });
     }
   };
 
@@ -109,7 +110,10 @@ function CommunityPage() {
       recorderRef.current = await startRecording();
       setRecording(true);
     } catch {
-      toast.error(locale === "pt" ? "Permita acesso ao microfone" : "Please allow microphone access");
+      notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
+        description: locale === "pt" ? "Permita acesso ao microfone." : "Please allow microphone access.",
+        dedupeKey: "community:mic-permission",
+      });
     }
   };
 
@@ -125,10 +129,13 @@ function CommunityPage() {
       if (text) {
         await send("voice", text);
       } else {
-        toast.error(locale === "pt" ? "Não entendi o áudio — tente novamente" : "Couldn't hear that — try again");
+        notify.warning(locale === "pt" ? "Não entendi o áudio" : "Couldn't hear that", {
+          description: locale === "pt" ? "Tente novamente." : "Please try again.",
+          dedupeKey: "community:no-speech",
+        });
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro");
+      notify.fromError(e, { dedupeKey: "community:transcribe" });
     } finally {
       setTranscribing(false);
     }
