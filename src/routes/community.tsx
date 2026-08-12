@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Users, Send, Baby, GraduationCap, User, Shield, Mic, MicOff, Lock, LogIn, Play, AlertTriangle } from "lucide-react";
+import { Users, Send, Baby, GraduationCap, User, Shield, Mic, MicOff, Lock, Play, AlertTriangle } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import { ageToRoom, type AgeTheme } from "@/lib/age-theme";
+import { startRecording, transcribe, type Recorder } from "@/lib/voice";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SITE_URL } from "@/lib/site-url";
@@ -55,8 +56,10 @@ function CommunityPage() {
   const [input, setInput] = useState("");
   const [voiceMode, setVoiceMode] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const recorderRef = useRef<Recorder | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -67,7 +70,7 @@ function CommunityPage() {
   const room: Room | null = user ? ageToRoom(user.age) : null;
   const displayName = user?.fullName || (user?.email?.split("@")[0] ?? "You");
 
-  const { data } = useQuery({
+  const { data, isError, refetch } = useQuery({
     queryKey: ["community_messages", room],
     enabled: !!room && started,
     refetchInterval: 3000,
@@ -101,9 +104,34 @@ function CommunityPage() {
     }
   };
 
-  const sendVoice = () => {
+  const startVoiceRecording = async () => {
+    try {
+      recorderRef.current = await startRecording();
+      setRecording(true);
+    } catch {
+      toast.error(locale === "pt" ? "Permita acesso ao microfone" : "Please allow microphone access");
+    }
+  };
+
+  const sendVoice = async () => {
+    const recorder = recorderRef.current;
+    recorderRef.current = null;
     setRecording(false);
-    send("voice", locale === "pt" ? "🎙️ Mensagem de voz (0:07)" : "🎙️ Voice message (0:07)");
+    if (!recorder) return;
+    setTranscribing(true);
+    try {
+      const blob = await recorder.stop();
+      const text = (await transcribe(blob)).trim();
+      if (text) {
+        await send("voice", text);
+      } else {
+        toast.error(locale === "pt" ? "Não entendi o áudio — tente novamente" : "Couldn't hear that — try again");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro");
+    } finally {
+      setTranscribing(false);
+    }
   };
 
   if (loading || !user) {
@@ -239,7 +267,15 @@ function CommunityPage() {
             </div>
 
             <div className="flex-1 space-y-4 overflow-y-auto p-6">
-              {messages.length === 0 && (
+              {isError && (
+                <div className="py-16 text-center text-sm text-muted-foreground">
+                  <p>{locale === "pt" ? "Não foi possível carregar as mensagens." : "Couldn't load messages."}</p>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
+                    {locale === "pt" ? "Tentar novamente" : "Try again"}
+                  </Button>
+                </div>
+              )}
+              {!isError && messages.length === 0 && (
                 <div className="py-16 text-center text-sm text-muted-foreground">
                   {locale === "pt" ? "Seja o primeiro a escrever 👋" : "Be the first to say hi 👋"}
                 </div>
@@ -277,14 +313,17 @@ function CommunityPage() {
               )}
               {voiceMode ? (
                 <Button
-                  onClick={() => (recording ? sendVoice() : setRecording(true))}
+                  onClick={() => (recording ? sendVoice() : startVoiceRecording())}
+                  disabled={transcribing}
                   className={`w-full ${recording ? "bg-red-500 text-white hover:bg-red-600" : "bg-gradient-sunset text-white hover:opacity-90"}`}
                   size="lg"
                 >
                   <Mic className="mr-2 h-4 w-4" />
-                  {recording
-                    ? locale === "pt" ? "● Gravando… toque para enviar" : "● Recording… tap to send"
-                    : locale === "pt" ? "Segurar para gravar" : "Hold to record"}
+                  {transcribing
+                    ? locale === "pt" ? "Transcrevendo…" : "Transcribing…"
+                    : recording
+                      ? locale === "pt" ? "● Gravando… toque para enviar" : "● Recording… tap to send"
+                      : locale === "pt" ? "Toque para gravar" : "Tap to record"}
                 </Button>
               ) : (
                 <div className="flex items-center gap-2">

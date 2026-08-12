@@ -80,7 +80,7 @@ export function ProfileHeader() {
 /* -------- Leaderboard -------- */
 export function LeaderboardCard() {
   const { user } = useAuth();
-  const { data = [] } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ["leaderboard"],
     queryFn: () =>
       apiFetch<
@@ -102,7 +102,8 @@ export function LeaderboardCard() {
         <Trophy className="h-4 w-4 text-amber" />
       </div>
       <ol className="space-y-2">
-        {data.length === 0 && <li className="text-xs text-muted-foreground">Sem alunos ainda.</li>}
+        {isLoading && <li className="text-xs text-muted-foreground">A carregar…</li>}
+        {!isLoading && data.length === 0 && <li className="text-xs text-muted-foreground">Sem alunos ainda.</li>}
         {data.map((row) => {
           const isMe = row.user_id === user?.id;
           const medal =
@@ -143,7 +144,7 @@ type CertificateRow = {
 
 export function CertificatesCard() {
   const { user } = useAuth();
-  const { data = [] } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ["my_certificates", user?.id],
     enabled: !!user,
     queryFn: () => apiFetch<CertificateRow[]>("/v1/me/certificates"),
@@ -155,7 +156,9 @@ export function CertificatesCard() {
         <h3 className="font-display font-bold">Certificados</h3>
         <Medal className="h-4 w-4 text-magenta" />
       </div>
-      {data.length === 0 ? (
+      {isLoading ? (
+        <p className="text-xs text-muted-foreground">A carregar…</p>
+      ) : data.length === 0 ? (
         <p className="text-xs text-muted-foreground">
           Ainda sem certificados. Conclua um nível para emitir o seu primeiro.
         </p>
@@ -190,7 +193,7 @@ export function CertificatesCard() {
 /* -------- Achievements -------- */
 export function AchievementsCard() {
   const { user } = useAuth();
-  const { data = [] } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ["my_achievements", user?.id],
     enabled: !!user,
     queryFn: () =>
@@ -205,7 +208,9 @@ export function AchievementsCard() {
         <h3 className="font-display font-bold">Conquistas</h3>
         <Award className="h-4 w-4 text-amber" />
       </div>
-      {data.length === 0 ? (
+      {isLoading ? (
+        <p className="text-xs text-muted-foreground">A carregar…</p>
+      ) : data.length === 0 ? (
         <p className="text-xs text-muted-foreground">
           Complete lições para desbloquear conquistas.
         </p>
@@ -348,13 +353,27 @@ type MyClasses = {
  */
 export function ClassesCard({ variant = "full" }: { variant?: "full" | "readonly" }) {
   const { user } = useAuth();
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["my_classes", user?.id],
     enabled: !!user,
     queryFn: () => apiFetch<MyClasses>("/v1/me/classes"),
   });
 
   if (variant === "readonly") {
+    // Returning null while still loading made a slow fetch look identical to
+    // "not in any class" — the card just silently never appeared instead of
+    // showing a loading state first.
+    if (isLoading) {
+      return (
+        <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+          <div className="mb-2 flex items-center gap-2">
+            <Users className="h-4 w-4 text-violet" />
+            <h3 className="font-display font-bold">Minha turma</h3>
+          </div>
+          <p className="text-sm text-muted-foreground">A carregar…</p>
+        </div>
+      );
+    }
     const joined = data?.joined ?? [];
     if (joined.length === 0) return null;
     return (
@@ -383,7 +402,9 @@ export function ClassesCard({ variant = "full" }: { variant?: "full" | "readonly
           Turmas
         </h3>
       </div>
-      {total === 0 ? (
+      {isLoading ? (
+        <p className="text-xs text-muted-foreground">A carregar…</p>
+      ) : total === 0 ? (
         <p className="text-xs text-muted-foreground">
           Crie uma turma para acompanhar o progresso de outros alunos, ou entre numa turma com um
           código de convite.
@@ -441,22 +462,34 @@ export function ReminderCard({
           {locale === "pt" ? "Lembrete de estudo" : "Study reminder"}
         </h3>
         <button
-          onClick={() => {
-            reminder.save.mutate({ interval_minutes: r.interval_minutes, enabled: !r.enabled });
-            if (
-              !r.enabled &&
-              typeof Notification !== "undefined" &&
-              Notification.permission === "default"
-            ) {
-              Notification.requestPermission().then((p) => {
-                if (p !== "granted")
+          onClick={async () => {
+            const turningOn = !r.enabled;
+            // Ask for (or check) permission BEFORE persisting "enabled" — the
+            // toggle used to flip to "Ativo" immediately regardless of the
+            // outcome, so denying the browser prompt left the UI claiming
+            // reminders were on when no notification could ever fire.
+            if (turningOn && typeof Notification !== "undefined") {
+              if (Notification.permission === "denied") {
+                toast.error(
+                  locale === "pt"
+                    ? "Notificações bloqueadas — permita-as nas definições do navegador"
+                    : "Notifications blocked — allow them in your browser settings",
+                );
+                return;
+              }
+              if (Notification.permission === "default") {
+                const p = await Notification.requestPermission();
+                if (p !== "granted") {
                   toast.error(
                     locale === "pt"
                       ? "Permita notificações no navegador"
                       : "Please allow notifications",
                   );
-              });
+                  return;
+                }
+              }
             }
+            reminder.save.mutate({ interval_minutes: r.interval_minutes, enabled: turningOn });
           }}
           className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${r.enabled ? "bg-[var(--violet)] text-white" : "border border-gray-200 text-gray-500"}`}
         >

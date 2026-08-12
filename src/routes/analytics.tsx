@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api/client";
+import { useAuth } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import {
 } from "recharts";
 import {
   Users, DollarSign, Calendar, TrendingUp, Clock, Target,
-  UserCheck, UserX, Download, FileSpreadsheet, FileText, Loader2,
+  UserCheck, UserX, FileSpreadsheet, FileText, ShieldCheck, AlertTriangle,
 } from "lucide-react";
 export type AnalyticsData = {
   students: number;
@@ -52,15 +53,32 @@ function fmtKz(n: number) {
 }
 
 function AnalyticsPage() {
+  const { user, isAdmin, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
+    if (!authLoading && !user) navigate({ to: "/auth" });
+  }, [authLoading, user, navigate]);
+
+  const load = () => {
+    setLoading(true);
+    setError(false);
     apiFetch<AnalyticsData>("/v1/admin/analytics?days=30")
       .then((d) => setData(d))
-      .catch((e) => toast.error(e?.message ?? "Erro ao carregar analytics"))
+      .catch((e) => {
+        setError(true);
+        toast.error(e?.message ?? "Erro ao carregar analytics");
+      })
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => {
+    if (!authLoading && user && isAdmin) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user, isAdmin]);
 
   function exportExcel() {
     if (!data) return;
@@ -134,6 +152,26 @@ function AnalyticsPage() {
     toast.success("PDF exportado");
   }
 
+  if (authLoading) return <div className="p-10 text-center">...</div>;
+
+  if (user && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-background">
+        <SiteHeader />
+        <div className="mx-auto max-w-lg px-6 py-20 text-center">
+          <ShieldCheck className="mx-auto h-12 w-12 text-primary" />
+          <h1 className="mt-4 font-display text-2xl font-bold">Acesso restrito</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Esta área é apenas para administradores. Se acredita que devia ter acesso, contacte o Coach.
+          </p>
+          <Button asChild className="mt-6">
+            <Link to="/dashboard">Ir para o painel</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
@@ -153,7 +191,15 @@ function AnalyticsPage() {
           </div>
         </div>
 
-        {loading || !data ? (
+        {error && !loading ? (
+          <div className="flex flex-col items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-10 text-center">
+            <AlertTriangle className="h-8 w-8 text-destructive" />
+            <p className="text-sm text-destructive">Não foi possível carregar os dados de analytics.</p>
+            <Button size="sm" variant="outline" onClick={load}>
+              Tentar novamente
+            </Button>
+          </div>
+        ) : loading || !data ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-28" />)}
           </div>

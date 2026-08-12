@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
+import { useAuth } from "@/lib/auth";
 import type { CourseRow, UnitRow, LessonRow } from "@/lib/learning";
 import {
   Table,
@@ -47,17 +48,27 @@ type AdminSubscription = {
 };
 
 export function SubscriptionsSection() {
+  const { user, isAdmin } = useAuth();
   const { data = [], refetch } = useQuery({
     queryKey: ["admin_subscriptions"],
     queryFn: async () => {
       const res = await apiFetch<{ items: AdminSubscription[] }>("/v1/admin/subscriptions?limit=200");
       return res.items;
     },
+    enabled: !!user && isAdmin,
   });
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
 
   const cancelSub = async (id: string) => {
-    await apiFetch(`/v1/admin/subscriptions/${id}/cancel`, { method: "POST" });
-    refetch();
+    setCancelingId(id);
+    try {
+      await apiFetch(`/v1/admin/subscriptions/${id}/cancel`, { method: "POST" });
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao cancelar a assinatura.");
+    } finally {
+      setCancelingId(null);
+    }
   };
 
   return (
@@ -137,8 +148,13 @@ export function SubscriptionsSection() {
                 </TableCell>
                 <TableCell>
                   {s.status === "active" && (
-                    <Button size="sm" variant="outline" onClick={() => cancelSub(s.id)}>
-                      Cancelar
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={cancelingId === s.id}
+                      onClick={() => cancelSub(s.id)}
+                    >
+                      {cancelingId === s.id ? "A cancelar…" : "Cancelar"}
                     </Button>
                   )}
                 </TableCell>
@@ -153,8 +169,10 @@ export function SubscriptionsSection() {
 
 /* -------- Analytics (last 30 days: signups + revenue) -------- */
 export function AnalyticsSection() {
+  const { user, isAdmin } = useAuth();
   const { data } = useQuery({
     queryKey: ["admin_analytics_30d"],
+    enabled: !!user && isAdmin,
     queryFn: async () => {
       const since = new Date(Date.now() - 30 * 86400000);
       const [profs, pays] = await Promise.all([
@@ -248,18 +266,24 @@ export function AnalyticsSection() {
 
 /* -------- Reports (CSV exports) -------- */
 export function ReportsSection() {
-  const exportUsers = async () => {
-    csvDownload("users", await apiFetch<Record<string, any>[]>("/v1/admin/reports/users"));
+  const [pending, setPending] = useState<"users" | "payments" | "diagnostics" | null>(null);
+
+  const runExport = async (
+    kind: "users" | "payments" | "diagnostics",
+    path: string,
+  ) => {
+    setPending(kind);
+    try {
+      csvDownload(kind, await apiFetch<Record<string, any>[]>(path));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao exportar o relatório.");
+    } finally {
+      setPending(null);
+    }
   };
-  const exportPayments = async () => {
-    csvDownload("payments", await apiFetch<Record<string, any>[]>("/v1/admin/reports/payments"));
-  };
-  const exportDiagnostics = async () => {
-    csvDownload(
-      "diagnostics",
-      await apiFetch<Record<string, any>[]>("/v1/admin/reports/diagnostics"),
-    );
-  };
+  const exportUsers = () => runExport("users", "/v1/admin/reports/users");
+  const exportPayments = () => runExport("payments", "/v1/admin/reports/payments");
+  const exportDiagnostics = () => runExport("diagnostics", "/v1/admin/reports/diagnostics");
 
   return (
     <div className="mt-10 rounded-2xl border border-border bg-card shadow-card p-6">
@@ -270,14 +294,27 @@ export function ReportsSection() {
         Exportar dados em CSV para análise externa.
       </p>
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" onClick={exportUsers}>
-          <Download className="h-3.5 w-3.5 mr-1" /> Utilizadores
+        <Button variant="outline" size="sm" disabled={pending === "users"} onClick={exportUsers}>
+          <Download className="h-3.5 w-3.5 mr-1" />{" "}
+          {pending === "users" ? "A exportar…" : "Utilizadores"}
         </Button>
-        <Button variant="outline" size="sm" onClick={exportPayments}>
-          <Download className="h-3.5 w-3.5 mr-1" /> Pagamentos
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={pending === "payments"}
+          onClick={exportPayments}
+        >
+          <Download className="h-3.5 w-3.5 mr-1" />{" "}
+          {pending === "payments" ? "A exportar…" : "Pagamentos"}
         </Button>
-        <Button variant="outline" size="sm" onClick={exportDiagnostics}>
-          <Download className="h-3.5 w-3.5 mr-1" /> Diagnósticos
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={pending === "diagnostics"}
+          onClick={exportDiagnostics}
+        >
+          <Download className="h-3.5 w-3.5 mr-1" />{" "}
+          {pending === "diagnostics" ? "A exportar…" : "Diagnósticos"}
         </Button>
       </div>
     </div>
@@ -306,6 +343,7 @@ type AdminLessonDetail = {
 };
 
 export function CurriculumSection() {
+  const { user, isAdmin } = useAuth();
   const [level, setLevel] = useState("A1");
   const [unitId, setUnitId] = useState<string | null>(null);
   const [lessonId, setLessonId] = useState<string | null>(null);
@@ -315,6 +353,7 @@ export function CurriculumSection() {
     queryFn: () =>
       apiFetch<{ courses: CourseRow[]; units: UnitRow[]; lessons: LessonRow[] }>("/v1/courses"),
     staleTime: 60_000,
+    enabled: !!user && isAdmin,
   });
 
   const course = curriculum?.courses.find((c) => c.level === level);

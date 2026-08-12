@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
@@ -23,14 +23,9 @@ import {
   PlayCircle,
   Sparkles,
   Trophy,
-  Zap,
-  HelpCircle,
-  Gift,
-  User,
-  Settings,
-  LogOut,
   Loader2,
 } from "lucide-react";
+import { HeaderActionLinks, MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
 
 export const Route = createFileRoute("/curriculum")({
   component: CurriculumPage,
@@ -128,30 +123,19 @@ const LEVEL_META: Record<
 
 function CurriculumPage() {
   const { locale } = useLocale();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { data: unlocked } = useMaxUnlockedLevel();
   const { data: minScore = 70 } = useMinExamScore();
   const { data, isLoading } = useCurriculum();
   const { data: progressMap } = useProgress();
 
-  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
-  const avatarRef = useRef<HTMLDivElement>(null);
-
   const initialLevel: CefrLevel = (unlocked as CefrLevel) ?? "A1";
   const [activeLevel, setActiveLevel] = useState<CefrLevel>(initialLevel);
   const [openUnitId, setOpenUnitId] = useState<string | null>(null);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
-        setAvatarMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  const unlockedRank = cefrRank(unlocked ?? null);
+  // Before the placement diagnostic, `unlocked` is null — default to A1 so
+  // the easiest level isn't locked too (same fallback as cefr-levels.tsx).
+  const unlockedRank = cefrRank(unlocked ?? "A1");
   const activeCourse = data?.courses.find((c) => c.level === activeLevel);
   const activeUnits = useMemo(
     () => (activeCourse ? data!.units.filter((u) => u.course_id === activeCourse.id) : []),
@@ -213,58 +197,9 @@ function CurriculumPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
-            <button className="bg-[var(--ink)] text-white px-3 md:px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity">
-              <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
-              <span className="hidden sm:inline">Upgrade</span>
-            </button>
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex">
-              <HelpCircle className="w-5 h-5" />
-            </button>
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex">
-              <Gift className="w-5 h-5" />
-            </button>
-            <div className="relative md:hidden" ref={avatarRef}>
-              {avatarMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
-                      <User className="w-4 h-4 text-[var(--violet)]" />
-                      {locale === "pt" ? "Ver perfil" : "View profile"}
-                    </button>
-                    <button className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left">
-                      <Settings className="w-4 h-4 text-gray-400" />
-                      {locale === "pt" ? "Definições" : "Settings"}
-                    </button>
-                    <div className="mx-3 my-1 h-px bg-gray-50" />
-                    <button
-                      onClick={() => signOut()}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {locale === "pt" ? "Sair da conta" : "Sign out"}
-                    </button>
-                  </div>
-                </>
-              )}
-              <button
-                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
-                className="relative inline-flex"
-              >
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
-                <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-              </button>
-            </div>
-            <div className="hidden md:block">
-              <div className="relative inline-flex">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
-              </div>
-            </div>
+            <HeaderActionLinks />
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
           </div>
         </header>
 

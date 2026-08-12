@@ -80,7 +80,7 @@ function WatchPage() {
   const topic = search.topic ?? title;
 
   // History fetch
-  const { data: history } = useQuery({
+  const { data: history, isError: historyError } = useQuery({
     queryKey: ["video_history", user?.id, videoId],
     enabled: !!user,
     queryFn: () => apiFetch<HistoryRow | null>(`/v1/me/video-history/${encodeURIComponent(videoId)}`),
@@ -90,10 +90,13 @@ function WatchPage() {
   const [startAt, setStartAt] = useState<number | null>(null);
 
   useEffect(() => {
-    // decide start once history has loaded
-    if (history === undefined) return;
+    // Decide start once history has loaded — but `history` also stays
+    // `undefined` forever after a failed fetch (indistinguishable from
+    // "still loading"), which used to leave the player frozen on its
+    // spinner permanently. On error, just start from 0 instead of resuming.
+    if (history === undefined && !historyError) return;
     setStartAt(resumeAt > 5 ? resumeAt : 0);
-  }, [history, resumeAt]);
+  }, [history, historyError, resumeAt]);
 
   // Study pack (AI-generated + cached)
   const {
@@ -135,21 +138,38 @@ function WatchPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["video_history"] }),
   });
 
+  // The periodic saves are intentionally best-effort/silent (no toast every
+  // 15s if the connection is flaky), but a persistent failure was previously
+  // completely invisible — this surfaces it once per page visit instead.
+  const saveErrorShownRef = useRef(false);
+  const saveProgress = (position: number) => {
+    upsertHistory.mutateAsync({ position }).catch(() => {
+      if (!saveErrorShownRef.current) {
+        saveErrorShownRef.current = true;
+        toast.error("Não foi possível guardar o seu progresso neste vídeo.");
+      }
+    });
+  };
+
   useEffect(() => {
     if (!user || startAt == null) return;
     // Save initial position immediately so it appears in Continue watching.
-    upsertHistory.mutate({ position: positionRef.current });
+    saveProgress(positionRef.current);
     const interval = setInterval(() => {
       positionRef.current += 15;
-      upsertHistory.mutate({ position: positionRef.current });
+      saveProgress(positionRef.current);
     }, 15_000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, startAt]);
 
-  const markCompleted = () => {
-    upsertHistory.mutate({ position: positionRef.current, completed: true });
-    toast.success("Aula em vídeo concluída!");
+  const markCompleted = async () => {
+    try {
+      await upsertHistory.mutateAsync({ position: positionRef.current, completed: true });
+      toast.success("Aula em vídeo concluída!");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao marcar a aula como concluída.");
+    }
   };
 
   if (!user) {

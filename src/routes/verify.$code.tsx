@@ -79,18 +79,30 @@ function VerifyPage() {
     throw notFound();
   }
 
+  const isValid = cert.valid;
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
       <div className="bg-hero">
         <div className="mx-auto max-w-3xl px-6 py-16">
           <div className="text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/90 shadow-glow">
-              <ShieldCheck className="h-7 w-7 text-white" />
+            <div
+              className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl shadow-glow ${isValid ? "bg-emerald-500/90" : "bg-destructive/90"}`}
+            >
+              {isValid ? (
+                <ShieldCheck className="h-7 w-7 text-white" />
+              ) : (
+                <ShieldAlert className="h-7 w-7 text-white" />
+              )}
             </div>
-            <h1 className="mt-4 font-display text-3xl font-bold md:text-4xl">Certificado autêntico</h1>
+            <h1 className="mt-4 font-display text-3xl font-bold md:text-4xl">
+              {isValid ? "Certificado autêntico" : "Certificado revogado"}
+            </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Este certificado foi emitido oficialmente pela plataforma Learning English with Coach.
+              {isValid
+                ? "Este certificado foi emitido oficialmente pela plataforma Learning English with Coach."
+                : "Este certificado já não é válido. Contacte o suporte se acredita que isto é um erro."}
             </p>
           </div>
 
@@ -125,7 +137,7 @@ function VerifyPage() {
                   value={cert.score != null ? `${Math.round(Number(cert.score))}%` : "—"}
                 />
                 <Meta label="Código" value={cert.verification_code} mono />
-                <Meta label="Estado" value="Válido ✓" />
+                <Meta label="Estado" value={isValid ? "Válido ✓" : "Revogado ✕"} />
               </div>
 
               <div className="mt-8 rounded-lg border bg-muted/30 p-4">

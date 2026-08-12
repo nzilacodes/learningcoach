@@ -8,6 +8,7 @@ import {
   CEFR_LEVELS,
   type CefrLevel,
   cefrRank,
+  levelAccessQueryKey,
   useLevelExam,
   useMaxUnlockedLevel,
   useMinExamScore,
@@ -50,7 +51,10 @@ function LevelExamPage() {
   );
 
   const isValidLevel = (CEFR_LEVELS as readonly string[]).includes(level);
-  const canTake = !!unlocked && cefrRank(level) === cefrRank(unlocked); // exam of CURRENT level only
+  // Before the placement diagnostic, `unlocked` is null — default to A1 so
+  // the A1 exam is reachable pre-diagnostic too (same fallback used across
+  // curriculum.tsx/cefr-levels.tsx). Exam of CURRENT level only.
+  const canTake = cefrRank(level) === cefrRank(unlocked ?? "A1");
 
   if (loading || uLoading || eLoading) {
     return <FullBleed>Carregando…</FullBleed>;
@@ -79,8 +83,24 @@ function LevelExamPage() {
       </FullBleed>
     );
   }
+  if (questions.length === 0) {
+    return (
+      <FullBleed>
+        <XCircle className="w-10 h-10 text-destructive mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Não foi possível carregar o exame</h2>
+        <p className="text-muted-foreground mb-6 max-w-md">
+          Não há perguntas disponíveis para este exame agora. Tente recarregar a página ou volte mais tarde.
+        </p>
+        <Button asChild variant="outline"><Link to="/cefr-levels"><ArrowLeft className="w-4 h-4 mr-2" />Voltar aos níveis</Link></Button>
+      </FullBleed>
+    );
+  }
 
   const submit = async () => {
+    if (questions.length === 0) {
+      toast.error("Não foi possível carregar as perguntas do exame. Tente recarregar a página.");
+      return;
+    }
     if (Object.keys(answers).length !== questions.length) {
       toast.error("Responda a todas as perguntas.");
       return;
@@ -100,8 +120,10 @@ function LevelExamPage() {
     setSubmitting(false);
     const { score, passed } = outcome;
     setResult({ score, passed });
-    qc.invalidateQueries({ queryKey: ["max_unlocked_level"] });
-    qc.invalidateQueries({ queryKey: ["level_attempts"] });
+    // Was invalidating "max_unlocked_level", a key nothing ever registered
+    // under (a silent no-op) — the real query key lives in level-access.ts,
+    // exported precisely so this can't drift out of sync again.
+    qc.invalidateQueries({ queryKey: levelAccessQueryKey(user?.id) });
     if (passed) toast.success(`Aprovado com ${score}%! Próximo nível desbloqueado.`);
     else toast.error(`Nota ${score}% — mínimo ${minScore}%. Pode tentar novamente.`);
   };

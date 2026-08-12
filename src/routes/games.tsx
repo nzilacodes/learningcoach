@@ -1,18 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Star,
-  Play,
-  Search,
-  Lock,
-  HelpCircle,
-  Gift,
-  User,
-  Settings,
-  LogOut,
-  Zap,
-} from "lucide-react";
+import { Star, Play, Search, Lock } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
@@ -21,6 +10,7 @@ import { AGE_TRACKS, AGE_GROUP_LABEL, type AgeTrack } from "@/lib/age-tracks";
 import { AgeThemeSwitcher } from "@/components/age-theme-switcher";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { GamePlayModal } from "@/components/games/game-play-modal";
+import { HeaderActionLinks, MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
 import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/games")({
@@ -62,7 +52,7 @@ function formatPlays(n: number) {
 
 function GamesPage() {
   const { locale } = useLocale();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { group } = useAgeGroup();
   const track = AGE_TRACKS[group];
   const ageLabel = AGE_GROUP_LABEL[group];

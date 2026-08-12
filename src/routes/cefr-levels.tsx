@@ -117,7 +117,10 @@ function CefrLevelsPage() {
   const { user } = useAuth();
   const { data: unlocked } = useMaxUnlockedLevel();
   const { data: minScore = 70 } = useMinExamScore();
-  const unlockedRank = cefrRank(unlocked ?? null);
+  // Before the placement diagnostic, `unlocked` is null — default to A1 so
+  // the easiest level isn't shown locked too (matches the same fallback
+  // used for the dashboard's active course, see lib/learning.ts).
+  const unlockedRank = cefrRank(unlocked ?? "A1");
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

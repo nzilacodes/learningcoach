@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,6 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useAgeGroup } from "@/lib/use-age-group";
 import { AGE_TRACKS, AGE_GROUP_LABEL, type AgeGroup } from "@/lib/age-tracks";
-import { useAgeTheme } from "@/lib/age-theme";
 import {
   Sparkles,
   BookOpen,
@@ -44,8 +44,17 @@ const GROUPS: AgeGroup[] = ["kids", "teens", "adults"];
 function TrackPage() {
   const { locale } = useLocale();
   const { user } = useAuth();
-  const { group, source, age } = useAgeGroup();
-  const { setTheme } = useAgeTheme();
+  const { group: syncedGroup, source, age } = useAgeGroup();
+  // A local preview override, separate from the global age theme: useAgeGroup()
+  // re-derives its `group` from the profile age on every render for any user
+  // who has one set, which was overwriting a global setTheme(g) call from this
+  // switcher on the very next tick — the buttons looked interactive but did
+  // nothing. Previewing a different track locally sidesteps that fight
+  // entirely, and still follows the profile-derived group when it changes.
+  const [group, setGroup] = useState<AgeGroup>(syncedGroup);
+  useEffect(() => {
+    setGroup(syncedGroup);
+  }, [syncedGroup]);
   const track = AGE_TRACKS[group];
   const label = AGE_GROUP_LABEL[group];
 
@@ -73,7 +82,7 @@ function TrackPage() {
                 return (
                   <button
                     key={g}
-                    onClick={() => setTheme(g)}
+                    onClick={() => setGroup(g)}
                     className={`px-4 py-2 rounded-full text-sm font-medium border transition backdrop-blur ${
                       active
                         ? "bg-white text-slate-900 border-white"

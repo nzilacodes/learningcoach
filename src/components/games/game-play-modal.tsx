@@ -314,6 +314,16 @@ function SpeakingGame({
   const [finishing, setFinishing] = useState(false);
   const recorderRef = useRef<Recorder | null>(null);
 
+  // If the modal is closed (Escape, overlay click, etc.) while still
+  // recording, this component unmounts without handleMic's stop branch ever
+  // running — without this, the getUserMedia stream (and the mic indicator)
+  // stays live indefinitely.
+  useEffect(() => {
+    return () => {
+      recorderRef.current?.stop().catch(() => {});
+    };
+  }, []);
+
   const handleMic = async () => {
     if (processing) return;
     if (!recording) {

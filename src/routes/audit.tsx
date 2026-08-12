@@ -1,10 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api/client";
+import { useAuth } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -77,27 +79,51 @@ function fmtDate(s: string) {
 }
 
 function AuditPage() {
+  const { user, isAdmin, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [summary, setSummary] = useState<SecuritySummary | null>(null);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [attempts, setAttempts] = useState<LoginAttempt[]>([]);
   const [lockouts, setLockouts] = useState<Lockout[]>([]);
   const [query, setQuery] = useState("");
+  const [dataLoading, setDataLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      apiFetch<SecuritySummary>("/v1/admin/security-summary").catch(() => null),
-      apiFetch<AuditLog[]>("/v1/admin/audit-logs").catch(() => []),
-      apiFetch<LoginAttempt[]>("/v1/admin/login-attempts").catch(() => []),
-      apiFetch<Lockout[]>("/v1/admin/lockouts").catch(() => []),
+    if (!authLoading && !user) navigate({ to: "/auth" });
+  }, [authLoading, user, navigate]);
+
+  const load = () => {
+    setDataLoading(true);
+    setLoadError(false);
+    // Promise.allSettled (not .all with per-call .catch fallbacks) so a
+    // failure is actually detectable — the previous version swallowed every
+    // rejection into a fallback value before Promise.all ever saw it, so its
+    // outer .catch could never fire and a total fetch failure rendered as a
+    // normal-looking, fully-empty dashboard with no error shown at all.
+    Promise.allSettled([
+      apiFetch<SecuritySummary>("/v1/admin/security-summary"),
+      apiFetch<AuditLog[]>("/v1/admin/audit-logs"),
+      apiFetch<LoginAttempt[]>("/v1/admin/login-attempts"),
+      apiFetch<Lockout[]>("/v1/admin/lockouts"),
     ])
       .then(([s, l, a, k]) => {
-        if (s) setSummary(s);
-        setLogs(l);
-        setAttempts(a);
-        setLockouts(k);
+        if (s.status === "fulfilled") setSummary(s.value);
+        if (l.status === "fulfilled") setLogs(l.value);
+        if (a.status === "fulfilled") setAttempts(a.value);
+        if (k.status === "fulfilled") setLockouts(k.value);
+        if ([s, l, a, k].some((r) => r.status === "rejected")) {
+          setLoadError(true);
+          toast.error("Falha ao carregar alguns dados de auditoria.");
+        }
       })
-      .catch((e) => toast.error(e?.message ?? "Falha ao carregar auditoria"));
-  }, []);
+      .finally(() => setDataLoading(false));
+  };
+
+  useEffect(() => {
+    if (!authLoading && user && isAdmin) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user, isAdmin]);
 
   const filteredLogs = logs.filter(
     (l) =>
@@ -113,6 +139,26 @@ function AuditPage() {
     return <Badge variant="secondary">info</Badge>;
   }
 
+  if (authLoading) return <div className="p-10 text-center">...</div>;
+
+  if (user && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-background">
+        <SiteHeader />
+        <div className="mx-auto max-w-lg px-6 py-20 text-center">
+          <ShieldCheck className="mx-auto h-12 w-12 text-emerald-500" />
+          <h1 className="mt-4 font-display text-2xl font-bold">Acesso restrito</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Esta área é apenas para administradores. Se acredita que devia ter acesso, contacte o Coach.
+          </p>
+          <Button asChild className="mt-6">
+            <Link to="/dashboard">Ir para o painel</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
@@ -126,6 +172,15 @@ function AuditPage() {
             Monitorização de acessos, eventos críticos e deteção de brute-force.
           </p>
         </div>
+
+        {loadError && !dataLoading && (
+          <div className="mb-6 flex items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <span>Alguns dados de auditoria não puderam ser carregados.</span>
+            <Button size="sm" variant="outline" onClick={load}>
+              Tentar novamente
+            </Button>
+          </div>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Kpi

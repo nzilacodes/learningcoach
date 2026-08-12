@@ -131,6 +131,10 @@ function AdminPage() {
       }
       qc.invalidateQueries({ queryKey: ["admin_payments"] });
       qc.invalidateQueries({ queryKey: ["admin_stats"] });
+      // Activating a payment also activates its linked subscription
+      // server-side — without this, SubscriptionsSection kept showing the
+      // pre-activation state until an unrelated refetch.
+      qc.invalidateQueries({ queryKey: ["admin_subscriptions"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -141,6 +145,9 @@ function AdminPage() {
     onSuccess: () => {
       toast.success(locale === "pt" ? "Pagamento cancelado" : "Payment cancelled");
       qc.invalidateQueries({ queryKey: ["admin_payments"] });
+      // The "Pendentes" stat card reads admin_stats — cancelling a pending
+      // payment used to leave it stale until an unrelated refetch.
+      qc.invalidateQueries({ queryKey: ["admin_stats"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });

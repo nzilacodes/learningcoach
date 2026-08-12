@@ -12,12 +12,17 @@ export const cefrRank = (l: CefrLevel | string | null | undefined): number => {
 
 type LevelAccess = { maxUnlockedLevel: CefrLevel | null; minExamScore: number };
 
+// Exported so callers that need to invalidate this query (e.g. after passing
+// a level exam) use the exact same key instead of a hand-typed guess that
+// can silently drift out of sync and turn the invalidation into a no-op.
+export const levelAccessQueryKey = (userId: string | undefined) => ["level_access", userId];
+
 /** Max unlocked level + min passing score, computed server-side from the
  * user's diagnostic CEFR level and passed level_exam_attempts rows. */
 function useLevelAccess() {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["level_access", user?.id],
+    queryKey: levelAccessQueryKey(user?.id),
     enabled: !!user,
     queryFn: () => apiFetch<LevelAccess>("/v1/me/level-access"),
   });
@@ -45,19 +50,12 @@ export function useLevelExam(level: CefrLevel) {
   });
 }
 
-export function useLevelAttempts(level?: CefrLevel) {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["level_attempts", user?.id, level ?? "all"],
-    enabled: !!user,
-    queryFn: () =>
-      apiFetch<{ level: CefrLevel; score: number; passed: boolean; created_at: string }[]>(
-        `/v1/me/level-exam-attempts${level ? `?level=${level}` : ""}`,
-      ),
-  });
-}
-
+// `unlocked` is null before a user has taken the placement diagnostic (see
+// getMaxUnlockedLevel in the backend's exams module). A1 — the easiest level
+// — should still be reachable in that state rather than locking everything,
+// so this defaults to "A1" instead of treating null as "nothing unlocked".
+// Matches the same `?? "A1"` fallback already used for the dashboard's
+// active course in lib/learning.ts.
 export function canAccessLevel(target: CefrLevel, unlocked: CefrLevel | null) {
-  if (!unlocked) return false;
-  return cefrRank(target) <= cefrRank(unlocked);
+  return cefrRank(target) <= cefrRank(unlocked ?? "A1");
 }
