@@ -11,6 +11,7 @@ import {
   BookMarked,
   Trophy,
   Users,
+  FolderOpen,
   PanelLeftClose,
   PanelLeftOpen,
   ChevronDown,
@@ -29,18 +30,44 @@ const NAV_SECTIONS = [
   {
     label: { pt: "Plataforma", en: "Platform" },
     items: [
-      { to: "/", Icon: Home, hoverColor: "group-hover:text-[var(--violet)]", label: { pt: "Home", en: "Home" } },
-      { to: "/dashboard", Icon: LayoutDashboard, hoverColor: "group-hover:text-[var(--amber)]", label: { pt: "Dashboard", en: "Dashboard" } },
-      { to: "/games", Icon: Gamepad2, hoverColor: "group-hover:text-[var(--magenta)]", label: { pt: "Jogos", en: "Games" } },
+      {
+        to: "/",
+        Icon: Home,
+        hoverColor: "group-hover:text-[var(--violet)]",
+        label: { pt: "Home", en: "Home" },
+      },
+      {
+        to: "/dashboard",
+        Icon: LayoutDashboard,
+        hoverColor: "group-hover:text-[var(--amber)]",
+        label: { pt: "Dashboard", en: "Dashboard" },
+      },
+      {
+        to: "/games",
+        Icon: Gamepad2,
+        hoverColor: "group-hover:text-[var(--magenta)]",
+        label: { pt: "Jogos", en: "Games" },
+      },
     ],
   },
   {
     label: { pt: "Aprendizado", en: "Learning" },
     items: [
-      { to: "/curriculum", Icon: BookOpen, hoverColor: "", label: { pt: "Currículo", en: "Curriculum" } },
+      {
+        to: "/curriculum",
+        Icon: BookOpen,
+        hoverColor: "",
+        label: { pt: "Currículo", en: "Curriculum" },
+      },
       { to: "/ai-coach", Icon: Bot, hoverColor: "", label: { pt: "AI Coach", en: "AI Coach" } },
       { to: "/videos", Icon: Film, hoverColor: "", label: { pt: "Vídeos", en: "Videos" } },
-      { to: "/pronunciation", Icon: Mic, hoverColor: "", label: { pt: "Pronúncia", en: "Pronunciation" } },
+      { to: "/media", Icon: FolderOpen, hoverColor: "", label: { pt: "Media", en: "Media" } },
+      {
+        to: "/pronunciation",
+        Icon: Mic,
+        hoverColor: "",
+        label: { pt: "Pronúncia", en: "Pronunciation" },
+      },
       { to: "/reading", Icon: BookMarked, hoverColor: "", label: { pt: "Reading", en: "Reading" } },
       { to: "/rewards", Icon: Trophy, hoverColor: "", label: { pt: "Recompensas", en: "Rewards" } },
     ],
@@ -48,7 +75,12 @@ const NAV_SECTIONS = [
   {
     label: { pt: "Comunidade", en: "Community" },
     items: [
-      { to: "/community", Icon: Users, hoverColor: "", label: { pt: "Comunidade", en: "Community" } },
+      {
+        to: "/community",
+        Icon: Users,
+        hoverColor: "",
+        label: { pt: "Comunidade", en: "Community" },
+      },
     ],
   },
 ];
@@ -70,21 +102,33 @@ export function VideosSidebar() {
       }`}
     >
       {/* Header */}
-      <div className={`flex items-center transition-all duration-300 ${
-        collapsed ? "justify-center p-6" : "justify-between p-8 pb-10"
-      }`}>
+      <div
+        className={`flex items-center transition-all duration-300 ${
+          collapsed ? "justify-center p-6" : "justify-between p-8 pb-10"
+        }`}
+      >
         {!collapsed && (
           <Link to="/" className="flex items-center gap-3">
-            <img src={coachLogo} alt="LEWC" className="w-10 h-10 rounded-xl object-contain shadow-lg ring-1 ring-gray-100" />
+            <img
+              src={coachLogo}
+              alt="LEWC"
+              className="w-10 h-10 rounded-xl object-contain shadow-lg ring-1 ring-gray-100"
+            />
             <div className="leading-tight">
               <div className="font-display font-bold text-lg text-[var(--ink)]">Learning</div>
-              <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Coach</div>
+              <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                Coach
+              </div>
             </div>
           </Link>
         )}
         {collapsed && (
           <Link to="/" className="mx-auto">
-            <img src={coachLogo} alt="LEWC" className="w-10 h-10 rounded-xl object-contain shadow-lg ring-1 ring-gray-100" />
+            <img
+              src={coachLogo}
+              alt="LEWC"
+              className="w-10 h-10 rounded-xl object-contain shadow-lg ring-1 ring-gray-100"
+            />
           </Link>
         )}
         {!collapsed ? (
@@ -141,16 +185,19 @@ export function VideosSidebar() {
       </nav>
 
       {/* User Profile */}
-      <div className={`border-t border-gray-50 relative ${collapsed ? "p-4 flex justify-center" : "p-6"}`} ref={profileRef}>
+      <div
+        className={`border-t border-gray-50 relative ${collapsed ? "p-4 flex justify-center" : "p-6"}`}
+        ref={profileRef}
+      >
         {/* Profile Dropdown */}
         {profileOpen && (
           <>
             <div className="fixed inset-0 z-20" onClick={() => setProfileOpen(false)} />
-            <div className={`absolute bottom-full mb-2 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow ${
-              collapsed
-                ? "left-full ml-2 w-52"
-                : "left-4 right-4"
-            }`}>
+            <div
+              className={`absolute bottom-full mb-2 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow ${
+                collapsed ? "left-full ml-2 w-52" : "left-4 right-4"
+              }`}
+            >
               <button
                 onClick={() => {
                   setProfileOpen(false);
@@ -203,9 +250,7 @@ export function VideosSidebar() {
                 <p className="text-sm font-bold truncate text-[var(--ink)]">
                   {user?.email?.split("@")[0] || "Utilizador"}
                 </p>
-                <p className="text-[11px] text-gray-400 font-medium truncate">
-                  Premium Member
-                </p>
+                <p className="text-[11px] text-gray-400 font-medium truncate">Premium Member</p>
               </div>
               {profileOpen ? (
                 <ChevronUp className="w-4 h-4 text-gray-400" />
@@ -235,6 +280,7 @@ const MOBILE_MORE_ITEMS = [
   { to: "/dashboard", Icon: LayoutDashboard, label: { pt: "Dashboard", en: "Dashboard" } },
   { to: "/games", Icon: Gamepad2, label: { pt: "Jogos", en: "Games" } },
   { to: "/videos", Icon: Film, label: { pt: "Vídeos", en: "Videos" } },
+  { to: "/media", Icon: FolderOpen, label: { pt: "Media", en: "Media" } },
   { to: "/pronunciation", Icon: Mic, label: { pt: "Pronúncia", en: "Pronunciation" } },
   { to: "/reading", Icon: BookMarked, label: { pt: "Reading", en: "Reading" } },
   { to: "/rewards", Icon: Trophy, label: { pt: "Recompensas", en: "Rewards" } },
@@ -253,7 +299,10 @@ export function VideosMobileNav() {
     <>
       {/* More dropdown overlay */}
       {moreOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-black/30" onClick={() => setMoreOpen(false)} />
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-black/30"
+          onClick={() => setMoreOpen(false)}
+        />
       )}
 
       {/* More dropdown panel */}
@@ -271,7 +320,9 @@ export function VideosMobileNav() {
               to={item.to}
               onClick={() => setMoreOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${
-                isActive(item.to) ? "text-[var(--violet)] bg-[var(--violet)]/5" : "text-gray-600 hover:bg-gray-50"
+                isActive(item.to)
+                  ? "text-[var(--violet)] bg-[var(--violet)]/5"
+                  : "text-gray-600 hover:bg-gray-50"
               }`}
             >
               <item.Icon className="w-5 h-5" />
@@ -306,9 +357,7 @@ export function VideosMobileNav() {
             }`}
           >
             <Grid3X3 className="w-5 h-5" />
-            <span className="text-[10px] font-medium">
-              {locale === "pt" ? "Mais" : "More"}
-            </span>
+            <span className="text-[10px] font-medium">{locale === "pt" ? "Mais" : "More"}</span>
           </button>
         </div>
       </nav>

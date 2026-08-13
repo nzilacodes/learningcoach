@@ -22,6 +22,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PlacementRouteImport } from './routes/placement'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as MediaRouteImport } from './routes/media'
 import { Route as MaintenanceRouteImport } from './routes/maintenance'
 import { Route as GamesRouteImport } from './routes/games'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -107,6 +108,11 @@ const PlacementRoute = PlacementRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MediaRoute = MediaRouteImport.update({
+  id: '/media',
+  path: '/media',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MaintenanceRoute = MaintenanceRouteImport.update({
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/games': typeof GamesRoute
   '/maintenance': typeof MaintenanceRoute
+  '/media': typeof MediaRoute
   '/onboarding': typeof OnboardingRoute
   '/placement': typeof PlacementRoute
   '/pricing': typeof PricingRoute
@@ -268,6 +275,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/games': typeof GamesRoute
   '/maintenance': typeof MaintenanceRoute
+  '/media': typeof MediaRoute
   '/onboarding': typeof OnboardingRoute
   '/placement': typeof PlacementRoute
   '/pricing': typeof PricingRoute
@@ -305,6 +313,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/games': typeof GamesRoute
   '/maintenance': typeof MaintenanceRoute
+  '/media': typeof MediaRoute
   '/onboarding': typeof OnboardingRoute
   '/placement': typeof PlacementRoute
   '/pricing': typeof PricingRoute
@@ -343,6 +352,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/games'
     | '/maintenance'
+    | '/media'
     | '/onboarding'
     | '/placement'
     | '/pricing'
@@ -379,6 +389,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/games'
     | '/maintenance'
+    | '/media'
     | '/onboarding'
     | '/placement'
     | '/pricing'
@@ -415,6 +426,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/games'
     | '/maintenance'
+    | '/media'
     | '/onboarding'
     | '/placement'
     | '/pricing'
@@ -452,6 +464,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   GamesRoute: typeof GamesRoute
   MaintenanceRoute: typeof MaintenanceRoute
+  MediaRoute: typeof MediaRoute
   OnboardingRoute: typeof OnboardingRoute
   PlacementRoute: typeof PlacementRoute
   PricingRoute: typeof PricingRoute
@@ -563,6 +576,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/media': {
+      id: '/media'
+      path: '/media'
+      fullPath: '/media'
+      preLoaderRoute: typeof MediaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/maintenance': {
@@ -732,6 +752,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   GamesRoute: GamesRoute,
   MaintenanceRoute: MaintenanceRoute,
+  MediaRoute: MediaRoute,
   OnboardingRoute: OnboardingRoute,
   PlacementRoute: PlacementRoute,
   PricingRoute: PricingRoute,

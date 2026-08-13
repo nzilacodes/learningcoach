@@ -13,6 +13,7 @@ import {
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
+import { uploadMedia } from "@/lib/media";
 import { apiFetch } from "@/lib/api/client";
 import { awardActivity } from "@/lib/gamification";
 import { useNotification } from "@/lib/notifications/notification-provider";
@@ -26,7 +27,11 @@ import {
   CartesianGrid,
 } from "recharts";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
-import { HeaderActionLinks, MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 
 export const Route = createFileRoute("/reading")({
   component: ReadingPage,
@@ -64,11 +69,23 @@ const PASSAGES: Passage[] = [
       { word: "shower", ipa: "/ˈʃaʊ.ər/", pt: "duche" },
       { word: "breakfast", ipa: "/ˈbrek.fəst/", pt: "pequeno-almoço" },
     ],
-    idiom: { pt: "Chave para o sucesso", en: "The key to success", meaning: "Algo fundamental para alcançar o sucesso." },
+    idiom: {
+      pt: "Chave para o sucesso",
+      en: "The key to success",
+      meaning: "Algo fundamental para alcançar o sucesso.",
+    },
     quiz: [
       { q: "Que horas eu acordo?", options: ["6 horas", "7 horas", "8 horas"], answer: 1 },
-      { q: "O que comemos ao pequeno-almoço?", options: ["Arroz", "Torradas e fruta", "Sopa"], answer: 1 },
-      { q: "Como vou trabalhar?", options: ["De carro", "De autocarro", "De bicicleta"], answer: 1 },
+      {
+        q: "O que comemos ao pequeno-almoço?",
+        options: ["Arroz", "Torradas e fruta", "Sopa"],
+        answer: 1,
+      },
+      {
+        q: "Como vou trabalhar?",
+        options: ["De carro", "De autocarro", "De bicicleta"],
+        answer: 1,
+      },
     ],
   },
   {
@@ -82,10 +99,22 @@ const PASSAGES: Passage[] = [
       { word: "pond", ipa: "/pɒnd/", pt: "lago pequeno" },
       { word: "melody", ipa: "/ˈmel.ə.di/", pt: "melodia" },
     ],
-    idiom: { pt: "Deitar moedas", en: "Drop coins", meaning: "Contribuir com dinheiro para alguém." },
+    idiom: {
+      pt: "Deitar moedas",
+      en: "Drop coins",
+      meaning: "Contribuir com dinheiro para alguém.",
+    },
     quiz: [
-      { q: "Quando o parque está cheio?", options: ["Segunda de manhã", "Sábado à tarde", "Domingo à noite"], answer: 1 },
-      { q: "Quem alimenta os patos?", options: ["Uma criança", "Um homem idoso", "Um turista"], answer: 1 },
+      {
+        q: "Quando o parque está cheio?",
+        options: ["Segunda de manhã", "Sábado à tarde", "Domingo à noite"],
+        answer: 1,
+      },
+      {
+        q: "Quem alimenta os patos?",
+        options: ["Uma criança", "Um homem idoso", "Um turista"],
+        answer: 1,
+      },
       { q: "O que o músico toca?", options: ["Piano", "Guitarra", "Violino"], answer: 1 },
     ],
   },
@@ -100,11 +129,23 @@ const PASSAGES: Passage[] = [
       { word: "pledge", ipa: "/pledʒ/", pt: "prometer" },
       { word: "consume", ipa: "/kənˈsjuːm/", pt: "consumir" },
     ],
-    idiom: { pt: "Sem precedentes", en: "Unprecedented", meaning: "Algo que nunca aconteceu antes na história." },
+    idiom: {
+      pt: "Sem precedentes",
+      en: "Unprecedented",
+      meaning: "Algo que nunca aconteceu antes na história.",
+    },
     quiz: [
       { q: "O que está a subir?", options: ["Preços", "Nível do mar", "Populações"], answer: 1 },
-      { q: "O progresso depende de…", options: ["Apenas governos", "Escolhas individuais também", "Cientistas"], answer: 1 },
-      { q: "Quão frequentes são os eventos extremos?", options: ["Raros", "Alarmemente frequentes", "Inalterados"], answer: 1 },
+      {
+        q: "O progresso depende de…",
+        options: ["Apenas governos", "Escolhas individuais também", "Cientistas"],
+        answer: 1,
+      },
+      {
+        q: "Quão frequentes são os eventos extremos?",
+        options: ["Raros", "Alarmemente frequentes", "Inalterados"],
+        answer: 1,
+      },
     ],
   },
 ];
@@ -185,7 +226,8 @@ function ReadingPage() {
         setTranscript("");
       } catch {
         notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
-          description: locale === "pt" ? "Permite o acesso ao microfone." : "Please allow microphone access.",
+          description:
+            locale === "pt" ? "Permite o acesso ao microfone." : "Please allow microphone access.",
           dedupeKey: "reading:mic-permission",
         });
       }
@@ -197,7 +239,12 @@ function ReadingPage() {
       const blob = await recorderRef.current!.stop();
       recorderRef.current = null;
       const durationSeconds = Math.max(1, Math.round((Date.now() - startRef.current) / 1000));
-      const text = await transcribe(blob);
+      // Uploading the recording is best-effort and never blocks assessment —
+      // see the identical comment in components/word-card.tsx.
+      const [text, mediaAsset] = await Promise.all([
+        transcribe(blob),
+        uploadMedia(blob, { filename: "leitura.webm" }).catch(() => null),
+      ]);
       setTranscript(text);
       const r = await apiFetch<ReadingReport>("/v1/reading/assess", {
         method: "POST",
@@ -206,6 +253,7 @@ function ReadingPage() {
           passage: passage.text,
           transcript: text,
           durationSeconds,
+          mediaAssetId: mediaAsset?.id ?? null,
         }),
       });
       setReport(r);
@@ -246,7 +294,6 @@ function ReadingPage() {
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
           {/* Mobile: single column | Desktop: two columns */}
           <div className="px-4 md:px-6 py-6 md:py-10">
-
             {/* 1. Pronunciation Section — full width on both */}
             <section className="bg-white rounded-2xl p-5 md:p-6 shadow-[0_4px_20px_0px_rgba(0,0,0,0.04)] border border-gray-100 mb-6 md:mb-8">
               <div className="flex items-center gap-2 mb-4">
@@ -254,7 +301,9 @@ function ReadingPage() {
                 <h2 className="font-display text-lg font-bold text-[var(--ink)]">Pronúncia</h2>
               </div>
               <p className="text-gray-500 mb-6 text-sm md:text-base">
-                {locale === "pt" ? "Repita a frase abaixo para praticar sua fluência:" : "Repeat the sentence below to practice your fluency:"}
+                {locale === "pt"
+                  ? "Repita a frase abaixo para praticar sua fluência:"
+                  : "Repeat the sentence below to practice your fluency:"}
               </p>
               <div className="bg-gray-50 rounded-xl p-5 md:p-6 mb-6 md:mb-8 text-center">
                 <p className="text-lg md:text-xl font-bold text-[var(--ink)] leading-relaxed mb-2">
@@ -296,9 +345,14 @@ function ReadingPage() {
                     { label: "Fluência", v: report.fluency },
                     { label: "Clareza", v: report.clarity },
                   ].map((m) => (
-                    <div key={m.label} className="rounded-xl border border-gray-100 bg-gray-50 p-3 text-center">
+                    <div
+                      key={m.label}
+                      className="rounded-xl border border-gray-100 bg-gray-50 p-3 text-center"
+                    >
                       <div className="text-[10px] md:text-xs text-gray-400">{m.label}</div>
-                      <div className="mt-1 font-display text-xl md:text-2xl font-bold text-[var(--ink)]">{Math.round(m.v)}</div>
+                      <div className="mt-1 font-display text-xl md:text-2xl font-bold text-[var(--ink)]">
+                        {Math.round(m.v)}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -331,7 +385,9 @@ function ReadingPage() {
                     </div>
                   </div>
                   <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-100">
-                    <h3 className="font-display text-xl font-bold mb-4 text-[var(--ink)]">{passage.title.pt}</h3>
+                    <h3 className="font-display text-xl font-bold mb-4 text-[var(--ink)]">
+                      {passage.title.pt}
+                    </h3>
                     <div className="space-y-4 text-gray-600 text-sm md:text-base leading-relaxed">
                       <p>{passage.text}</p>
                     </div>
@@ -350,12 +406,19 @@ function ReadingPage() {
                 <section className="flex flex-col gap-3 md:gap-4">
                   <div className="flex items-center gap-2 px-1">
                     <BookOpen className="w-5 h-5 text-[var(--primary)]" />
-                    <h2 className="font-display text-lg font-bold text-[var(--ink)]">Vocabulário</h2>
+                    <h2 className="font-display text-lg font-bold text-[var(--ink)]">
+                      Vocabulário
+                    </h2>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     {passage.vocab.map((v) => (
-                      <div key={v.word} className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 hover:border-[var(--primary)]/30 transition-colors">
-                        <span className="text-[10px] md:text-xs font-bold text-[var(--primary)] mb-1 md:mb-2 block">Palavra</span>
+                      <div
+                        key={v.word}
+                        className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 hover:border-[var(--primary)]/30 transition-colors"
+                      >
+                        <span className="text-[10px] md:text-xs font-bold text-[var(--primary)] mb-1 md:mb-2 block">
+                          Palavra
+                        </span>
                         <h4 className="font-bold text-base md:text-lg mb-0.5 md:mb-1">{v.word}</h4>
                         <p className="text-xs md:text-sm text-gray-500">{v.pt}</p>
                         <button
@@ -368,9 +431,13 @@ function ReadingPage() {
                     ))}
                     {/* Idiom card */}
                     <div className="col-span-2 bg-[var(--primary)] p-4 md:p-5 rounded-xl text-white">
-                      <span className="text-[10px] md:text-xs font-bold text-white/80 mb-1 md:mb-2 block">Expressão Idiomática</span>
+                      <span className="text-[10px] md:text-xs font-bold text-white/80 mb-1 md:mb-2 block">
+                        Expressão Idiomática
+                      </span>
                       <h4 className="font-bold text-lg md:text-xl mb-1">{passage.idiom.pt}</h4>
-                      <p className="text-xs md:text-sm opacity-90">"{passage.idiom.en}" - {passage.idiom.meaning}</p>
+                      <p className="text-xs md:text-sm opacity-90">
+                        "{passage.idiom.en}" - {passage.idiom.meaning}
+                      </p>
                     </div>
                   </div>
                 </section>
@@ -381,7 +448,9 @@ function ReadingPage() {
                 <section className="flex flex-col gap-3 md:gap-4">
                   <div className="flex items-center gap-2 px-1">
                     <Sparkles className="w-5 h-5 text-[var(--primary)]" />
-                    <h2 className="font-display text-lg font-bold text-[var(--ink)]">Compreensão</h2>
+                    <h2 className="font-display text-lg font-bold text-[var(--ink)]">
+                      Compreensão
+                    </h2>
                   </div>
                   <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-100">
                     <p className="text-xs text-gray-400 mb-4">Teste seu entendimento do texto</p>
@@ -421,7 +490,9 @@ function ReadingPage() {
                                     className="w-4 h-4 text-[var(--primary)]"
                                   />
                                   {wrongPick && <XCircle className="w-4 h-4 text-red-500 ml-2" />}
-                                  {correct && <CheckCircle className="w-4 h-4 text-green-500 ml-2" />}
+                                  {correct && (
+                                    <CheckCircle className="w-4 h-4 text-green-500 ml-2" />
+                                  )}
                                   <span className="ml-3">{opt}</span>
                                 </label>
                               );
@@ -432,9 +503,11 @@ function ReadingPage() {
                     </div>
 
                     {quizChecked && (
-                      <p className={`mt-4 text-sm font-bold ${
-                        quizScore === passage.quiz.length ? "text-green-500" : "text-red-500"
-                      }`}>
+                      <p
+                        className={`mt-4 text-sm font-bold ${
+                          quizScore === passage.quiz.length ? "text-green-500" : "text-red-500"
+                        }`}
+                      >
                         {quizScore === passage.quiz.length
                           ? "Correto! Muito bem!"
                           : `Acertou ${quizScore} de ${passage.quiz.length}. Tente novamente.`}
@@ -463,13 +536,29 @@ function ReadingPage() {
                 <h2 className="mb-3 font-display text-lg font-bold">Evolução</h2>
                 <div className="bg-white rounded-2xl border border-gray-100 p-4">
                   <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={history.map((h, i) => ({ i: i + 1, overall: Number(h.overall ?? 0), pronunciation: Number(h.pronunciation ?? 0) }))}>
+                    <LineChart
+                      data={history.map((h, i) => ({
+                        i: i + 1,
+                        overall: Number(h.overall ?? 0),
+                        pronunciation: Number(h.pronunciation ?? 0),
+                      }))}
+                    >
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                       <XAxis dataKey="i" />
                       <YAxis />
                       <Tooltip />
-                      <Line type="monotone" dataKey="overall" stroke="var(--primary)" strokeWidth={2} />
-                      <Line type="monotone" dataKey="pronunciation" stroke="#d946ef" strokeWidth={2} />
+                      <Line
+                        type="monotone"
+                        dataKey="overall"
+                        stroke="var(--primary)"
+                        strokeWidth={2}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="pronunciation"
+                        stroke="#d946ef"
+                        strokeWidth={2}
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

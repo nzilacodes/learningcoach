@@ -1,5 +1,8 @@
 // import.meta.env for the browser bundle; process.env fallback for SSR (loaders run in Node).
-const API_BASE_URL = import.meta.env.VITE_API_URL || process.env.VITE_API_URL || "http://localhost:8787";
+// Exported for callers that need to build a raw resource URL outside apiFetch
+// (e.g. a <video src>/<img src> the browser fetches on its own — see lib/media.ts).
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL || process.env.VITE_API_URL || "http://localhost:8787";
 
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
@@ -68,7 +71,14 @@ async function parseErrorEnvelope(res: Response): Promise<ApiError> {
     const body = await res.json();
     const err = body?.error;
     if (err && typeof err.code === "string" && typeof err.message === "string") {
-      return new ApiError(err.message, res.status, err.code, Boolean(err.retryable), err.request_id, err.fields);
+      return new ApiError(
+        err.message,
+        res.status,
+        err.code,
+        Boolean(err.retryable),
+        err.request_id,
+        err.fields,
+      );
     }
     return new ApiError(res.statusText || "Request failed", res.status, "UNKNOWN_ERROR");
   } catch {
@@ -108,7 +118,11 @@ async function fetchOrNetworkError(input: string, init: RequestInit): Promise<Re
 /** JSON request/response helper for the learningcoachbackEnd API. Session lives in
  * HttpOnly cookies (set by the backend), so there's no token to attach here —
  * just credentials + a CSRF header on mutating requests. */
-export async function apiFetch<T>(path: string, init: RequestInit = {}, _retried = false): Promise<T> {
+export async function apiFetch<T>(
+  path: string,
+  init: RequestInit = {},
+  _retried = false,
+): Promise<T> {
   // Only claim a JSON content-type when there's actually a body to parse —
   // Fastify's JSON body parser throws FST_ERR_CTP_EMPTY_JSON_BODY on a
   // request with Content-Type: application/json and a zero-byte body (e.g.
@@ -119,7 +133,11 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}, _retried
     ...csrfHeaders(init.method),
     ...(init.headers ?? {}),
   };
-  const res = await fetchOrNetworkError(`${API_BASE_URL}${path}`, { ...init, credentials: "include", headers });
+  const res = await fetchOrNetworkError(`${API_BASE_URL}${path}`, {
+    ...init,
+    credentials: "include",
+    headers,
+  });
 
   if (res.status === 401 && !_retried && !path.startsWith("/v1/auth/")) {
     const refreshed = await refreshSession();
@@ -129,11 +147,17 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}, _retried
   if (!res.ok) throw await parseErrorEnvelope(res);
   if (res.status === 204) return undefined as T;
   const contentType = res.headers.get("content-type") ?? "";
-  return contentType.includes("application/json") ? ((await res.json()) as T) : ((await res.blob()) as unknown as T);
+  return contentType.includes("application/json")
+    ? ((await res.json()) as T)
+    : ((await res.blob()) as unknown as T);
 }
 
 /** multipart/form-data helper (audio uploads) — do not set Content-Type, fetch sets the boundary. */
-export async function apiFetchFormData<T>(path: string, formData: FormData, _retried = false): Promise<T> {
+export async function apiFetchFormData<T>(
+  path: string,
+  formData: FormData,
+  _retried = false,
+): Promise<T> {
   const res = await fetchOrNetworkError(`${API_BASE_URL}${path}`, {
     method: "POST",
     credentials: "include",

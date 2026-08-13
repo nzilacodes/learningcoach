@@ -1,25 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  Volume2,
-  Gauge,
-  Mic,
-  Square,
-  Loader2,
-  Sparkles,
-  Flag,
-} from "lucide-react";
+import { Volume2, Gauge, Mic, Square, Loader2, Sparkles, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
+import { uploadMedia } from "@/lib/media";
 import { apiFetch } from "@/lib/api/client";
 import { useLocale } from "@/lib/i18n";
 import { useNotification } from "@/lib/notifications/notification-provider";
@@ -83,7 +71,9 @@ export function WordCard({ word, lessonId = null, showTranslation = true }: Prop
 
   const play = (accent: "us" | "uk", slow = false) =>
     speak(word, { accent, speed: slow ? 0.7 : 1 }).catch(() =>
-      notify.warning(locale === "pt" ? "Áudio indisponível" : "Audio unavailable", { dedupeKey: "word-card:play" }),
+      notify.warning(locale === "pt" ? "Áudio indisponível" : "Audio unavailable", {
+        dedupeKey: "word-card:play",
+      }),
     );
 
   return (
@@ -91,9 +81,7 @@ export function WordCard({ word, lessonId = null, showTranslation = true }: Prop
       <CardContent className="p-4 space-y-3">
         <div className="flex flex-wrap items-baseline gap-3">
           <h3 className="text-2xl font-semibold">{word}</h3>
-          {data?.part_of_speech && (
-            <Badge variant="secondary">{data.part_of_speech}</Badge>
-          )}
+          {data?.part_of_speech && <Badge variant="secondary">{data.part_of_speech}</Badge>}
           {loading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
         </div>
 
@@ -142,9 +130,7 @@ export function WordCard({ word, lessonId = null, showTranslation = true }: Prop
               </Button>
             </div>
 
-            {data.example && (
-              <p className="italic text-muted-foreground">"{data.example}"</p>
-            )}
+            {data.example && <p className="italic text-muted-foreground">"{data.example}"</p>}
             {showTranslation && data.translation_pt && (
               <p className="text-xs text-muted-foreground">PT: {data.translation_pt}</p>
             )}
@@ -243,11 +229,23 @@ function PracticeDialog({
     try {
       const blob = await recorder.stop();
       setRecorder(null);
-      const transcribed = await transcribe(blob);
+      // Uploading the recording is best-effort and never blocks assessment —
+      // if it fails (rate limit, size, offline), scoring still works exactly
+      // as before, just without a saved "Speaking Attempt" media asset.
+      const [transcribed, mediaAsset] = await Promise.all([
+        transcribe(blob),
+        uploadMedia(blob, { filename: "pronuncia.webm" }).catch(() => null),
+      ]);
       setStage("assessing");
       const score = await apiFetch<PronScore>("/v1/pronunciation/assess", {
         method: "POST",
-        body: JSON.stringify({ word, transcribed, ipa, lessonId }),
+        body: JSON.stringify({
+          word,
+          transcribed,
+          ipa,
+          lessonId,
+          mediaAssetId: mediaAsset?.id ?? null,
+        }),
       });
       setResult({
         ...score,
@@ -257,7 +255,10 @@ function PracticeDialog({
     } catch (e) {
       // Consolidates what used to be a bespoke 402 branch here — any
       // PAYMENT_REQUIRED error now gets the "Ver planos" CTA centrally.
-      notify.fromError(e, { dedupeKey: "word-card:assess", onUpgrade: () => navigate({ to: "/pricing" }) });
+      notify.fromError(e, {
+        dedupeKey: "word-card:assess",
+        onUpgrade: () => navigate({ to: "/pricing" }),
+      });
     } finally {
       setStage(null);
     }
@@ -284,7 +285,11 @@ function PracticeDialog({
             <Button size="sm" variant="outline" onClick={() => speak(word, { accent: "uk" })}>
               <Volume2 className="w-4 h-4 mr-1" /> UK
             </Button>
-            <Button size="sm" variant="outline" onClick={() => speak(word, { accent: "us", speed: 0.65 })}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => speak(word, { accent: "us", speed: 0.65 })}
+            >
               <Gauge className="w-4 h-4 mr-1" /> Slow
             </Button>
           </div>
@@ -303,7 +308,11 @@ function PracticeDialog({
 
           {stage && (
             <StagedLoader
-              stages={locale === "pt" ? ["A transcrever…", "A analisar pronúncia…"] : ["Transcribing…", "Analyzing pronunciation…"]}
+              stages={
+                locale === "pt"
+                  ? ["A transcrever…", "A analisar pronúncia…"]
+                  : ["Transcribing…", "Analyzing pronunciation…"]
+              }
               currentStage={stage === "transcribing" ? 0 : 1}
               status="running"
             />
