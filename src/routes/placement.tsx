@@ -111,8 +111,13 @@ function DiagnosticPage() {
   useEffect(() => {
     if (!user) return;
     void (async () => {
-      const data = await apiFetch<Report | null>("/v1/me/diagnostic-result");
-      if (data) setReport(data);
+      try {
+        const data = await apiFetch<Report | null>("/v1/me/diagnostic-result");
+        if (data) setReport(data);
+      } catch {
+        // Best-effort: just means the "Ver último relatório" button won't
+        // appear. Not worth surfacing a toast for a background prefetch.
+      }
     })();
   }, [user]);
 

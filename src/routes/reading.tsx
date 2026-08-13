@@ -152,6 +152,17 @@ function ReadingPage() {
 
   const vocabWords = useMemo(() => passage.vocab.map((v) => v.word.split(" ")[0]), [passage]);
 
+  // Switching passages must clear quiz/report state — it's keyed by question
+  // index, not passage, so leftover answers/report would otherwise appear to
+  // belong to the newly selected passage.
+  const selectPassage = (i: number) => {
+    setIdx(i);
+    setQuizAnswers({});
+    setQuizChecked(false);
+    setReport(null);
+    setTranscript("");
+  };
+
   const handlePlay = async () => {
     try {
       setPlaying(true);
@@ -303,6 +314,21 @@ function ReadingPage() {
                   <div className="flex items-center gap-2 px-1">
                     <BookOpen className="w-5 h-5 text-[var(--primary)]" />
                     <h2 className="font-display text-lg font-bold text-[var(--ink)]">Leitura</h2>
+                    <div className="ml-auto flex gap-1.5">
+                      {PASSAGES.map((p, i) => (
+                        <button
+                          key={p.key}
+                          onClick={() => selectPassage(i)}
+                          className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${
+                            idx === i
+                              ? "bg-[var(--primary)] text-white"
+                              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                          }`}
+                        >
+                          {p.level}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-100">
                     <h3 className="font-display text-xl font-bold mb-4 text-[var(--ink)]">{passage.title.pt}</h3>

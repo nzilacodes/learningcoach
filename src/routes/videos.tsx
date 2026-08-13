@@ -51,6 +51,24 @@ type Recent = {
 
 const FILTERS = ["All Videos", "Grammar", "Business English", "Listening", "Pronunciation"];
 
+// The video catalog (lib/age-tracks.ts) has no category/topic field to filter
+// on, so category matching is approximated from the title/channel text —
+// some categories may come up empty for a given age group whose content
+// doesn't naturally fit these labels (e.g. kids' songs vs. "Business English").
+const FILTER_KEYWORDS: Record<string, string[]> = {
+  Grammar: ["grammar", "gramática", "tense", "verb", "conjugat", "sentence", "article", "preposition"],
+  "Business English": ["business", "interview", "meeting", "email", "negotiat", "career", "professional", "office", "work"],
+  Listening: ["listening", "podcast", "news", "song", "music", "story", "stories"],
+  Pronunciation: ["pronunciation", "pronúncia", "accent", "phonics", "sound", "speak"],
+};
+
+function matchesFilter(video: { title: string; channel: string }, filter: string): boolean {
+  if (filter === "All Videos") return true;
+  const keywords = FILTER_KEYWORDS[filter] ?? [];
+  const haystack = `${video.title} ${video.channel}`.toLowerCase();
+  return keywords.some((k) => haystack.includes(k));
+}
+
 function VideosPage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -59,6 +77,7 @@ function VideosPage() {
   const { locale } = useLocale();
   const notify = useNotification();
   const [activeFilter, setActiveFilter] = useState("All Videos");
+  const [searchQuery, setSearchQuery] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
@@ -76,6 +95,14 @@ function VideosPage() {
   const featuredRec = recs[0];
   const featuredId = featuredRec ? extractYouTubeId(featuredRec.url) : null;
   const catalog = useMemo(() => videoPoolForAge(group, locale), [group, locale]);
+  const filteredCatalog = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return catalog.filter((video) => {
+      const matchesSearch =
+        !q || video.title.toLowerCase().includes(q) || video.channel.toLowerCase().includes(q);
+      return matchesSearch && matchesFilter(video, activeFilter);
+    });
+  }, [catalog, searchQuery, activeFilter]);
   const weekHours = ((week?.seconds ?? 0) / 3600).toFixed(1);
   const watchedCount = recent?.filter((r) => r.completed).length ?? 0;
 
@@ -94,6 +121,8 @@ function VideosPage() {
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-(--violet) transition-colors" />
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={
                   locale === "pt"
                     ? "Pesquisar aulas, tópicos ou gramática..."
@@ -324,8 +353,15 @@ function VideosPage() {
           )}
 
           {/* Video Grid */}
+          {filteredCatalog.length === 0 && (
+            <p className="text-sm text-gray-400 font-medium">
+              {locale === "pt"
+                ? "Nenhum vídeo encontrado para esta pesquisa/categoria."
+                : "No videos found for this search/category."}
+            </p>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-            {catalog.map((video) => {
+            {filteredCatalog.map((video) => {
               const search = { title: video.title, channel: video.channel, level: video.level };
               return (
                 <div key={video.videoId} className="group space-y-3 video-card relative">
@@ -441,15 +477,9 @@ function VideosPage() {
               © {new Date().getFullYear()} Learning Coach Platform
             </span>
             <div className="flex gap-8 text-sm font-bold text-gray-400">
-              <a href="#" className="hover:text-black transition-colors">
-                Privacy
-              </a>
-              <a href="#" className="hover:text-black transition-colors">
-                Terms
-              </a>
-              <a href="#" className="hover:text-black transition-colors">
-                Support
-              </a>
+              <span>Privacy</span>
+              <span>Terms</span>
+              <span>Support</span>
             </div>
           </footer>
         </div>
