@@ -109,7 +109,16 @@ async function fetchOrNetworkError(input: string, init: RequestInit): Promise<Re
  * HttpOnly cookies (set by the backend), so there's no token to attach here —
  * just credentials + a CSRF header on mutating requests. */
 export async function apiFetch<T>(path: string, init: RequestInit = {}, _retried = false): Promise<T> {
-  const headers = { "Content-Type": "application/json", ...csrfHeaders(init.method), ...(init.headers ?? {}) };
+  // Only claim a JSON content-type when there's actually a body to parse —
+  // Fastify's JSON body parser throws FST_ERR_CTP_EMPTY_JSON_BODY on a
+  // request with Content-Type: application/json and a zero-byte body (e.g.
+  // every bodyless POST like /lessons/:id/complete or /auth/logout), which
+  // isn't an AppError and so surfaced to users as a generic 500.
+  const headers = {
+    ...(init.body !== undefined ? { "Content-Type": "application/json" } : {}),
+    ...csrfHeaders(init.method),
+    ...(init.headers ?? {}),
+  };
   const res = await fetchOrNetworkError(`${API_BASE_URL}${path}`, { ...init, credentials: "include", headers });
 
   if (res.status === 401 && !_retried && !path.startsWith("/v1/auth/")) {
