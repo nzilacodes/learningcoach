@@ -1,5 +1,6 @@
 import "./lib/error-capture";
 
+import * as Sentry from "@sentry/tanstackstart-react";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 
@@ -28,7 +29,9 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   const body = await response.clone().text();
   if (!isH3SwallowedErrorBody(body)) return response;
 
-  console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
+  const error = consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`);
+  console.error(error);
+  Sentry.captureException(error);
   return new Response(renderErrorPage(), {
     status: 500,
     headers: { "content-type": "text/html; charset=utf-8" },
@@ -44,7 +47,7 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
-export default {
+const serverEntry: ServerEntry = {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
@@ -52,6 +55,7 @@ export default {
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
       console.error(error);
+      Sentry.captureException(error);
       return new Response(renderErrorPage(), {
         status: 500,
         headers: { "content-type": "text/html; charset=utf-8" },
@@ -59,3 +63,13 @@ export default {
     }
   },
 };
+
+// wrapFetchWithSentry mutates `.fetch` in place (via Proxy) and forwards every
+// argument through regardless of its own narrower (request, opts?) type — the
+// arity mismatch against this file's (request, env, ctx) signature (a holdover
+// from Lovable's default cloudflare-module nitro preset; this project overrides
+// to node-server, where env/ctx go unused) is a static-typing-only concern, not
+// a runtime one, hence the cast.
+Sentry.wrapFetchWithSentry(serverEntry as unknown as { fetch: (request: Request, opts?: unknown) => Promise<Response> | Response });
+
+export default serverEntry;

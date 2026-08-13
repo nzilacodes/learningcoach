@@ -5,6 +5,7 @@
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { sentryTanstackStart } from "@sentry/tanstackstart-react/vite";
 
 export default defineConfig({
   // The application is self-hosted on the LearningCoach VPS. Nitro's default
@@ -15,5 +16,11 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
+    // Redirect the client entry to src/client.tsx (loads instrument.client.ts before hydrating).
+    client: { entry: "client" },
   },
+  // org/project/authToken read from SENTRY_ORG/SENTRY_PROJECT/SENTRY_AUTH_TOKEN
+  // env vars (set in CI, see .github/workflows/deploy.yml) — uploads source
+  // maps automatically on `npm run build`; no-ops locally when they're unset.
+  plugins: [sentryTanstackStart()],
 });
