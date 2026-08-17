@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Volume2, Mic, Check, X, Trophy, Loader2, CheckCircle2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -158,6 +158,15 @@ function SpeakingPractice({
   const [transcript, setTranscript] = useState("");
   const [score, setScore] = useState<number | null>(null);
   const recorderRef = useRef<Recorder | null>(null);
+
+  // Without this, leaving the lesson mid-recording leaves the getUserMedia
+  // stream open and the mic indicator lit — same leak already fixed once in
+  // components/games/game-play-modal.tsx.
+  useEffect(() => {
+    return () => {
+      recorderRef.current?.stop().catch(() => {});
+    };
+  }, []);
 
   const handleMic = async () => {
     if (processing) return;

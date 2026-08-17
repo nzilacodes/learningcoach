@@ -24,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { awardActivity } from "@/lib/gamification";
 import { apiFetch, apiFetchFormData } from "@/lib/api/client";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { normalizeApiError, type NormalizedError } from "@/lib/errors/normalize-api-error";
@@ -160,7 +159,11 @@ function DiagnosticPage() {
         }),
       });
 
-      awardActivity("diagnostic_complete", { silent: true }).catch(() => {});
+      // XP is now awarded server-side, inside POST /v1/assessments/diagnostic
+      // itself, right after grading — see backend modules/diagnostic/service.ts.
+      // Self-reporting "diagnostic_complete" from here has been removed since
+      // the backend no longer accepts it via POST /v1/xp/events (a client
+      // could otherwise farm the reward without ever taking the test).
       setReport(data);
       setSection("report");
       notify.success(locale === "pt" ? `Nível ${data.cefr_level} identificado!` : `Level ${data.cefr_level} identified!`);
@@ -748,6 +751,16 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
   const [elapsed, setElapsed] = useState(0);
   const recorderRef = useRef<import("@/lib/wav-recorder").WavRecorder | null>(null);
   const timerRef = useRef<number | null>(null);
+
+  // Without this, advancing the wizard (Back/Next) mid-recording leaves the
+  // getUserMedia stream open AND the 250ms elapsed-time interval running
+  // forever, ticking setState on an unmounted component indefinitely.
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      recorderRef.current?.stop().catch(() => {});
+    };
+  }, []);
 
   const start = async () => {
     try {

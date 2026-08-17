@@ -1,6 +1,9 @@
 import { apiFetch } from "@/lib/api/client";
 import { toast } from "sonner";
 
+// "diagnostic_complete" is deliberately absent — the backend now awards it
+// itself from a verified-graded result (see POST /v1/assessments/diagnostic)
+// and no longer accepts it via this client-facing endpoint.
 export type ActivitySource =
   | "watch_video"
   | "lesson_complete"
@@ -8,8 +11,7 @@ export type ActivitySource =
   | "reading"
   | "speaking"
   | "listening"
-  | "daily_study"
-  | "diagnostic_complete";
+  | "daily_study";
 
 export type AwardResult = {
   xp: number;

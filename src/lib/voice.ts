@@ -2,6 +2,23 @@
 import { apiFetch, apiFetchFormData } from "@/lib/api/client";
 
 let currentAudio: HTMLAudioElement | null = null;
+let currentUrl: string | null = null;
+let currentAbort: AbortController | null = null;
+
+// Stops whatever's currently playing/in-flight and releases its blob URL.
+// Shared by a fresh speak() call and by anything that just wants silence.
+function stopCurrentPlayback() {
+  currentAbort?.abort();
+  currentAbort = null;
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+  if (currentUrl) {
+    URL.revokeObjectURL(currentUrl);
+    currentUrl = null;
+  }
+}
 
 export type SpeakOpts = {
   voice?: string;
@@ -21,21 +38,32 @@ export async function speak(text: string, opts: SpeakOpts | string = {}): Promis
       : o.accent === "us"
         ? "Speak with a clear, natural General American English accent."
         : undefined);
+  stopCurrentPlayback();
+  const abort = new AbortController();
+  currentAbort = abort;
   try {
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio = null;
-    }
     const blob = await apiFetch<Blob>("/v1/audio/speech", {
       method: "POST",
       body: JSON.stringify({ text, voice, instructions, speed: o.speed }),
+      signal: abort.signal,
     });
+    // A newer speak() call superseded this one while the request was in
+    // flight (e.g. rapid US/UK/slow button taps on word-card.tsx) — let that
+    // one own playback instead of two accents overlapping/racing.
+    if (abort.signal.aborted) return;
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     currentAudio = audio;
-    audio.onended = () => URL.revokeObjectURL(url);
+    currentUrl = url;
+    currentAbort = null;
+    audio.onended = () => {
+      URL.revokeObjectURL(url);
+      if (currentUrl === url) currentUrl = null;
+      if (currentAudio === audio) currentAudio = null;
+    };
     await audio.play();
   } catch (e) {
+    if (abort.signal.aborted) return;
     console.error("speak failed", e);
     throw e;
   }

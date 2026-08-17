@@ -181,6 +181,15 @@ function ReadingPage() {
   const recorderRef = useRef<Recorder | null>(null);
   const startRef = useRef<number>(0);
 
+  // Without this, navigating away mid-recording (e.g. switching passages)
+  // leaves the getUserMedia stream open and the mic indicator lit — same
+  // leak already fixed once in components/games/game-play-modal.tsx.
+  useEffect(() => {
+    return () => {
+      recorderRef.current?.stop().catch(() => {});
+    };
+  }, []);
+
   const [history, setHistory] = useState<Array<Record<string, number | string | null>>>([]);
 
   useEffect(() => {
@@ -258,7 +267,9 @@ function ReadingPage() {
       });
       setReport(r);
       setAttempts((n) => n + 1);
-      awardActivity("reading", { meta: { overall: r.overall ?? 0 } }).catch(() => {});
+      // awardActivity() already catches its own failures internally (returns
+      // null rather than rejecting) — no .catch() needed here.
+      awardActivity("reading", { meta: { overall: r.overall ?? 0 } });
     } catch (e) {
       notify.fromError(e, { dedupeKey: "reading:assess" });
     } finally {

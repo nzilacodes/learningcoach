@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -67,6 +67,7 @@ function useCoachMessages(conversationId: string | null) {
 function AICoachPage() {
   const { locale } = useLocale();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const notify = useNotification();
   const [input, setInput] = useState("");
@@ -83,12 +84,23 @@ function AICoachPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
-  const { data: conversations = [] } = useConversations(user?.id);
+  const { data: conversations = [], isLoading: conversationsLoading } = useConversations(user?.id);
   const { data: transcript = [], isLoading: transcriptLoading } = useCoachMessages(activeId);
 
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [transcript.length, sending]);
+
+  // Without this, navigating away (or switching conversations) while
+  // recording leaves the getUserMedia stream open and the mic indicator lit
+  // — same leak already fixed once in components/games/game-play-modal.tsx.
+  // Keyed on `recorder` (not []) so the cleanup closure always sees the
+  // current instance instead of the `null` captured on first render.
+  useEffect(() => {
+    return () => {
+      recorder?.stop().catch(() => {});
+    };
+  }, [recorder]);
 
   const send = async () => {
     const content = input.trim();
@@ -127,7 +139,7 @@ function AICoachPage() {
       }
     } catch (e) {
       setInput(content);
-      notify.fromError(e, { dedupeKey: "ai-coach:send", onRetry: () => send() });
+      notify.fromError(e, { dedupeKey: "ai-coach:send", onRetry: () => send(), onUpgrade: () => navigate({ to: "/pricing" }) });
     } finally {
       setSending(false);
     }
@@ -155,7 +167,7 @@ function AICoachPage() {
         });
       }
     } catch (e) {
-      notify.fromError(e, { dedupeKey: "ai-coach:retry" });
+      notify.fromError(e, { dedupeKey: "ai-coach:retry", onUpgrade: () => navigate({ to: "/pricing" }) });
     } finally {
       setRetryingId(null);
     }
@@ -439,7 +451,12 @@ function AICoachPage() {
                     </button>
                   );
                 })}
-                {conversations.length === 0 && (
+                {conversationsLoading && conversations.length === 0 && (
+                  <div className="flex justify-center py-6">
+                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                  </div>
+                )}
+                {!conversationsLoading && conversations.length === 0 && (
                   <p className="text-center text-xs text-gray-400 py-6">
                     {locale === "pt" ? "Nenhuma conversa ainda." : "No conversations yet."}
                   </p>

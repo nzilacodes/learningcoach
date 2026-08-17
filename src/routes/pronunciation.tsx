@@ -18,6 +18,7 @@ import { apiFetch } from "@/lib/api/client";
 import { useLocale } from "@/lib/i18n";
 import { normalizeApiError } from "@/lib/errors/normalize-api-error";
 import { InlineStatusFromError } from "@/components/feedback/inline-status";
+import { useNotification } from "@/lib/notifications/notification-provider";
 
 function PronunciationRouteError({ error }: { error: Error }) {
   const { locale } = useLocale();
@@ -60,6 +61,7 @@ type Row = {
 };
 
 function PronunciationPage() {
+  const notify = useNotification();
   const [word, setWord] = useState("hello");
   const [current, setCurrent] = useState("hello");
   const [history, setHistory] = useState<Row[]>([]);
@@ -67,7 +69,10 @@ function PronunciationPage() {
   useEffect(() => {
     apiFetch<Row[]>("/v1/me/pronunciation-history")
       .then((r) => setHistory(r ?? []))
-      .catch(() => setHistory([]));
+      // A fetch failure here used to render identically to "no history yet"
+      // (an empty array either way), so a network hiccup looked like lost
+      // progress with no indication anything went wrong.
+      .catch((e) => notify.fromError(e, { dedupeKey: "pronunciation:history" }));
   }, []);
 
   const chartData = useMemo(
