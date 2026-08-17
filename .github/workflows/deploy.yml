@@ -28,6 +28,13 @@ jobs:
       - run: npm run build
         env:
           VITE_API_URL: https://back.learningcoach.co.ao
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT_FRONTEND }}
+
+      - name: Copy Sentry server instrumentation into build output
+        run: cp instrument.server.mjs .output/server/instrument.server.mjs
 
       - name: Package production output
         run: tar -C .output -czf learningcoach-${{ github.sha }}.tar.gz .
