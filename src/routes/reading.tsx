@@ -13,6 +13,7 @@ import {
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
+import { describeGetUserMediaError } from "@/lib/media-devices";
 import { uploadMedia } from "@/lib/media";
 import { apiFetch } from "@/lib/api/client";
 import { awardActivity } from "@/lib/gamification";
@@ -233,12 +234,9 @@ function ReadingPage() {
         setRecording(true);
         setReport(null);
         setTranscript("");
-      } catch {
-        notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
-          description:
-            locale === "pt" ? "Permite o acesso ao microfone." : "Please allow microphone access.",
-          dedupeKey: "reading:mic-permission",
-        });
+      } catch (e) {
+        const { title, description } = describeGetUserMediaError(e, locale);
+        notify.error(title, { description, dedupeKey: "reading:mic-permission" });
       }
       return;
     }

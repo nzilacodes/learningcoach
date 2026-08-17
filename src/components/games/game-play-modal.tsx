@@ -12,6 +12,7 @@ import {
   feedbackFor,
   type Recorder,
 } from "@/lib/voice";
+import { describeGetUserMediaError } from "@/lib/media-devices";
 import type { AgeTrack } from "@/lib/age-tracks";
 import { useNotification } from "@/lib/notifications/notification-provider";
 
@@ -335,11 +336,9 @@ function SpeakingGame({
         setRecording(true);
         setTranscript("");
         setScore(null);
-      } catch {
-        notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
-          description: locale === "pt" ? "Permita o acesso ao microfone." : "Please allow microphone access.",
-          dedupeKey: "game:mic-permission",
-        });
+      } catch (e) {
+        const { title, description } = describeGetUserMediaError(e, locale);
+        notify.error(title, { description, dedupeKey: "game:mic-permission" });
       }
       return;
     }

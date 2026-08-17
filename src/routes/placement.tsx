@@ -29,6 +29,7 @@ import { useNotification } from "@/lib/notifications/notification-provider";
 import { normalizeApiError, type NormalizedError } from "@/lib/errors/normalize-api-error";
 import { InlineStatusFromError } from "@/components/feedback/inline-status";
 import { StagedLoader } from "@/components/feedback/staged-loader";
+import { describeGetUserMediaError } from "@/lib/media-devices";
 import {
   GRAMMAR,
   VOCABULARY,
@@ -773,13 +774,11 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
         setElapsed(Math.floor((Date.now() - startedAt) / 1000));
       }, 250);
       setState("recording");
-    } catch {
-      // A getUserMedia/permission failure, not a backend error — canned copy,
-      // not the raw DOMException message.
-      notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
-        description: locale === "pt" ? "Verifique as permissões do navegador." : "Check your browser permissions.",
-        dedupeKey: "placement:mic-permission",
-      });
+    } catch (e) {
+      // A getUserMedia/permission failure, not a backend error — describe the
+      // actual DOMException reason instead of one generic message.
+      const { title, description } = describeGetUserMediaError(e, locale);
+      notify.error(title, { description, dedupeKey: "placement:mic-permission" });
     }
   };
 

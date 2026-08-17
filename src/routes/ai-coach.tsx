@@ -18,6 +18,7 @@ import { apiFetch } from "@/lib/api/client";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { HeaderActionLinks, MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
 import { startRecording, transcribe, type Recorder } from "@/lib/voice";
+import { describeGetUserMediaError } from "@/lib/media-devices";
 import { SITE_URL } from "@/lib/site-url";
 import { useNotification } from "@/lib/notifications/notification-provider";
 
@@ -190,11 +191,9 @@ function AICoachPage() {
     }
     try {
       setRecorder(await startRecording());
-    } catch {
-      notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
-        description: locale === "pt" ? "Permita acesso ao microfone nas definições do navegador." : "Please allow microphone access in your browser settings.",
-        dedupeKey: "ai-coach:mic-permission",
-      });
+    } catch (e) {
+      const { title, description } = describeGetUserMediaError(e, locale);
+      notify.error(title, { description, dedupeKey: "ai-coach:mic-permission" });
     }
   };
 

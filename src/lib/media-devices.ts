@@ -70,3 +70,47 @@ export function classifyGetUserMediaError(err: unknown): MediaDeviceErrorReason 
       return "unknown";
   }
 }
+
+/** Shared copy for every mic-only recording entry point (reading, lessons,
+ * placement, AI Coach, community, word-card, games) — previously each of
+ * these seven call sites showed the same generic "allow mic access" message
+ * regardless of the real cause, even though Media Studio (via
+ * classifyGetUserMediaError above) already knew how to tell them apart. */
+export function describeGetUserMediaError(
+  err: unknown,
+  locale: "pt" | "en",
+): { title: string; description: string } {
+  const reason = classifyGetUserMediaError(err);
+  const copy: Record<MediaDeviceErrorReason, { title: [string, string]; description: [string, string] }> = {
+    denied: {
+      title: ["Permissão de microfone bloqueada", "Microphone permission blocked"],
+      description: [
+        "Autorize o acesso ao microfone nas permissões do site, no navegador.",
+        "Allow microphone access for this site in your browser's permissions.",
+      ],
+    },
+    "not-found": {
+      title: ["Nenhum microfone encontrado", "No microphone found"],
+      description: [
+        "Ligue um microfone e verifique se está ativo nas definições do sistema.",
+        "Connect a microphone and check it's enabled in your system settings.",
+      ],
+    },
+    "in-use": {
+      title: ["Microfone em uso por outra aplicação", "Microphone in use by another app"],
+      description: [
+        "Feche outras aplicações que possam estar a usar o microfone e tente novamente.",
+        "Close other apps that might be using the microphone, then try again.",
+      ],
+    },
+    unknown: {
+      title: ["Microfone indisponível", "Microphone unavailable"],
+      description: [
+        "Verifique as permissões do microfone nas definições do navegador.",
+        "Check your browser's microphone permissions.",
+      ],
+    },
+  };
+  const i = locale === "pt" ? 0 : 1;
+  return { title: copy[reason].title[i], description: copy[reason].description[i] };
+}

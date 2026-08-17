@@ -18,6 +18,7 @@ import {
   feedbackFor,
   type Recorder,
 } from "@/lib/voice";
+import { describeGetUserMediaError } from "@/lib/media-devices";
 
 export const Route = createFileRoute("/lesson/$lessonId")({
   component: LessonPage,
@@ -176,11 +177,9 @@ function SpeakingPractice({
         setRecording(true);
         setTranscript("");
         setScore(null);
-      } catch {
-        notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
-          description: locale === "pt" ? "Permita o acesso ao microfone." : "Please allow microphone access.",
-          dedupeKey: "lesson:mic-permission",
-        });
+      } catch (e) {
+        const { title, description } = describeGetUserMediaError(e, locale);
+        notify.error(title, { description, dedupeKey: "lesson:mic-permission" });
       }
       return;
     }

@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
+import { describeGetUserMediaError } from "@/lib/media-devices";
 import { uploadMedia } from "@/lib/media";
 import { apiFetch } from "@/lib/api/client";
 import { useLocale } from "@/lib/i18n";
@@ -212,14 +213,9 @@ function PracticeDialog({
       const r = await startRecording();
       setRecorder(r);
       setResult(null);
-    } catch {
-      notify.error(locale === "pt" ? "Microfone indisponível" : "Microphone unavailable", {
-        description:
-          locale === "pt"
-            ? "Permita acesso ao microfone nas definições do navegador."
-            : "Please allow microphone access in your browser settings.",
-        dedupeKey: "word-card:mic-permission",
-      });
+    } catch (e) {
+      const { title, description } = describeGetUserMediaError(e, locale);
+      notify.error(title, { description, dedupeKey: "word-card:mic-permission" });
     }
   };
 
