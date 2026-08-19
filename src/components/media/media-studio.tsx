@@ -42,6 +42,7 @@ import {
   uploadMedia,
   useUpdateMedia,
   formatBytes,
+  formatDuration,
   type MediaAsset,
   type MediaVisibility,
 } from "@/lib/media";
@@ -60,15 +61,6 @@ type ResultFile = {
 };
 
 const NONE = "__none__";
-
-function formatElapsed(ms: number): string {
-  const total = Math.floor(ms / 1000);
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = total % 60;
-  const two = (n: number) => String(n).padStart(2, "0");
-  return `${two(h)}:${two(m)}:${two(s)}`;
-}
 
 export function MediaStudio({
   open,
@@ -549,7 +541,7 @@ function RecordingPanel(props: {
               className={`w-2 h-2 rounded-full bg-red-500 ${props.recordPhase === "recording" ? "animate-pulse" : ""}`}
             />
             {props.recordPhase === "recording" ? "GRAVANDO" : "PAUSADO"} ·{" "}
-            {formatElapsed(props.elapsedMs)}
+            {formatDuration(props.elapsedMs / 1000, { alwaysShowHours: true })}
           </div>
         )}
       </div>

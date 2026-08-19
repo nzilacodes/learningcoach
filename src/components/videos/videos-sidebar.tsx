@@ -134,17 +134,20 @@ export function VideosSidebar() {
         {!collapsed ? (
           <button
             onClick={() => setCollapsed(true)}
-            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-black hover:bg-gray-50 rounded-lg transition-all"
+            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-black hover:bg-gray-50 rounded-lg transition-all"
             title="Recolher Menu"
+            aria-label="Recolher Menu"
           >
             <PanelLeftClose className="w-5 h-5" />
           </button>
         ) : (
           <button
             onClick={() => setCollapsed(false)}
-            className="absolute -right-3 top-7 w-6 h-6 flex items-center justify-center bg-white border border-gray-200 rounded-full text-gray-400 hover:text-black hover:bg-gray-50 shadow-sm transition-all z-30"
+            className="absolute -right-3 top-6 w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-full text-gray-400 hover:text-black hover:bg-gray-50 shadow-sm transition-all z-30"
+            title="Expandir menu"
+            aria-label="Expandir menu"
           >
-            <PanelLeftOpen className="w-3 h-3" />
+            <PanelLeftOpen className="w-3.5 h-3.5" />
           </button>
         )}
       </div>

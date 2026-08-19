@@ -10,6 +10,7 @@ import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { useAgeGroup } from "@/lib/use-age-group";
 import { buildEmbedUrl, youtubeThumb } from "@/lib/youtube";
+import { formatDuration } from "@/lib/media";
 import {
   Loader2,
   PlayCircle,
@@ -239,7 +240,7 @@ function WatchPage() {
           {resumeAt > 5 && (
             <span className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary inline-flex items-center gap-1">
               <PlayCircle className="w-3.5 h-3.5" />
-              Retomado em {formatTime(resumeAt)}
+              Retomado em {formatDuration(resumeAt, { padMinutes: false })}
             </span>
           )}
           <Button size="sm" variant="outline" onClick={markCompleted}>
@@ -449,10 +450,4 @@ function QuizBlock({ quiz }: { quiz: StudyPack["quiz"] }) {
       </div>
     </Card>
   );
-}
-
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
 }

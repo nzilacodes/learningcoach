@@ -54,16 +54,29 @@ export function formatBytes(bytes: number | string | null | undefined): string {
   return `${(n / 1024 ** i).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
 }
 
-export function formatDuration(seconds: number | string | null | undefined): string {
+/**
+ * The one time-formatting function for the app — was independently
+ * reimplemented as formatTime() in watch.$videoId.tsx and formatElapsed() in
+ * media-studio.tsx, both now just call this with the option that reproduces
+ * their exact prior output (see call sites).
+ */
+export function formatDuration(
+  seconds: number | string | null | undefined,
+  opts: { alwaysShowHours?: boolean; padMinutes?: boolean } = {},
+): string {
   const n = Number(seconds ?? 0);
   if (!Number.isFinite(n) || n <= 0) return "--:--";
   const total = Math.round(n);
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
-  const mm = String(m).padStart(2, "0");
   const ss = String(s).padStart(2, "0");
-  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+  if (opts.alwaysShowHours || h > 0) {
+    const mm = String(m).padStart(2, "0");
+    return `${String(h).padStart(2, "0")}:${mm}:${ss}`;
+  }
+  const mm = (opts.padMinutes ?? true) ? String(m).padStart(2, "0") : String(m);
+  return `${mm}:${ss}`;
 }
 
 function readCookie(name: string): string | undefined {
