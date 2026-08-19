@@ -10,6 +10,10 @@ export type NormalizedError = {
   action: ErrorAction;
   severity: ErrorSeverity;
   requestId?: string;
+  /** Field paths (e.g. "email") the backend rejected, for forms that want to
+   * highlight the specific input — never the backend's raw per-field message,
+   * which stays out of the UI per this file's one-function rule below. */
+  fieldPaths?: string[];
 };
 
 /**
@@ -24,15 +28,27 @@ export function normalizeApiError(error: unknown, locale: Locale = "pt"): Normal
 
   const code: ErrorCode = error instanceof ApiError ? error.code : "UNKNOWN_ERROR";
   const entry = ErrorCodeMap[code] ?? ErrorCodeMap.UNKNOWN_ERROR;
+  const fieldPaths =
+    error instanceof ApiError && error.fields?.length
+      ? [...new Set(error.fields.map((f) => f.path))]
+      : undefined;
+
+  // Field paths are safe identifiers (e.g. "email"), not free text, so
+  // naming them here doesn't reintroduce raw backend copy into the UI —
+  // only entry.description (pre-approved, localized) is ever shown otherwise.
+  const description = fieldPaths?.length
+    ? `${entry.description[locale]} (${fieldPaths.join(", ")})`
+    : entry.description[locale];
 
   return {
     code,
     title: entry.title[locale],
-    description: entry.description[locale],
+    description,
     retryable: error instanceof ApiError ? error.retryable : entry.retryable,
     action: entry.action,
     severity: entry.severity,
     requestId: error instanceof ApiError ? error.requestId : undefined,
+    fieldPaths,
   };
 }
 

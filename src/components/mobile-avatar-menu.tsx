@@ -92,7 +92,12 @@ export function MobileAvatarMenu() {
           </div>
         </>
       )}
-      <button onClick={() => setOpen(!open)} className="relative inline-flex">
+      <button
+        onClick={() => setOpen(!open)}
+        aria-label={locale === "pt" ? "Menu de conta" : "Account menu"}
+        aria-expanded={open}
+        className="relative inline-flex"
+      >
         <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
           <User className="w-4 h-4 text-gray-600" />
         </div>

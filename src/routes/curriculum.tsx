@@ -126,7 +126,7 @@ function CurriculumPage() {
   const { user } = useAuth();
   const { data: unlocked } = useMaxUnlockedLevel();
   const { data: minScore = 70 } = useMinExamScore();
-  const { data, isLoading } = useCurriculum();
+  const { data, isLoading, isError, refetch } = useCurriculum();
   const { data: progressMap } = useProgress();
 
   const initialLevel: CefrLevel = (unlocked as CefrLevel) ?? "A1";
@@ -463,6 +463,20 @@ function CurriculumPage() {
                 <span className="text-sm">
                   {locale === "pt" ? "Carregando currículo…" : "Loading curriculum…"}
                 </span>
+              </div>
+            ) : isError ? (
+              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 py-16 text-center">
+                <p className="text-sm text-gray-500">
+                  {locale === "pt"
+                    ? "Não foi possível carregar o currículo."
+                    : "Couldn't load the curriculum."}
+                </p>
+                <button
+                  onClick={() => refetch()}
+                  className="mt-4 inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                >
+                  {locale === "pt" ? "Tentar novamente" : "Try again"}
+                </button>
               </div>
             ) : activeUnits.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 py-16 text-center">

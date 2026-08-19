@@ -198,7 +198,17 @@ function ReadingPage() {
       `/v1/me/reading-history?passageKey=${encodeURIComponent(passage.key)}`,
     )
       .then((r) => setHistory(r))
-      .catch(() => setHistory([]));
+      // A fetch failure here used to render identically to "no history yet"
+      // (an empty array either way), so a network hiccup looked like lost
+      // progress with no indication anything went wrong — see the same fix
+      // in pronunciation.tsx.
+      .catch((e) => {
+        setHistory([]);
+        notify.fromError(e, { dedupeKey: "reading:history" });
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- notify's identity
+    // isn't stable across renders (NotificationProvider doesn't memoize its
+    // context value); including it would refetch history far more than intended.
   }, [passage.key, attempts]);
 
   const vocabWords = useMemo(() => passage.vocab.map((v) => v.word.split(" ")[0]), [passage]);

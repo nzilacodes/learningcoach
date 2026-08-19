@@ -176,6 +176,8 @@ export function AdultsDashboard(data: DashboardData) {
               )}
               <button
                 onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
+                aria-label={locale === "pt" ? "Menu de conta" : "Account menu"}
+                aria-expanded={avatarMenuOpen}
                 className="relative inline-flex"
               >
                 <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">

@@ -448,7 +448,7 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
   const notify = useNotification();
   const qc = useQueryClient();
 
-  const { data: lesson, isLoading } = useLesson(lessonId);
+  const { data: lesson, isLoading, isError, refetch } = useLesson(lessonId);
   const { data: curriculum } = useCurriculum();
   const { data: progress = [] } = useLessonProgress();
 
@@ -496,6 +496,23 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
           <span className="text-sm">
             {locale === "pt" ? "Carregando lição…" : "Loading lesson…"}
           </span>
+        </div>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen">
+        <SiteHeader />
+        <div className="mx-auto max-w-2xl px-6 py-20 text-center">
+          <p className="text-destructive">
+            {locale === "pt" ? "Não foi possível carregar a lição." : "Couldn't load the lesson."}
+          </p>
+          <Button onClick={() => refetch()} className="mt-4">
+            {locale === "pt" ? "Tentar novamente" : "Try again"}
+          </Button>
         </div>
         <SiteFooter />
       </div>
