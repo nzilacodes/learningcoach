@@ -1,15 +1,42 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Languages, KeyRound, LogOut, Loader2, CreditCard, ChevronRight } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import { passwordError } from "@/lib/password";
+
+function changePasswordSchema(locale: "pt" | "en") {
+  return z
+    .object({
+      currentPassword: z.string().min(1, locale === "pt" ? "Obrigatório" : "Required"),
+      newPassword: z.string().superRefine((pw, ctx) => {
+        const message = passwordError(pw, locale);
+        if (message) ctx.addIssue({ code: z.ZodIssueCode.custom, message });
+      }),
+      confirmPassword: z.string(),
+    })
+    .refine((v) => v.newPassword === v.confirmPassword, {
+      message: locale === "pt" ? "As palavras-passe não coincidem" : "Passwords don't match",
+      path: ["confirmPassword"],
+    });
+}
+type ChangePasswordValues = z.infer<ReturnType<typeof changePasswordSchema>>;
 
 export const Route = createFileRoute("/settings")({
   component: SettingsPage,
@@ -32,10 +59,11 @@ function SettingsPage() {
     if (!loading && !user) navigate({ to: "/auth" });
   }, [loading, user, navigate]);
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const form = useForm<ChangePasswordValues>({
+    resolver: zodResolver(changePasswordSchema(locale)),
+    defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
+  });
 
   if (loading || !user) {
     return (
@@ -46,21 +74,15 @@ function SettingsPage() {
     );
   }
 
-  const changePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      return notify.warning(
-        locale === "pt" ? "As palavras-passe não coincidem" : "Passwords don't match",
-      );
-    }
-    const pwError = passwordError(newPassword, locale);
-    if (pwError) return notify.warning(pwError);
-
+  const changePassword = form.handleSubmit(async (values) => {
     setSaving(true);
     try {
       await apiFetch("/v1/auth/change-password", {
         method: "POST",
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify({
+          currentPassword: values.currentPassword,
+          newPassword: values.newPassword,
+        }),
       });
       // The backend revokes every refresh token (this session included) when
       // the password changes, so the current session is already dead server-
@@ -74,11 +96,14 @@ function SettingsPage() {
       await signOut();
       navigate({ to: "/auth" });
     } catch (err) {
-      notify.fromError(err, { dedupeKey: "settings:change-password" });
+      const normalized = notify.fromError(err, { dedupeKey: "settings:change-password" });
+      if (normalized.fieldPaths?.includes("currentPassword")) {
+        form.setError("currentPassword", { type: "server", message: normalized.description });
+      }
     } finally {
       setSaving(false);
     }
-  };
+  });
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
@@ -136,56 +161,75 @@ function SettingsPage() {
                 <KeyRound className="h-5 w-5 text-[var(--violet)]" />
                 {locale === "pt" ? "Alterar palavra-passe" : "Change password"}
               </h2>
-              <form onSubmit={changePassword} className="mt-4 space-y-4">
-                <div className="space-y-2">
-                  <Label>{locale === "pt" ? "Palavra-passe atual" : "Current password"}</Label>
-                  <Input
-                    type="password"
-                    required
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
+              <Form {...form}>
+                <form onSubmit={changePassword} className="mt-4 space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="currentPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {locale === "pt" ? "Palavra-passe atual" : "Current password"}
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="password" autoComplete="current-password" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>{locale === "pt" ? "Nova palavra-passe" : "New password"}</Label>
-                  <Input
-                    type="password"
-                    required
-                    minLength={8}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+                  <FormField
+                    control={form.control}
+                    name="newPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {locale === "pt" ? "Nova palavra-passe" : "New password"}
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="password" autoComplete="new-password" {...field} />
+                        </FormControl>
+                        <p className="text-xs text-gray-400">
+                          {locale === "pt"
+                            ? "Mínimo 8 caracteres, com pelo menos uma letra e um número."
+                            : "At least 8 characters, with at least one letter and one number."}
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <p className="text-xs text-gray-400">
-                    {locale === "pt"
-                      ? "Mínimo 8 caracteres, com pelo menos uma letra e um número."
-                      : "At least 8 characters, with at least one letter and one number."}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label>
-                    {locale === "pt" ? "Confirmar nova palavra-passe" : "Confirm new password"}
-                  </Label>
-                  <Input
-                    type="password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {locale === "pt"
+                            ? "Confirmar nova palavra-passe"
+                            : "Confirm new password"}
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="password" autoComplete="new-password" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                <Button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-[var(--violet)] text-white hover:opacity-90"
-                >
-                  {saving ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : locale === "pt" ? (
-                    "Alterar palavra-passe"
-                  ) : (
-                    "Change password"
-                  )}
-                </Button>
-              </form>
+                  <Button
+                    type="submit"
+                    disabled={saving}
+                    className="bg-[var(--violet)] text-white hover:opacity-90"
+                  >
+                    {saving ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : locale === "pt" ? (
+                      "Alterar palavra-passe"
+                    ) : (
+                      "Change password"
+                    )}
+                  </Button>
+                </form>
+              </Form>
             </section>
 
             {/* Sign out */}
