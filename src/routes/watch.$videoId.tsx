@@ -84,7 +84,8 @@ function WatchPage() {
   const { data: history, isError: historyError } = useQuery({
     queryKey: ["video_history", user?.id, videoId],
     enabled: !!user,
-    queryFn: () => apiFetch<HistoryRow | null>(`/v1/me/video-history/${encodeURIComponent(videoId)}`),
+    queryFn: () =>
+      apiFetch<HistoryRow | null>(`/v1/me/video-history/${encodeURIComponent(videoId)}`),
   });
 
   const resumeAt = history?.position_seconds ?? 0;
@@ -110,7 +111,14 @@ function WatchPage() {
     enabled: !!user,
     staleTime: 60 * 60 * 1000,
     queryFn: () => {
-      const params = new URLSearchParams({ videoUrl, title, channel, level, topic, ageGroup: group });
+      const params = new URLSearchParams({
+        videoUrl,
+        title,
+        channel,
+        level,
+        topic,
+        ageGroup: group,
+      });
       return apiFetch<StudyPack>(`/v1/videos/${encodeURIComponent(videoId)}/study-pack?${params}`);
     },
   });
@@ -250,12 +258,24 @@ function WatchPage() {
         {/* Study pack tabs */}
         <Tabs defaultValue="summary" className="w-full">
           <TabsList className="flex flex-wrap h-auto">
-            <TabsTrigger value="summary"><FileText className="w-4 h-4 mr-1" /> Resumo</TabsTrigger>
-            <TabsTrigger value="transcript"><BookOpen className="w-4 h-4 mr-1" /> Transcrição</TabsTrigger>
-            <TabsTrigger value="quiz"><ListChecks className="w-4 h-4 mr-1" /> Quiz</TabsTrigger>
-            <TabsTrigger value="listening"><Ear className="w-4 h-4 mr-1" /> Listening</TabsTrigger>
-            <TabsTrigger value="vocab"><BookMarked className="w-4 h-4 mr-1" /> Vocabulary</TabsTrigger>
-            <TabsTrigger value="speaking"><Mic className="w-4 h-4 mr-1" /> Speaking</TabsTrigger>
+            <TabsTrigger value="summary">
+              <FileText className="w-4 h-4 mr-1" /> Resumo
+            </TabsTrigger>
+            <TabsTrigger value="transcript">
+              <BookOpen className="w-4 h-4 mr-1" /> Transcrição
+            </TabsTrigger>
+            <TabsTrigger value="quiz">
+              <ListChecks className="w-4 h-4 mr-1" /> Quiz
+            </TabsTrigger>
+            <TabsTrigger value="listening">
+              <Ear className="w-4 h-4 mr-1" /> Listening
+            </TabsTrigger>
+            <TabsTrigger value="vocab">
+              <BookMarked className="w-4 h-4 mr-1" /> Vocabulary
+            </TabsTrigger>
+            <TabsTrigger value="speaking">
+              <Mic className="w-4 h-4 mr-1" /> Speaking
+            </TabsTrigger>
           </TabsList>
 
           <div className="mt-4">
@@ -276,7 +296,8 @@ function WatchPage() {
                 <TabsContent value="transcript">
                   <Card>
                     <p className="text-sm text-muted-foreground mb-3">
-                      Excerto simulado com base no título e tema. As legendas nativas do YouTube estão ativadas no player (botão CC).
+                      Excerto simulado com base no título e tema. As legendas nativas do YouTube
+                      estão ativadas no player (botão CC).
                     </p>
                     <p className="whitespace-pre-line leading-relaxed">{pack.transcript_excerpt}</p>
                   </Card>
@@ -299,9 +320,12 @@ function WatchPage() {
                         {pack.key_vocabulary.map((v) => (
                           <li key={v.word} className="py-3">
                             <div className="font-semibold">
-                              {v.word} <span className="text-muted-foreground text-sm">— {v.pt}</span>
+                              {v.word}{" "}
+                              <span className="text-muted-foreground text-sm">— {v.pt}</span>
                             </div>
-                            <div className="text-sm text-muted-foreground italic">"{v.example}"</div>
+                            <div className="text-sm text-muted-foreground italic">
+                              "{v.example}"
+                            </div>
                           </li>
                         ))}
                       </ul>
@@ -372,7 +396,11 @@ function QuizBlock({ quiz }: { quiz: StudyPack["quiz"] }) {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [checked, setChecked] = useState(false);
   if (!quiz || quiz.length === 0) {
-    return <Card><p className="text-muted-foreground">Sem quiz gerado ainda.</p></Card>;
+    return (
+      <Card>
+        <p className="text-muted-foreground">Sem quiz gerado ainda.</p>
+      </Card>
+    );
   }
   const correct = quiz.reduce((n, q, i) => n + (answers[i] === q.a ? 1 : 0), 0);
   return (
@@ -380,7 +408,9 @@ function QuizBlock({ quiz }: { quiz: StudyPack["quiz"] }) {
       <div className="space-y-5">
         {quiz.map((q, i) => (
           <div key={i}>
-            <div className="font-medium mb-2">{i + 1}. {q.q}</div>
+            <div className="font-medium mb-2">
+              {i + 1}. {q.q}
+            </div>
             <div className="grid gap-2">
               {q.opts.map((opt, j) => {
                 const picked = answers[i] === j;
@@ -412,7 +442,8 @@ function QuizBlock({ quiz }: { quiz: StudyPack["quiz"] }) {
         <Button onClick={() => setChecked(true)}>Verificar</Button>
         {checked && (
           <div className="text-sm">
-            Nota: <strong>{Math.round((correct / quiz.length) * 100)}%</strong> ({correct}/{quiz.length})
+            Nota: <strong>{Math.round((correct / quiz.length) * 100)}%</strong> ({correct}/
+            {quiz.length})
           </div>
         )}
       </div>

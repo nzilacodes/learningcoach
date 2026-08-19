@@ -37,7 +37,13 @@ function renderAction(action?: { label: string; onClick: () => void }) {
  * analysis field, the Placement Test evaluation status). Wraps the existing,
  * previously-unused Alert primitive rather than a bespoke destructive box.
  */
-export function InlineStatus({ title, description, severity = "error", action, className }: InlineStatusProps) {
+export function InlineStatus({
+  title,
+  description,
+  severity = "error",
+  action,
+  className,
+}: InlineStatusProps) {
   const Icon = SEVERITY_ICON[severity];
   return (
     <Alert variant={severity === "error" ? "destructive" : "default"} className={className}>
@@ -59,14 +65,31 @@ export function InlineStatusFromError({
   action?: { label: string; onClick: () => void };
   className?: string;
 }) {
-  return <InlineStatus title={error.title} description={error.description} severity={error.severity} action={action} className={className} />;
+  return (
+    <InlineStatus
+      title={error.title}
+      description={error.description}
+      severity={error.severity}
+      action={action}
+      className={className}
+    />
+  );
 }
 
 /** Full-width, non-dismissible variant for area-wide degradation notices. */
-export function Banner({ title, description, severity = "warning", action, className }: InlineStatusProps) {
+export function Banner({
+  title,
+  description,
+  severity = "warning",
+  action,
+  className,
+}: InlineStatusProps) {
   const Icon = SEVERITY_ICON[severity];
   return (
-    <Alert variant={severity === "error" ? "destructive" : "default"} className={cn("w-full rounded-none border-x-0", className)}>
+    <Alert
+      variant={severity === "error" ? "destructive" : "default"}
+      className={cn("w-full rounded-none border-x-0", className)}
+    >
       <Icon className="size-4" />
       <AlertTitle>{title}</AlertTitle>
       {description && <AlertDescription>{description}</AlertDescription>}

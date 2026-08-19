@@ -1,8 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-  Crown, Calendar, FileText, Receipt, Clock, CheckCircle2,
-  XCircle, Loader2, Download,
+  Crown,
+  Calendar,
+  FileText,
+  Receipt,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  Download,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -20,13 +27,18 @@ export const Route = createFileRoute("/subscription")({
   head: () => ({
     meta: [
       { title: "Minha assinatura — Coach" },
-      { name: "description", content: "Consulta a tua assinatura ativa, faturas e histórico de pagamentos." },
+      {
+        name: "description",
+        content: "Consulta a tua assinatura ativa, faturas e histórico de pagamentos.",
+      },
     ],
   }),
 });
 
 type SubWithPlan = SubscriptionRow & { subscription_plans: PlanRow | null };
-type PayWithPlan = PaymentRow & { subscription_plans: Pick<PlanRow, "tier" | "billing_cycle" | "price_kz" | "duration_days"> | null };
+type PayWithPlan = PaymentRow & {
+  subscription_plans: Pick<PlanRow, "tier" | "billing_cycle" | "price_kz" | "duration_days"> | null;
+};
 
 function SubscriptionPage() {
   const [subs, setSubs] = useState<SubWithPlan[]>([]);
@@ -76,16 +88,28 @@ function SubscriptionPage() {
             <Card className="mt-10 border-dashed">
               <CardContent className="p-10 text-center">
                 <div className="mx-auto max-w-md text-left">
-                  <InlineStatusFromError error={error} action={{ label: "Tentar novamente", onClick: () => void load() }} />
+                  <InlineStatusFromError
+                    error={error}
+                    action={{ label: "Tentar novamente", onClick: () => void load() }}
+                  />
                 </div>
               </CardContent>
             </Card>
           ) : (
             <Tabs defaultValue="current" className="mt-6">
               <TabsList>
-                <TabsTrigger value="current"><Crown className="mr-1.5 h-4 w-4" />Minha Assinatura</TabsTrigger>
-                <TabsTrigger value="invoices"><Receipt className="mr-1.5 h-4 w-4" />Minhas Faturas</TabsTrigger>
-                <TabsTrigger value="history"><Clock className="mr-1.5 h-4 w-4" />Meu Histórico</TabsTrigger>
+                <TabsTrigger value="current">
+                  <Crown className="mr-1.5 h-4 w-4" />
+                  Minha Assinatura
+                </TabsTrigger>
+                <TabsTrigger value="invoices">
+                  <Receipt className="mr-1.5 h-4 w-4" />
+                  Minhas Faturas
+                </TabsTrigger>
+                <TabsTrigger value="history">
+                  <Clock className="mr-1.5 h-4 w-4" />
+                  Meu Histórico
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="current" className="mt-6">
@@ -98,11 +122,15 @@ function SubscriptionPage() {
                             {active.subscription_plans?.tier?.toUpperCase() || "PLANO"}
                           </Badge>
                           <div className="mt-2 font-display text-2xl font-bold">
-                            Plano {active.subscription_plans?.tier} · {active.subscription_plans?.billing_cycle}
+                            Plano {active.subscription_plans?.tier} ·{" "}
+                            {active.subscription_plans?.billing_cycle}
                           </div>
                           <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
                             <Calendar className="h-3.5 w-3.5" />
-                            Ativo até {active.expires_at ? new Date(active.expires_at).toLocaleDateString() : "—"}
+                            Ativo até{" "}
+                            {active.expires_at
+                              ? new Date(active.expires_at).toLocaleDateString()
+                              : "—"}
                           </div>
                         </div>
                         <div className="text-right">
@@ -114,8 +142,12 @@ function SubscriptionPage() {
                       </div>
 
                       <div className="mt-6 flex flex-wrap gap-2">
-                        <Button asChild variant="outline"><Link to="/pricing">Mudar de plano</Link></Button>
-                        <Button asChild><Link to="/dashboard">Ir para os cursos</Link></Button>
+                        <Button asChild variant="outline">
+                          <Link to="/pricing">Mudar de plano</Link>
+                        </Button>
+                        <Button asChild>
+                          <Link to="/dashboard">Ir para os cursos</Link>
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -123,7 +155,9 @@ function SubscriptionPage() {
                   <Card className="border-dashed">
                     <CardContent className="p-10 text-center">
                       <Crown className="mx-auto h-10 w-10 text-muted-foreground/60" />
-                      <p className="mt-3 text-sm text-muted-foreground">Não tens nenhuma assinatura ativa.</p>
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        Não tens nenhuma assinatura ativa.
+                      </p>
                       <Button asChild className="mt-4 bg-gradient-sunset text-white">
                         <Link to="/pricing">Ver planos</Link>
                       </Button>
@@ -174,16 +208,35 @@ function EmptyState({ text }: { text: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { cls: string; icon: typeof CheckCircle2; label: string }> = {
-    paid: { cls: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30", icon: CheckCircle2, label: "Pago" },
-    pending: { cls: "bg-amber-500/15 text-amber-700 border-amber-500/30", icon: Clock, label: "Pendente" },
-    cancelled: { cls: "bg-muted text-muted-foreground border-border", icon: XCircle, label: "Cancelado" },
-    expired: { cls: "bg-destructive/15 text-destructive border-destructive/30", icon: XCircle, label: "Expirado" },
+    paid: {
+      cls: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
+      icon: CheckCircle2,
+      label: "Pago",
+    },
+    pending: {
+      cls: "bg-amber-500/15 text-amber-700 border-amber-500/30",
+      icon: Clock,
+      label: "Pendente",
+    },
+    cancelled: {
+      cls: "bg-muted text-muted-foreground border-border",
+      icon: XCircle,
+      label: "Cancelado",
+    },
+    expired: {
+      cls: "bg-destructive/15 text-destructive border-destructive/30",
+      icon: XCircle,
+      label: "Expirado",
+    },
   };
   const cfg = map[status] ?? map.pending;
   const Icon = cfg.icon;
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${cfg.cls}`}>
-      <Icon className="h-3 w-3" />{cfg.label}
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${cfg.cls}`}
+    >
+      <Icon className="h-3 w-3" />
+      {cfg.label}
     </span>
   );
 }
@@ -196,7 +249,9 @@ function InvoiceRow({ payment }: { payment: PayWithPlan }) {
     const a = document.createElement("a");
     a.href = url;
     a.download = `${payment.invoice_number || payment.id}.html`;
-    document.body.appendChild(a); a.click(); a.remove();
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   return (
@@ -207,9 +262,12 @@ function InvoiceRow({ payment }: { payment: PayWithPlan }) {
             <FileText className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <div className="font-mono text-sm font-bold">{payment.invoice_number || payment.id.slice(0, 8)}</div>
+            <div className="font-mono text-sm font-bold">
+              {payment.invoice_number || payment.id.slice(0, 8)}
+            </div>
             <div className="text-xs text-muted-foreground">
-              {payment.paid_at ? new Date(payment.paid_at).toLocaleDateString() : "—"} · {payment.subscription_plans?.tier?.toUpperCase()}
+              {payment.paid_at ? new Date(payment.paid_at).toLocaleDateString() : "—"} ·{" "}
+              {payment.subscription_plans?.tier?.toUpperCase()}
             </div>
           </div>
         </div>
@@ -218,7 +276,8 @@ function InvoiceRow({ payment }: { payment: PayWithPlan }) {
             {payment.amount_kz.toLocaleString("pt-AO")} Kz
           </div>
           <Button size="sm" variant="outline" onClick={downloadInvoice}>
-            <Download className="mr-1.5 h-3.5 w-3.5" />Fatura
+            <Download className="mr-1.5 h-3.5 w-3.5" />
+            Fatura
           </Button>
         </div>
       </CardContent>

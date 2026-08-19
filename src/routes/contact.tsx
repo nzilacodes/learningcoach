@@ -43,7 +43,9 @@ function ContactPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
-      notify.warning(pt ? "Preencha todos os campos obrigatórios." : "Please fill all required fields.");
+      notify.warning(
+        pt ? "Preencha todos os campos obrigatórios." : "Please fill all required fields.",
+      );
       return;
     }
     setSubmitting(true);
@@ -58,7 +60,9 @@ function ContactPage() {
         }),
       });
       setForm({ name: "", email: "", subject: "", message: "" });
-      notify.success(pt ? "Mensagem enviada! Respondemos em breve." : "Message sent! We'll reply soon.");
+      notify.success(
+        pt ? "Mensagem enviada! Respondemos em breve." : "Message sent! We'll reply soon.",
+      );
     } catch (err) {
       // RATE_LIMITED (429) and the generic fallback are already well-covered
       // by ErrorCodeMap — no need to hand-check the status here anymore.

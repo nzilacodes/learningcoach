@@ -81,7 +81,10 @@ export function describeGetUserMediaError(
   locale: "pt" | "en",
 ): { title: string; description: string } {
   const reason = classifyGetUserMediaError(err);
-  const copy: Record<MediaDeviceErrorReason, { title: [string, string]; description: [string, string] }> = {
+  const copy: Record<
+    MediaDeviceErrorReason,
+    { title: [string, string]; description: [string, string] }
+  > = {
     denied: {
       title: ["Permissão de microfone bloqueada", "Microphone permission blocked"],
       description: [

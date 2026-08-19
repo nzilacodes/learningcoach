@@ -40,7 +40,8 @@ function SettingsPage() {
   if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {locale === "pt" ? "A carregar…" : "Loading…"}
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+        {locale === "pt" ? "A carregar…" : "Loading…"}
       </div>
     );
   }
@@ -48,7 +49,9 @@ function SettingsPage() {
   const changePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      return notify.warning(locale === "pt" ? "As palavras-passe não coincidem" : "Passwords don't match");
+      return notify.warning(
+        locale === "pt" ? "As palavras-passe não coincidem" : "Passwords don't match",
+      );
     }
     const pwError = passwordError(newPassword, locale);
     if (pwError) return notify.warning(pwError);
@@ -101,7 +104,9 @@ function SettingsPage() {
                     type="button"
                     onClick={() => setLocale(l)}
                     className={`rounded-xl border-2 px-4 py-2 text-sm font-semibold transition ${
-                      locale === l ? "border-[var(--violet)] bg-[var(--violet)] text-white" : "border-gray-100 hover:border-[var(--violet)]/50"
+                      locale === l
+                        ? "border-[var(--violet)] bg-[var(--violet)] text-white"
+                        : "border-gray-100 hover:border-[var(--violet)]/50"
                     }`}
                   >
                     {l === "pt" ? "Português" : "English"}
@@ -157,7 +162,9 @@ function SettingsPage() {
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label>{locale === "pt" ? "Confirmar nova palavra-passe" : "Confirm new password"}</Label>
+                  <Label>
+                    {locale === "pt" ? "Confirmar nova palavra-passe" : "Confirm new password"}
+                  </Label>
                   <Input
                     type="password"
                     required
@@ -165,8 +172,18 @@ function SettingsPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                 </div>
-                <Button type="submit" disabled={saving} className="bg-[var(--violet)] text-white hover:opacity-90">
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : locale === "pt" ? "Alterar palavra-passe" : "Change password"}
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-[var(--violet)] text-white hover:opacity-90"
+                >
+                  {saving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : locale === "pt" ? (
+                    "Alterar palavra-passe"
+                  ) : (
+                    "Change password"
+                  )}
                 </Button>
               </form>
             </section>

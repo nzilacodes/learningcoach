@@ -18,10 +18,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Download, BarChart3, CreditCard, BookOpen, Plus, Trash2 } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
 
-function csvDownload(name: string, rows: Record<string, any>[]) {
+function csvDownload(name: string, rows: Record<string, unknown>[]) {
   if (!rows.length) return;
   const cols = Object.keys(rows[0]);
-  const esc = (v: any) => {
+  const esc = (v: unknown) => {
     if (v == null) return "";
     const s = typeof v === "object" ? JSON.stringify(v) : String(v);
     return /[,"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -53,7 +53,9 @@ export function SubscriptionsSection() {
   const { data = [], refetch } = useQuery({
     queryKey: ["admin_subscriptions"],
     queryFn: async () => {
-      const res = await apiFetch<{ items: AdminSubscription[] }>("/v1/admin/subscriptions?limit=200");
+      const res = await apiFetch<{ items: AdminSubscription[] }>(
+        "/v1/admin/subscriptions?limit=200",
+      );
       return res.items;
     },
     enabled: !!user && isAdmin,
@@ -271,13 +273,10 @@ export function ReportsSection() {
   const notify = useNotification();
   const [pending, setPending] = useState<"users" | "payments" | "diagnostics" | null>(null);
 
-  const runExport = async (
-    kind: "users" | "payments" | "diagnostics",
-    path: string,
-  ) => {
+  const runExport = async (kind: "users" | "payments" | "diagnostics", path: string) => {
     setPending(kind);
     try {
-      csvDownload(kind, await apiFetch<Record<string, any>[]>(path));
+      csvDownload(kind, await apiFetch<Record<string, unknown>[]>(path));
     } catch (e) {
       notify.fromError(e, { dedupeKey: "admin:export-report" });
     } finally {
@@ -606,7 +605,12 @@ function ExerciseEditor({
           key={ex.id}
           exercise={ex}
           onDeleted={() => {
-            if (!window.confirm("Apagar este exercício definitivamente? Esta ação não pode ser revertida.")) return;
+            if (
+              !window.confirm(
+                "Apagar este exercício definitivamente? Esta ação não pode ser revertida.",
+              )
+            )
+              return;
             deleteExercise.mutate(ex.id);
           }}
           onSaved={onChanged}
@@ -669,9 +673,14 @@ function ExerciseRow({
   });
 
   const handleSave = () => {
-    const parsedOptions = options.split("|").map((s) => s.trim()).filter(Boolean);
+    const parsedOptions = options
+      .split("|")
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (correctIndex < 0 || correctIndex >= parsedOptions.length) {
-      notify.warning(`Índice da resposta correta (${correctIndex}) precisa estar entre 0 e ${parsedOptions.length - 1}.`);
+      notify.warning(
+        `Índice da resposta correta (${correctIndex}) precisa estar entre 0 e ${parsedOptions.length - 1}.`,
+      );
       return;
     }
     save.mutate();

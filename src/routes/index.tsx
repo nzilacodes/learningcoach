@@ -267,7 +267,7 @@ function LandingPage() {
       {/* STATS — Mobile only: normal section below hero */}
       <section className="border-y border-slate-100 bg-white py-10 md:hidden">
         <div className="mx-auto grid grid-cols-2 gap-4 px-6">
-          {stats.map((s, i) => (
+          {stats.map((s) => (
             <div
               key={s.label}
               className="rounded-2xl border border-slate-100 bg-white p-4 text-center shadow-md"
@@ -567,6 +567,11 @@ function AgePanel({
           <div className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-[#0F172A] backdrop-blur">
             {tag}
           </div>
+          {highlighted && (
+            <div className="absolute right-3 top-3 rounded-full bg-[#0EA5A4] px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-white">
+              Popular
+            </div>
+          )}
           <div className="absolute bottom-3 left-3 text-[9px] font-black uppercase tracking-widest text-white/95">
             Learning English with Coach
           </div>

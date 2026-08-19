@@ -1,7 +1,11 @@
 import { createContext, useCallback, useContext, useRef, type ReactNode } from "react";
 import { toast as sonnerToast } from "sonner";
 import { useLocale } from "@/lib/i18n";
-import { normalizeApiError, getErrorAction, type NormalizedError } from "@/lib/errors/normalize-api-error";
+import {
+  normalizeApiError,
+  getErrorAction,
+  type NormalizedError,
+} from "@/lib/errors/normalize-api-error";
 
 export type NotifyType = "success" | "error" | "warning" | "info" | "loading" | "neutral";
 
@@ -22,7 +26,11 @@ export type NotifyInput = {
 };
 
 type LoadingHandle = {
-  update: (next: { type: Exclude<NotifyType, "loading" | "neutral">; title: string; description?: string }) => void;
+  update: (next: {
+    type: Exclude<NotifyType, "loading" | "neutral">;
+    title: string;
+    description?: string;
+  }) => void;
   dismiss: () => void;
 };
 
@@ -59,7 +67,12 @@ function fireToast(
   id: string,
   opts: { title: string; description?: string; duration: number; action?: NotifyAction },
 ) {
-  const options = { id, description: opts.description, duration: opts.duration, action: opts.action };
+  const options = {
+    id,
+    description: opts.description,
+    duration: opts.duration,
+    action: opts.action,
+  };
   switch (type) {
     case "success":
       sonnerToast.success(opts.title, options);
@@ -94,26 +107,50 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     const count = (repeatCounts.current.get(id) ?? 0) + 1;
     repeatCounts.current.set(id, count);
-    const description = count > 1 && input.description ? `${input.description} (${count}×)` : input.description;
-    const duration = input.duration === "persistent" ? Infinity : (input.duration ?? PRIORITY_DURATION[input.priority ?? "normal"]);
+    const description =
+      count > 1 && input.description ? `${input.description} (${count}×)` : input.description;
+    const duration =
+      input.duration === "persistent"
+        ? Infinity
+        : (input.duration ?? PRIORITY_DURATION[input.priority ?? "normal"]);
 
     fireToast(type, id, { title: input.title, description, duration, action: input.action });
     return id;
   }, []);
 
-  const success = useCallback((title: string, opts: Omit<NotifyInput, "title"> = {}) => notify("success", { title, ...opts }), [notify]);
-  const error = useCallback((title: string, opts: Omit<NotifyInput, "title"> = {}) => notify("error", { title, ...opts }), [notify]);
-  const warning = useCallback((title: string, opts: Omit<NotifyInput, "title"> = {}) => notify("warning", { title, ...opts }), [notify]);
-  const info = useCallback((title: string, opts: Omit<NotifyInput, "title"> = {}) => notify("info", { title, ...opts }), [notify]);
+  const success = useCallback(
+    (title: string, opts: Omit<NotifyInput, "title"> = {}) => notify("success", { title, ...opts }),
+    [notify],
+  );
+  const error = useCallback(
+    (title: string, opts: Omit<NotifyInput, "title"> = {}) => notify("error", { title, ...opts }),
+    [notify],
+  );
+  const warning = useCallback(
+    (title: string, opts: Omit<NotifyInput, "title"> = {}) => notify("warning", { title, ...opts }),
+    [notify],
+  );
+  const info = useCallback(
+    (title: string, opts: Omit<NotifyInput, "title"> = {}) => notify("info", { title, ...opts }),
+    [notify],
+  );
 
-  const loading = useCallback((title: string, opts: Omit<NotifyInput, "title"> = {}): LoadingHandle => {
-    const id = opts.dedupeKey ?? `loading:${title}`;
-    fireToast("loading", id, { title, description: opts.description, duration: Infinity });
-    return {
-      update: (next) => fireToast(next.type, id, { title: next.title, description: next.description, duration: PRIORITY_DURATION.normal }),
-      dismiss: () => sonnerToast.dismiss(id),
-    };
-  }, []);
+  const loading = useCallback(
+    (title: string, opts: Omit<NotifyInput, "title"> = {}): LoadingHandle => {
+      const id = opts.dedupeKey ?? `loading:${title}`;
+      fireToast("loading", id, { title, description: opts.description, duration: Infinity });
+      return {
+        update: (next) =>
+          fireToast(next.type, id, {
+            title: next.title,
+            description: next.description,
+            duration: PRIORITY_DURATION.normal,
+          }),
+        dismiss: () => sonnerToast.dismiss(id),
+      };
+    },
+    [],
+  );
 
   const fromError = useCallback(
     (err: unknown, opts: FromErrorOptions = {}): NormalizedError => {
@@ -131,7 +168,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     [notify, locale],
   );
 
-  return <Ctx.Provider value={{ notify, success, error, warning, info, loading, fromError }}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={{ notify, success, error, warning, info, loading, fromError }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 export function useNotification(): NotificationCtx {

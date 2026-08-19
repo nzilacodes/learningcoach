@@ -92,7 +92,9 @@ export async function generateCertificatePdf(data: CertificatePdfData): Promise<
   doc.setFontSize(13);
   const date = new Date(data.issuedAt).toLocaleDateString();
   doc.text(date, 100, metaY + 18);
-  doc.text(data.score != null ? `${Math.round(Number(data.score))}%` : "—", W / 2, metaY + 18, { align: "center" });
+  doc.text(data.score != null ? `${Math.round(Number(data.score))}%` : "—", W / 2, metaY + 18, {
+    align: "center",
+  });
   doc.text(data.verificationCode, W - 100, metaY + 18, { align: "right" });
 
   // Signature
@@ -120,7 +122,9 @@ export async function generateCertificatePdf(data: CertificatePdfData): Promise<
   // Digital signature hash
   doc.setFontSize(6);
   doc.setTextColor(160, 160, 160);
-  doc.text(`Digital signature: ${data.signature.slice(0, 48)}…`, W / 2, H - 44, { align: "center" });
+  doc.text(`Digital signature: ${data.signature.slice(0, 48)}…`, W / 2, H - 44, {
+    align: "center",
+  });
 
   return doc.output("blob");
 }

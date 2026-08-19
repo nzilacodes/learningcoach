@@ -29,7 +29,14 @@ const DEFAULT_AUTO_ADVANCE_MS = [1500, 6000];
  *    stage until `status` resolves. Explicitly cosmetic pacing, not real
  *    progress.
  */
-export function StagedLoader({ stages, status, currentStage, autoAdvanceMs, failedLabel, className }: StagedLoaderProps) {
+export function StagedLoader({
+  stages,
+  status,
+  currentStage,
+  autoAdvanceMs,
+  failedLabel,
+  className,
+}: StagedLoaderProps) {
   const isControlled = currentStage !== undefined;
   const [autoStage, setAutoStage] = useState(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -59,7 +66,8 @@ export function StagedLoader({ stages, status, currentStage, autoAdvanceMs, fail
   }, [status, isControlled]);
 
   const activeIndex = Math.min(isControlled ? currentStage! : autoStage, stages.length - 1);
-  const label = status === "failed" ? (failedLabel ?? "Não foi possível concluir") : stages[activeIndex];
+  const label =
+    status === "failed" ? (failedLabel ?? "Não foi possível concluir") : stages[activeIndex];
 
   return (
     <div className={cn("flex flex-col items-center gap-3 text-center", className)}>
@@ -76,7 +84,13 @@ export function StagedLoader({ stages, status, currentStage, autoAdvanceMs, fail
       {status === "running" && stages.length > 1 && (
         <div className="flex gap-1.5">
           {stages.map((_, i) => (
-            <span key={i} className={cn("h-1.5 w-6 rounded-full transition-colors", i <= activeIndex ? "bg-primary" : "bg-muted")} />
+            <span
+              key={i}
+              className={cn(
+                "h-1.5 w-6 rounded-full transition-colors",
+                i <= activeIndex ? "bg-primary" : "bg-muted",
+              )}
+            />
           ))}
         </div>
       )}

@@ -70,7 +70,9 @@ export async function startWavRecording(): Promise<WavRecorder> {
       channelCount: 1,
     },
   });
-  const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const AC =
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   const ctx = new AC();
   const source = ctx.createMediaStreamSource(stream);
   // ScriptProcessor is deprecated but works everywhere including iOS Safari.

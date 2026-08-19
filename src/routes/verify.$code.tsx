@@ -39,7 +39,10 @@ export const Route = createFileRoute("/verify/$code")({
         <ShieldAlert className="mx-auto h-10 w-10 text-destructive" />
         <h1 className="mt-4 font-display text-2xl font-bold">Erro na verificação</h1>
         <div className="mx-auto mt-4 max-w-md text-left">
-          <InlineStatusFromError error={normalizeApiError(error)} action={{ label: "Tentar novamente", onClick: reset }} />
+          <InlineStatusFromError
+            error={normalizeApiError(error)}
+            action={{ label: "Tentar novamente", onClick: reset }}
+          />
         </div>
       </div>
       <SiteFooter />
@@ -50,7 +53,11 @@ export const Route = createFileRoute("/verify/$code")({
   head: ({ params }) => ({
     meta: [
       { title: `Validação de Certificado ${params.code} — Coach` },
-      { name: "description", content: "Página pública de validação de certificado CEFR emitido pela Learning English with Coach." },
+      {
+        name: "description",
+        content:
+          "Página pública de validação de certificado CEFR emitido pela Learning English with Coach.",
+      },
       { property: "og:title", content: `Certificado ${params.code}` },
       { property: "og:description", content: "Verifica a autenticidade deste certificado CEFR." },
     ],
@@ -68,7 +75,10 @@ function NotFoundView() {
           O código introduzido não corresponde a nenhum certificado emitido.
         </p>
         <Button asChild className="mt-4" variant="outline">
-          <Link to="/certificates"><ArrowLeft className="mr-1.5 h-4 w-4" />Voltar</Link>
+          <Link to="/certificates">
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            Voltar
+          </Link>
         </Button>
       </div>
       <SiteFooter />

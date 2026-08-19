@@ -8,12 +8,33 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Legend,
 } from "recharts";
 import {
-  Users, DollarSign, Calendar, TrendingUp, Clock, Target,
-  UserCheck, UserX, FileSpreadsheet, FileText, ShieldCheck, AlertTriangle,
+  Users,
+  DollarSign,
+  Calendar,
+  TrendingUp,
+  Clock,
+  Target,
+  UserCheck,
+  UserX,
+  FileSpreadsheet,
+  FileText,
+  ShieldCheck,
+  AlertTriangle,
 } from "lucide-react";
 export type AnalyticsData = {
   students: number;
@@ -41,7 +62,10 @@ export const Route = createFileRoute("/analytics")({
   head: () => ({
     meta: [
       { title: "Analytics — Coach" },
-      { name: "description", content: "Painel administrativo com métricas completas da plataforma." },
+      {
+        name: "description",
+        content: "Painel administrativo com métricas completas da plataforma.",
+      },
     ],
   }),
 });
@@ -98,8 +122,16 @@ function AnalyticsPage() {
       ["Taxa de abandono (%)", data.dropout_rate],
     ];
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), "Resumo");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.revenue_series), "Receita Mensal");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.students_series), "Novos Alunos");
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.json_to_sheet(data.revenue_series),
+      "Receita Mensal",
+    );
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.json_to_sheet(data.students_series),
+      "Novos Alunos",
+    );
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.activity_series), "Atividade");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.plans), "Planos");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.methods), "Métodos");
@@ -146,7 +178,10 @@ function AnalyticsPage() {
       doc.text(`${r.month}`, 14, y);
       doc.text(fmtKz(Number(r.amount)), 120, y);
       y += 6;
-      if (y > 280) { doc.addPage(); y = 20; }
+      if (y > 280) {
+        doc.addPage();
+        y = 20;
+      }
     });
 
     doc.save(`analytics_${new Date().toISOString().slice(0, 10)}.pdf`);
@@ -163,7 +198,8 @@ function AnalyticsPage() {
           <ShieldCheck className="mx-auto h-12 w-12 text-primary" />
           <h1 className="mt-4 font-display text-2xl font-bold">Acesso restrito</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Esta área é apenas para administradores. Se acredita que devia ter acesso, contacte o Coach.
+            Esta área é apenas para administradores. Se acredita que devia ter acesso, contacte o
+            Coach.
           </p>
           <Button asChild className="mt-6">
             <Link to="/dashboard">Ir para o painel</Link>
@@ -195,26 +231,66 @@ function AnalyticsPage() {
         {error && !loading ? (
           <div className="flex flex-col items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-10 text-center">
             <AlertTriangle className="h-8 w-8 text-destructive" />
-            <p className="text-sm text-destructive">Não foi possível carregar os dados de analytics.</p>
+            <p className="text-sm text-destructive">
+              Não foi possível carregar os dados de analytics.
+            </p>
             <Button size="sm" variant="outline" onClick={load}>
               Tentar novamente
             </Button>
           </div>
         ) : loading || !data ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-28" />)}
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-28" />
+            ))}
           </div>
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <KpiCard icon={<Users className="h-5 w-5" />} label="Alunos" value={data.students.toString()} sub={`${data.active_30} ativos (30d)`} />
-              <KpiCard icon={<DollarSign className="h-5 w-5" />} label="Receita total" value={fmtKz(data.revenue_total)} />
-              <KpiCard icon={<Calendar className="h-5 w-5" />} label="Receita do mês" value={fmtKz(data.revenue_month)} />
-              <KpiCard icon={<TrendingUp className="h-5 w-5" />} label="Receita do ano" value={fmtKz(data.revenue_year)} />
-              <KpiCard icon={<Clock className="h-5 w-5" />} label="Tempo médio estudo" value={`${data.avg_study_min} min`} sub="por sessão (30d)" />
-              <KpiCard icon={<UserCheck className="h-5 w-5" />} label="Retenção" value={`${data.retention_rate}%`} sub="ativos / total" />
-              <KpiCard icon={<Target className="h-5 w-5" />} label="Conclusão" value={`${data.completion_rate}%`} sub="lições completas" />
-              <KpiCard icon={<UserX className="h-5 w-5" />} label="Abandono" value={`${data.dropout_rate}%`} />
+              <KpiCard
+                icon={<Users className="h-5 w-5" />}
+                label="Alunos"
+                value={data.students.toString()}
+                sub={`${data.active_30} ativos (30d)`}
+              />
+              <KpiCard
+                icon={<DollarSign className="h-5 w-5" />}
+                label="Receita total"
+                value={fmtKz(data.revenue_total)}
+              />
+              <KpiCard
+                icon={<Calendar className="h-5 w-5" />}
+                label="Receita do mês"
+                value={fmtKz(data.revenue_month)}
+              />
+              <KpiCard
+                icon={<TrendingUp className="h-5 w-5" />}
+                label="Receita do ano"
+                value={fmtKz(data.revenue_year)}
+              />
+              <KpiCard
+                icon={<Clock className="h-5 w-5" />}
+                label="Tempo médio estudo"
+                value={`${data.avg_study_min} min`}
+                sub="por sessão (30d)"
+              />
+              <KpiCard
+                icon={<UserCheck className="h-5 w-5" />}
+                label="Retenção"
+                value={`${data.retention_rate}%`}
+                sub="ativos / total"
+              />
+              <KpiCard
+                icon={<Target className="h-5 w-5" />}
+                label="Conclusão"
+                value={`${data.completion_rate}%`}
+                sub="lições completas"
+              />
+              <KpiCard
+                icon={<UserX className="h-5 w-5" />}
+                label="Abandono"
+                value={`${data.dropout_rate}%`}
+              />
             </div>
 
             <div className="mt-8 grid gap-6 lg:grid-cols-2">
@@ -237,7 +313,13 @@ function AnalyticsPage() {
                     <XAxis dataKey="month" fontSize={11} />
                     <YAxis fontSize={11} />
                     <Tooltip />
-                    <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={{ r: 3 }}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </ChartCard>
@@ -250,8 +332,20 @@ function AnalyticsPage() {
                     <YAxis fontSize={11} />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="users" name="Utilizadores" stroke="#10b981" strokeWidth={2} />
-                    <Line type="monotone" dataKey="seconds" name="Segundos" stroke="#8b5cf6" strokeWidth={2} />
+                    <Line
+                      type="monotone"
+                      dataKey="users"
+                      name="Utilizadores"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="seconds"
+                      name="Segundos"
+                      stroke="#8b5cf6"
+                      strokeWidth={2}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </ChartCard>
@@ -260,7 +354,9 @@ function AnalyticsPage() {
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
                     <Pie data={data.plans} dataKey="revenue" nameKey="name" outerRadius={100} label>
-                      {data.plans.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                      {data.plans.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
                     </Pie>
                     <Tooltip formatter={(v: number) => fmtKz(Number(v))} />
                     <Legend />
@@ -273,7 +369,10 @@ function AnalyticsPage() {
               <ChartCard title="Métodos de pagamento">
                 <div className="space-y-2">
                   {data.methods.map((m) => (
-                    <div key={m.method} className="flex items-center justify-between rounded-lg border p-3">
+                    <div
+                      key={m.method}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
                       <div>
                         <div className="font-medium capitalize">{m.method.replace("_", " ")}</div>
                         <div className="text-xs text-muted-foreground">{m.count} transações</div>
@@ -287,10 +386,15 @@ function AnalyticsPage() {
               <ChartCard title="Desempenho por plano">
                 <div className="space-y-2">
                   {data.plans.map((p) => (
-                    <div key={p.name} className="flex items-center justify-between rounded-lg border p-3">
+                    <div
+                      key={p.name}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
                       <div>
                         <div className="font-medium">{p.name}</div>
-                        <div className="text-xs text-muted-foreground uppercase">{p.tier} · {p.orders} pedidos</div>
+                        <div className="text-xs text-muted-foreground uppercase">
+                          {p.tier} · {p.orders} pedidos
+                        </div>
                       </div>
                       <div className="text-right font-semibold">{fmtKz(Number(p.revenue))}</div>
                     </div>
@@ -306,7 +410,17 @@ function AnalyticsPage() {
   );
 }
 
-function KpiCard({ icon, label, value, sub }: { icon: React.ReactNode; label: string; value: string; sub?: string }) {
+function KpiCard({
+  icon,
+  label,
+  value,
+  sub,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sub?: string;
+}) {
   return (
     <Card>
       <CardContent className="p-4">

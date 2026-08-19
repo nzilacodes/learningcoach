@@ -22,7 +22,11 @@ import { celebrate, levelProgress, xpForLevel } from "@/lib/gamification";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
-import { HeaderActionLinks, MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 
 export const Route = createFileRoute("/rewards")({
   component: RewardsPage,
@@ -78,7 +82,13 @@ type XpEvent = { created_at: string; amount: number; source: string };
 /** Normalized row for both the privacy-filtered world/national leaderboard
  * (display_name + streak/cefr_level) and the full-profile friends list
  * (full_name + level/country) — same visual shape, different underlying fields. */
-type RankRow = { id: string; name: string; avatar_url: string | null; xp: number; sublabel: string };
+type RankRow = {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+  xp: number;
+  sublabel: string;
+};
 
 type TabId = "missions" | "calendar" | "rankings" | "shop" | "avatar" | "friends";
 type RankScope = "world" | "national" | "friends";
@@ -93,11 +103,13 @@ function RewardsPage() {
   const [shop, setShop] = useState<ShopItem[]>([]);
   const [inventory, setInventory] = useState<{ item_id: string; equipped: boolean }[]>([]);
   const [events, setEvents] = useState<XpEvent[]>([]);
-  const [ranks, setRanks] = useState<{ world: RankRow[]; national: RankRow[]; friends: RankRow[] }>({
-    world: [],
-    national: [],
-    friends: [],
-  });
+  const [ranks, setRanks] = useState<{ world: RankRow[]; national: RankRow[]; friends: RankRow[] }>(
+    {
+      world: [],
+      national: [],
+      friends: [],
+    },
+  );
   const [friendEmail, setFriendEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -116,16 +128,27 @@ function RewardsPage() {
 
     try {
       const [stats, ms, si, inv, ev, world] = await Promise.all([
-        apiFetch<{ xp: number; level: number; coins: number; streak: number; avatar_url: string | null; avatar_config: Record<string, unknown> }>(
-          "/v1/me/gamification-stats",
-        ),
+        apiFetch<{
+          xp: number;
+          level: number;
+          coins: number;
+          streak: number;
+          avatar_url: string | null;
+          avatar_config: Record<string, unknown>;
+        }>("/v1/me/gamification-stats"),
         apiFetch<Mission[]>("/v1/me/missions"),
         apiFetch<ShopItem[]>("/v1/shop-items"),
         apiFetch<{ item_id: string; equipped: boolean }[]>("/v1/me/inventory"),
         apiFetch<XpEvent[]>("/v1/me/xp-events?days=90"),
-        apiFetch<{ user_id: string; display_name: string; xp: number; streak: number; cefr_level: string | null }[]>(
-          "/v1/leaderboard?limit=50",
-        ),
+        apiFetch<
+          {
+            user_id: string;
+            display_name: string;
+            xp: number;
+            streak: number;
+            cefr_level: string | null;
+          }[]
+        >("/v1/leaderboard?limit=50"),
       ]);
 
       setProfile({
@@ -152,7 +175,9 @@ function RewardsPage() {
         sublabel: `${r.cefr_level ?? "—"} · 🔥${r.streak}`,
       }));
       const national = user.country
-        ? await apiFetch<typeof world>(`/v1/leaderboard?limit=50&country=${encodeURIComponent(user.country)}`)
+        ? await apiFetch<typeof world>(
+            `/v1/leaderboard?limit=50&country=${encodeURIComponent(user.country)}`,
+          )
         : [];
       const nationalRows: RankRow[] = national.map((r) => ({
         id: r.user_id,
@@ -161,10 +186,27 @@ function RewardsPage() {
         xp: r.xp,
         sublabel: `${r.cefr_level ?? "—"} · 🔥${r.streak}`,
       }));
-      const friendsList = await apiFetch<{ id: string; full_name: string | null; avatar_url: string | null; xp: number; level: number; country: string | null }[]>(
-        "/v1/me/friends",
-      );
-      const friendsRows: RankRow[] = [...friendsList, { id: user.id, full_name: user.fullName, avatar_url: stats.avatar_url, xp: stats.xp, level: stats.level, country: user.country }]
+      const friendsList = await apiFetch<
+        {
+          id: string;
+          full_name: string | null;
+          avatar_url: string | null;
+          xp: number;
+          level: number;
+          country: string | null;
+        }[]
+      >("/v1/me/friends");
+      const friendsRows: RankRow[] = [
+        ...friendsList,
+        {
+          id: user.id,
+          full_name: user.fullName,
+          avatar_url: stats.avatar_url,
+          xp: stats.xp,
+          level: stats.level,
+          country: user.country,
+        },
+      ]
         .sort((a, b) => b.xp - a.xp)
         .map((f) => ({
           id: f.id,
@@ -176,7 +218,13 @@ function RewardsPage() {
 
       setRanks({ world: worldRows, national: nationalRows, friends: friendsRows });
     } catch (e) {
-      setError(e instanceof Error ? e.message : locale === "pt" ? "Erro ao carregar recompensas" : "Failed to load rewards");
+      setError(
+        e instanceof Error
+          ? e.message
+          : locale === "pt"
+            ? "Erro ao carregar recompensas"
+            : "Failed to load rewards",
+      );
     } finally {
       setLoading(false);
     }
@@ -191,7 +239,10 @@ function RewardsPage() {
   const claim = async (missionId: string) => {
     setClaiming(missionId);
     try {
-      const r = await apiFetch<{ xp: number; coins: number }>(`/v1/me/missions/${missionId}/claim`, { method: "POST" });
+      const r = await apiFetch<{ xp: number; coins: number }>(
+        `/v1/me/missions/${missionId}/claim`,
+        { method: "POST" },
+      );
       notify.success(`Recompensa: +${r.xp} XP · +${r.coins} 🪙`);
       celebrate();
       await refresh();
@@ -218,7 +269,10 @@ function RewardsPage() {
 
   const equip = async (itemId: string) => {
     try {
-      await apiFetch(`/v1/me/inventory/${itemId}/equip`, { method: "PUT", body: JSON.stringify({ equipped: true }) });
+      await apiFetch(`/v1/me/inventory/${itemId}/equip`, {
+        method: "PUT",
+        body: JSON.stringify({ equipped: true }),
+      });
       notify.success("Equipado!");
       await refresh();
     } catch (e) {
@@ -229,7 +283,10 @@ function RewardsPage() {
   const addFriend = async () => {
     if (!friendEmail.trim()) return;
     try {
-      await apiFetch("/v1/me/friends", { method: "POST", body: JSON.stringify({ email: friendEmail.trim() }) });
+      await apiFetch("/v1/me/friends", {
+        method: "POST",
+        body: JSON.stringify({ email: friendEmail.trim() }),
+      });
       notify.success("Amigo adicionado!");
       setFriendEmail("");
       await refresh();
@@ -301,7 +358,9 @@ function RewardsPage() {
           <Trophy className="h-8 w-8 text-[var(--violet)]" />
         </div>
         <h2 className="font-display text-xl font-bold text-[var(--ink)]">
-          {locale === "pt" ? "Inicia sessão para ver as recompensas" : "Sign in to see your rewards"}
+          {locale === "pt"
+            ? "Inicia sessão para ver as recompensas"
+            : "Sign in to see your rewards"}
         </h2>
         <p className="mt-2 text-sm text-gray-500">
           {locale === "pt"
@@ -348,8 +407,7 @@ function RewardsPage() {
               <div className="mt-2 flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-[11px] font-semibold">
                   <Flame className="w-3 h-3 text-orange-400" />
-                  {profile.streak}{" "}
-                  {locale === "pt" ? "dias de streak" : "day streak"}
+                  {profile.streak} {locale === "pt" ? "dias de streak" : "day streak"}
                 </span>
                 <span className="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-[11px] font-semibold">
                   <Coins className="w-3 h-3 text-yellow-400" />
@@ -550,7 +608,11 @@ function RewardsPage() {
             <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
               {(
                 [
-                  { id: "world" as const, label: locale === "pt" ? "Mundial" : "World", Icon: Globe },
+                  {
+                    id: "world" as const,
+                    label: locale === "pt" ? "Mundial" : "World",
+                    Icon: Globe,
+                  },
                   {
                     id: "national" as const,
                     label: locale === "pt" ? "Nacional" : "National",
@@ -638,8 +700,12 @@ function RewardsPage() {
                         className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         {buying === it.id
-                          ? locale === "pt" ? "A comprar…" : "Buying…"
-                          : locale === "pt" ? "Comprar" : "Buy"}
+                          ? locale === "pt"
+                            ? "A comprar…"
+                            : "Buying…"
+                          : locale === "pt"
+                            ? "Comprar"
+                            : "Buy"}
                       </button>
                     )}
                   </div>
@@ -751,15 +817,7 @@ function StatCard({
   );
 }
 
-function RankList({
-  rows,
-  me,
-  locale,
-}: {
-  rows: RankRow[];
-  me: string;
-  locale: string;
-}) {
+function RankList({ rows, me, locale }: { rows: RankRow[]; me: string; locale: string }) {
   return (
     <div className="space-y-2">
       {rows.length === 0 && (

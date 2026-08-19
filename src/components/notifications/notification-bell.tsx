@@ -82,7 +82,9 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 max-h-[28rem] overflow-hidden p-0">
         <div className="flex items-center justify-between border-b px-3 py-2.5">
-          <span className="text-sm font-semibold">{locale === "pt" ? "Notificações" : "Notifications"}</span>
+          <span className="text-sm font-semibold">
+            {locale === "pt" ? "Notificações" : "Notifications"}
+          </span>
           {unreadCount > 0 && (
             <button
               type="button"
@@ -104,7 +106,9 @@ export function NotificationBell() {
           </TabsList>
           <TabsContent value={tab} className="mt-2 max-h-80 overflow-y-auto px-1 pb-2">
             {isLoading ? (
-              <p className="px-3 py-6 text-center text-xs text-muted-foreground">{locale === "pt" ? "A carregar…" : "Loading…"}</p>
+              <p className="px-3 py-6 text-center text-xs text-muted-foreground">
+                {locale === "pt" ? "A carregar…" : "Loading…"}
+              </p>
             ) : !data || data.items.length === 0 ? (
               <p className="px-3 py-6 text-center text-xs text-muted-foreground">
                 {locale === "pt" ? "Sem notificações." : "No notifications."}
@@ -129,14 +133,19 @@ export function NotificationBell() {
                           <Check className="mt-0.5 size-3 shrink-0 text-muted-foreground" />
                         )}
                       </div>
-                      {n.description && <p className="mt-0.5 text-xs text-muted-foreground">{n.description}</p>}
+                      {n.description && (
+                        <p className="mt-0.5 text-xs text-muted-foreground">{n.description}</p>
+                      )}
                       <p className="mt-1 text-[10px] text-muted-foreground">
-                        {new Date(n.created_at).toLocaleString(locale === "pt" ? "pt-PT" : "en-US", {
-                          day: "2-digit",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {new Date(n.created_at).toLocaleString(
+                          locale === "pt" ? "pt-PT" : "en-US",
+                          {
+                            day: "2-digit",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
                       </p>
                     </button>
                   </li>

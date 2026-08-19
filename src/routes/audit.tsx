@@ -150,7 +150,8 @@ function AuditPage() {
           <ShieldCheck className="mx-auto h-12 w-12 text-emerald-500" />
           <h1 className="mt-4 font-display text-2xl font-bold">Acesso restrito</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Esta área é apenas para administradores. Se acredita que devia ter acesso, contacte o Coach.
+            Esta área é apenas para administradores. Se acredita que devia ter acesso, contacte o
+            Coach.
           </p>
           <Button asChild className="mt-6">
             <Link to="/dashboard">Ir para o painel</Link>

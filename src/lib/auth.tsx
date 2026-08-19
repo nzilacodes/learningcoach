@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from "react";
 import { apiFetch, ApiError } from "@/lib/api/client";
 
 type Role = "admin" | "user";

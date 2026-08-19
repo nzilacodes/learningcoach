@@ -44,9 +44,10 @@ export function useLevelExam(level: CefrLevel) {
     queryKey: ["level_exam", level, user?.id],
     enabled: !!user,
     // Questions come back without the answer key — grading happens server-side.
-    queryFn: () => apiFetch<{ level: CefrLevel; title: string; questions: { q: string; opts: string[] }[] }>(
-      `/v1/level-exams/${level}`,
-    ),
+    queryFn: () =>
+      apiFetch<{ level: CefrLevel; title: string; questions: { q: string; opts: string[] }[] }>(
+        `/v1/level-exams/${level}`,
+      ),
   });
 }
 

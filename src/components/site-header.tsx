@@ -1,12 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  Languages,
-  User as UserIcon,
-  X,
-  ArrowRight,
-  ChevronDown,
-} from "lucide-react";
+import { Languages, User as UserIcon, X, ArrowRight, ChevronDown } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import coachLogo from "@/assets/coach-logo.png";
@@ -75,14 +69,14 @@ export function SiteHeader() {
       {/* Navbar */}
       <header
         className={`fixed left-0 right-0 top-0 z-50 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          scrolled
-            ? "pt-3"
-            : "pt-5"
+          scrolled ? "pt-3" : "pt-5"
         }`}
       >
-        <div className={`mx-auto px-4 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          scrolled ? "max-w-7xl" : "max-w-full"
-        }`}>
+        <div
+          className={`mx-auto px-4 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            scrolled ? "max-w-7xl" : "max-w-full"
+          }`}
+        >
           <nav
             className={`flex items-center justify-between gap-4 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
               scrolled
@@ -134,7 +128,7 @@ export function SiteHeader() {
                     {link.label}
                     <span className="absolute bottom-0.5 left-1/2 h-0.5 w-0 rounded-full bg-[#0EA5A4] transition-all duration-300 group-hover:left-4 group-hover:w-[calc(100%-2rem)]" />
                   </Link>
-                )
+                ),
               )}
 
               {/* More dropdown */}
@@ -187,8 +181,12 @@ export function SiteHeader() {
                 className="group hidden items-center gap-2.5 rounded-full bg-[#0F172A] px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white transition-all duration-300 hover:shadow-lg lg:inline-flex"
               >
                 {user
-                  ? (locale === "pt" ? "Painel" : "Dashboard")
-                  : (locale === "pt" ? "Entrar" : "Sign in")}
+                  ? locale === "pt"
+                    ? "Painel"
+                    : "Dashboard"
+                  : locale === "pt"
+                    ? "Entrar"
+                    : "Sign in"}
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#0F172A]">
                   <ArrowRight className="h-4 w-4 -rotate-45 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
@@ -244,7 +242,9 @@ export function SiteHeader() {
               <img src={coachLogo} alt="LEWC" className="h-9 w-9 rounded-xl object-contain" />
               <div>
                 <div className="text-sm font-bold text-slate-800">Learning English</div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider">with Coach</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider">
+                  with Coach
+                </div>
               </div>
             </div>
             <button

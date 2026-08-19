@@ -4,17 +4,13 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 // Detectar dispositivo
-export const isMobile = () =>
-  typeof window !== "undefined" && window.innerWidth <= 768;
+export const isMobile = () => typeof window !== "undefined" && window.innerWidth <= 768;
 
 export const isTablet = () =>
-  typeof window !== "undefined" &&
-  window.innerWidth > 480 &&
-  window.innerWidth <= 768;
+  typeof window !== "undefined" && window.innerWidth > 480 && window.innerWidth <= 768;
 
 export const prefersReducedMotion = () =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // Configurações globais otimizadas
 gsap.defaults({

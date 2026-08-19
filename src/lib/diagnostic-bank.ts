@@ -5,15 +5,15 @@ export type Cefr = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
 export interface McqItem {
   id: string;
-  prompt: string;      // English question / stem
+  prompt: string; // English question / stem
   options: string[];
   correct: number;
   level: Cefr;
-  note?: string;       // optional PT hint shown above the question
+  note?: string; // optional PT hint shown above the question
 }
 
 export interface ListeningItem extends McqItem {
-  audio: string;       // text passed to TTS
+  audio: string; // text passed to TTS
 }
 
 export interface ReadingPassage {
@@ -26,41 +26,113 @@ export interface ReadingPassage {
 export interface WritingPrompt {
   id: string;
   level: Cefr;
-  prompt: string;      // instruction to the learner
+  prompt: string; // instruction to the learner
   minWords: number;
 }
 
 export interface SpeakingPrompt {
   id: string;
   level: Cefr;
-  prompt: string;      // instruction shown to the learner
+  prompt: string; // instruction shown to the learner
   minWords: number;
 }
 
 export interface PronunciationItem {
   id: string;
   level: Cefr;
-  sentence: string;    // sentence to read aloud
+  sentence: string; // sentence to read aloud
 }
 
 /* ---------------- Grammar (6) ---------------- */
 export const GRAMMAR: McqItem[] = [
-  { id: "g1", level: "A1", prompt: "She ___ a teacher.", options: ["am", "is", "are", "be"], correct: 1 },
-  { id: "g2", level: "A2", prompt: "Yesterday I ___ to the market.", options: ["go", "goes", "went", "gone"], correct: 2 },
-  { id: "g3", level: "B1", prompt: "If it rains tomorrow, we ___ stay home.", options: ["will", "would", "would have", "are"], correct: 0 },
-  { id: "g4", level: "B2", prompt: "By the time he arrived, we ___ dinner.", options: ["finished", "have finished", "had finished", "were finishing"], correct: 2 },
-  { id: "g5", level: "C1", prompt: "Rarely ___ such a compelling argument.", options: ["I have heard", "have I heard", "I heard", "did I heard"], correct: 1 },
-  { id: "g6", level: "C2", prompt: "Were it not ___ your help, I would have failed.", options: ["by", "for", "of", "with"], correct: 1 },
+  {
+    id: "g1",
+    level: "A1",
+    prompt: "She ___ a teacher.",
+    options: ["am", "is", "are", "be"],
+    correct: 1,
+  },
+  {
+    id: "g2",
+    level: "A2",
+    prompt: "Yesterday I ___ to the market.",
+    options: ["go", "goes", "went", "gone"],
+    correct: 2,
+  },
+  {
+    id: "g3",
+    level: "B1",
+    prompt: "If it rains tomorrow, we ___ stay home.",
+    options: ["will", "would", "would have", "are"],
+    correct: 0,
+  },
+  {
+    id: "g4",
+    level: "B2",
+    prompt: "By the time he arrived, we ___ dinner.",
+    options: ["finished", "have finished", "had finished", "were finishing"],
+    correct: 2,
+  },
+  {
+    id: "g5",
+    level: "C1",
+    prompt: "Rarely ___ such a compelling argument.",
+    options: ["I have heard", "have I heard", "I heard", "did I heard"],
+    correct: 1,
+  },
+  {
+    id: "g6",
+    level: "C2",
+    prompt: "Were it not ___ your help, I would have failed.",
+    options: ["by", "for", "of", "with"],
+    correct: 1,
+  },
 ];
 
 /* ---------------- Vocabulary (6) ---------------- */
 export const VOCABULARY: McqItem[] = [
-  { id: "v1", level: "A1", prompt: "The opposite of 'big' is:", options: ["small", "tall", "fat", "long"], correct: 0 },
-  { id: "v2", level: "A2", prompt: "You use an ___ to open a door.", options: ["window", "key", "spoon", "book"], correct: 1 },
-  { id: "v3", level: "B1", prompt: "'Reliable' means someone you can:", options: ["ignore", "trust", "avoid", "fear"], correct: 1 },
-  { id: "v4", level: "B2", prompt: "'To postpone' a meeting means to:", options: ["cancel it", "attend it", "delay it", "shorten it"], correct: 2 },
-  { id: "v5", level: "C1", prompt: "A 'meticulous' person is very:", options: ["careless", "detail-oriented", "friendly", "hesitant"], correct: 1 },
-  { id: "v6", level: "C2", prompt: "'To exacerbate' a problem is to:", options: ["solve it", "reduce it", "worsen it", "ignore it"], correct: 2 },
+  {
+    id: "v1",
+    level: "A1",
+    prompt: "The opposite of 'big' is:",
+    options: ["small", "tall", "fat", "long"],
+    correct: 0,
+  },
+  {
+    id: "v2",
+    level: "A2",
+    prompt: "You use an ___ to open a door.",
+    options: ["window", "key", "spoon", "book"],
+    correct: 1,
+  },
+  {
+    id: "v3",
+    level: "B1",
+    prompt: "'Reliable' means someone you can:",
+    options: ["ignore", "trust", "avoid", "fear"],
+    correct: 1,
+  },
+  {
+    id: "v4",
+    level: "B2",
+    prompt: "'To postpone' a meeting means to:",
+    options: ["cancel it", "attend it", "delay it", "shorten it"],
+    correct: 2,
+  },
+  {
+    id: "v5",
+    level: "C1",
+    prompt: "A 'meticulous' person is very:",
+    options: ["careless", "detail-oriented", "friendly", "hesitant"],
+    correct: 1,
+  },
+  {
+    id: "v6",
+    level: "C2",
+    prompt: "'To exacerbate' a problem is to:",
+    options: ["solve it", "reduce it", "worsen it", "ignore it"],
+    correct: 2,
+  },
 ];
 
 /* ---------------- Reading (2 passages, 4 questions) ---------------- */
@@ -71,8 +143,16 @@ export const READING: ReadingPassage[] = [
     passage:
       "Maria wakes up at seven o'clock every morning. She drinks a cup of coffee and reads the news for twenty minutes. Then she rides her bike to the office. In the evening she cooks dinner with her sister and they watch a movie together.",
     questions: [
-      { prompt: "How does Maria get to work?", options: ["By car", "By bus", "By bike", "On foot"], correct: 2 },
-      { prompt: "What does she do in the morning before work?", options: ["Cooks dinner", "Reads the news", "Watches a movie", "Rides with her sister"], correct: 1 },
+      {
+        prompt: "How does Maria get to work?",
+        options: ["By car", "By bus", "By bike", "On foot"],
+        correct: 2,
+      },
+      {
+        prompt: "What does she do in the morning before work?",
+        options: ["Cooks dinner", "Reads the news", "Watches a movie", "Rides with her sister"],
+        correct: 1,
+      },
     ],
   },
   {
@@ -81,8 +161,21 @@ export const READING: ReadingPassage[] = [
     passage:
       "Although remote work has undeniable perks — flexibility, no commute, and quieter spaces — many employees report feeling isolated. Companies experimenting with hybrid schedules argue that a balance between office collaboration and home focus tends to yield higher productivity and stronger engagement over time.",
     questions: [
-      { prompt: "According to the text, a downside of remote work is:", options: ["higher costs", "isolation", "longer commutes", "less flexibility"], correct: 1 },
-      { prompt: "Hybrid schedules aim to combine:", options: ["office focus and home meetings", "collaboration and focus", "shorter days and lower pay", "isolation and productivity"], correct: 1 },
+      {
+        prompt: "According to the text, a downside of remote work is:",
+        options: ["higher costs", "isolation", "longer commutes", "less flexibility"],
+        correct: 1,
+      },
+      {
+        prompt: "Hybrid schedules aim to combine:",
+        options: [
+          "office focus and home meetings",
+          "collaboration and focus",
+          "shorter days and lower pay",
+          "isolation and productivity",
+        ],
+        correct: 1,
+      },
     ],
   },
 ];

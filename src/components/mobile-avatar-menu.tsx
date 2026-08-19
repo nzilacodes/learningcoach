@@ -111,7 +111,11 @@ export function MobileAvatarMenu() {
 export function DesktopAvatarLink() {
   const { locale } = useLocale();
   return (
-    <Link to="/profile" className="hidden md:block" title={locale === "pt" ? "Ver perfil" : "View profile"}>
+    <Link
+      to="/profile"
+      className="hidden md:block"
+      title={locale === "pt" ? "Ver perfil" : "View profile"}
+    >
       <div className="relative inline-flex">
         <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
           <User className="w-4 h-4 text-gray-600" />

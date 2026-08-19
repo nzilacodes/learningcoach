@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
@@ -25,7 +25,11 @@ import {
   Trophy,
   Loader2,
 } from "lucide-react";
-import { HeaderActionLinks, MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 
 export const Route = createFileRoute("/curriculum")({
   component: CurriculumPage,

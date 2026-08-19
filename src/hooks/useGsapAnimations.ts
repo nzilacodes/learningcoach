@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
  */
 export function useGsapAnimations(
   animationFn: (gsap: typeof import("gsap").default) => void,
-  deps: unknown[] = []
+  deps: unknown[] = [],
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const ctxRef = useRef<gsap.Context | null>(null);
@@ -39,10 +39,7 @@ export function useGsapAnimations(
 /**
  * Hook para animações que só funcionam em desktop
  */
-export function useDesktopOnly(
-  animationFn: () => void,
-  deps: unknown[] = []
-) {
+export function useDesktopOnly(animationFn: () => void, deps: unknown[] = []) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

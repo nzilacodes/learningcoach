@@ -34,19 +34,26 @@ function ResetPasswordPage() {
     const token = new URLSearchParams(window.location.search).get("token");
     if (!token) {
       return notify.warning(
-        locale === "pt" ? "Link inválido — peça um novo email de recuperação." : "Invalid link — request a new reset email.",
+        locale === "pt"
+          ? "Link inválido — peça um novo email de recuperação."
+          : "Invalid link — request a new reset email.",
       );
     }
     const pwError = passwordError(password, locale);
     if (pwError) return notify.warning(pwError);
-    if (password !== confirm) return notify.warning(locale === "pt" ? "Senhas não coincidem" : "Passwords don't match");
+    if (password !== confirm)
+      return notify.warning(locale === "pt" ? "Senhas não coincidem" : "Passwords don't match");
     setLoading(true);
     try {
       await apiFetch("/v1/auth/reset-password", {
         method: "POST",
         body: JSON.stringify({ token, newPassword: password }),
       });
-      notify.success(locale === "pt" ? "Senha atualizada — inicie sessão." : "Password updated — please sign in.");
+      notify.success(
+        locale === "pt"
+          ? "Senha atualizada — inicie sessão."
+          : "Password updated — please sign in.",
+      );
       navigate({ to: "/auth" });
     } catch (e) {
       notify.fromError(e, { dedupeKey: "reset-password:submit" });
@@ -60,17 +67,33 @@ function ResetPasswordPage() {
       <SiteHeader />
       <div className="mx-auto max-w-md px-6 py-16">
         <div className="glass rounded-3xl p-8 shadow-glow">
-          <h1 className="font-display text-2xl font-bold">{locale === "pt" ? "Definir nova senha" : "Set new password"}</h1>
+          <h1 className="font-display text-2xl font-bold">
+            {locale === "pt" ? "Definir nova senha" : "Set new password"}
+          </h1>
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div className="space-y-2">
               <Label>{locale === "pt" ? "Nova senha" : "New password"}</Label>
-              <Input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <Input
+                required
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label>{locale === "pt" ? "Confirmar" : "Confirm"}</Label>
-              <Input required type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+              <Input
+                required
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+              />
             </div>
-            <Button type="submit" disabled={loading} className="bg-gradient-sunset w-full text-white">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="bg-gradient-sunset w-full text-white"
+            >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : locale === "pt" ? (

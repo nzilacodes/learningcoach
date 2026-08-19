@@ -29,8 +29,7 @@ export type SpeakOpts = {
 
 export async function speak(text: string, opts: SpeakOpts | string = {}): Promise<void> {
   const o: SpeakOpts = typeof opts === "string" ? { voice: opts } : opts;
-  const voice =
-    o.voice ?? (o.accent === "uk" ? "fable" : o.accent === "us" ? "alloy" : "alloy");
+  const voice = o.voice ?? (o.accent === "uk" ? "fable" : o.accent === "us" ? "alloy" : "alloy");
   const instructions =
     o.instructions ??
     (o.accent === "uk"
@@ -75,12 +74,11 @@ export type Recorder = {
 
 export async function startRecording(): Promise<Recorder> {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  const mime =
-    MediaRecorder.isTypeSupported("audio/webm")
-      ? "audio/webm"
-      : MediaRecorder.isTypeSupported("audio/mp4")
-        ? "audio/mp4"
-        : "";
+  const mime = MediaRecorder.isTypeSupported("audio/webm")
+    ? "audio/webm"
+    : MediaRecorder.isTypeSupported("audio/mp4")
+      ? "audio/mp4"
+      : "";
   const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
   const chunks: BlobPart[] = [];
   rec.ondataavailable = (e) => {

@@ -7,7 +7,6 @@ import { useAuth } from "@/lib/auth";
 import { cefrRank, useMaxUnlockedLevel, useMinExamScore, type CefrLevel } from "@/lib/level-access";
 import { SITE_URL } from "@/lib/site-url";
 
-
 export const Route = createFileRoute("/cefr-levels")({
   component: CefrLevelsPage,
   head: () => ({
@@ -35,8 +34,7 @@ export const Route = createFileRoute("/cefr-levels")({
           "@context": "https://schema.org",
           "@type": "Article",
           headline: "Níveis CEFR (A1–C2): guia completo do Quadro Europeu",
-          description:
-            "Guia prático dos níveis CEFR A1–C2 aplicado ao aprendizado de inglês.",
+          description: "Guia prático dos níveis CEFR A1–C2 aplicado ao aprendizado de inglês.",
           author: { "@type": "Organization", name: "Learning English with Coach" },
         }),
       },
@@ -131,9 +129,7 @@ function CefrLevelsPage() {
             <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
               Guia CEFR
             </span>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Níveis CEFR: A1 a C2 explicados
-            </h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">Níveis CEFR: A1 a C2 explicados</h1>
             <p className="text-lg text-muted-foreground">
               O <strong>Quadro Europeu Comum de Referência para Línguas (CEFR)</strong> divide a
               proficiência em seis níveis. Descubra em qual você está e o que precisa dominar para
@@ -143,7 +139,8 @@ function CefrLevelsPage() {
               <div className="mt-6 inline-flex items-center gap-2 rounded-full border px-4 py-2 bg-card">
                 <Trophy className="w-4 h-4 text-primary" />
                 <span className="text-sm">
-                  Seu nível atual desbloqueado: <strong>{unlocked}</strong> · Nota mínima do exame: <strong>{minScore}%</strong>
+                  Seu nível atual desbloqueado: <strong>{unlocked}</strong> · Nota mínima do exame:{" "}
+                  <strong>{minScore}%</strong>
                 </span>
               </div>
             )}
@@ -166,7 +163,9 @@ function CefrLevelsPage() {
                         {level.code}
                         {locked && <Lock className="w-4 h-4 text-muted-foreground" />}
                         {isCurrent && (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary text-primary-foreground">ATUAL</span>
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
+                            ATUAL
+                          </span>
                         )}
                       </div>
                       <div className="text-sm text-muted-foreground">{level.name}</div>
@@ -185,7 +184,8 @@ function CefrLevelsPage() {
                     <div className="pt-3 border-t border-border/60">
                       {locked ? (
                         <p className="text-xs text-muted-foreground">
-                          Bloqueado — passe o exame final de {unlocked ?? "níveis anteriores"} para desbloquear.
+                          Bloqueado — passe o exame final de {unlocked ?? "níveis anteriores"} para
+                          desbloquear.
                         </p>
                       ) : isCurrent ? (
                         <Button size="sm" asChild>
@@ -206,7 +206,6 @@ function CefrLevelsPage() {
             })}
           </div>
 
-
           <div className="prose prose-neutral dark:prose-invert max-w-none mb-12">
             <h2>Como saber o meu nível de inglês?</h2>
             <p>
@@ -222,8 +221,9 @@ function CefrLevelsPage() {
             </p>
             <h2>Certificado CEFR</h2>
             <p>
-              Ao concluir cada nível na plataforma, você recebe um <strong>certificado digital</strong>{" "}
-              com o código CEFR correspondente, útil para currículo, universidade e imigração.
+              Ao concluir cada nível na plataforma, você recebe um{" "}
+              <strong>certificado digital</strong> com o código CEFR correspondente, útil para
+              currículo, universidade e imigração.
             </p>
           </div>
 

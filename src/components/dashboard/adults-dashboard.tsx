@@ -40,10 +40,30 @@ import {
 } from "@/components/dashboard/extras";
 
 const QUICK_PRACTICE = (locale: "pt" | "en") => [
-  { icon: Mic, label: locale === "pt" ? "Falar" : "Speak", to: "/pronunciation" as const, accent: "hover:bg-[var(--violet)]/5" },
-  { icon: BookOpen, label: locale === "pt" ? "Ler" : "Read", to: "/reading" as const, accent: "hover:bg-[var(--magenta)]/5" },
-  { icon: Gamepad2, label: locale === "pt" ? "Jogar" : "Play", to: "/games" as const, accent: "hover:bg-amber-50" },
-  { icon: Target, label: locale === "pt" ? "Quiz" : "Quiz", to: "/curriculum" as const, accent: "hover:bg-emerald-50" },
+  {
+    icon: Mic,
+    label: locale === "pt" ? "Falar" : "Speak",
+    to: "/pronunciation" as const,
+    accent: "hover:bg-[var(--violet)]/5",
+  },
+  {
+    icon: BookOpen,
+    label: locale === "pt" ? "Ler" : "Read",
+    to: "/reading" as const,
+    accent: "hover:bg-[var(--magenta)]/5",
+  },
+  {
+    icon: Gamepad2,
+    label: locale === "pt" ? "Jogar" : "Play",
+    to: "/games" as const,
+    accent: "hover:bg-amber-50",
+  },
+  {
+    icon: Target,
+    label: locale === "pt" ? "Quiz" : "Quiz",
+    to: "/curriculum" as const,
+    accent: "hover:bg-emerald-50",
+  },
 ];
 
 /** Adult layout: dense bento grid, full subscription management, configurable
@@ -186,7 +206,11 @@ export function AdultsDashboard(data: DashboardData) {
                 <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
               </button>
             </div>
-            <Link to="/profile" className="hidden md:block" title={locale === "pt" ? "Ver perfil" : "View profile"}>
+            <Link
+              to="/profile"
+              className="hidden md:block"
+              title={locale === "pt" ? "Ver perfil" : "View profile"}
+            >
               <div className="relative inline-flex">
                 <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
                   <User className="w-4 h-4 text-gray-600" />
@@ -774,7 +798,9 @@ function SubscriptionCard({
             <p className="text-[10px] text-white/70">
               {daysLeft != null
                 ? `${daysLeft} ${locale === "pt" ? "dias restantes" : "days left"}`
-                : locale === "pt" ? "Sem data de expiração" : "No expiration date"}
+                : locale === "pt"
+                  ? "Sem data de expiração"
+                  : "No expiration date"}
             </p>
           </div>
         </div>

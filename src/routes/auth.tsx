@@ -216,7 +216,9 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
     if (password !== confirm)
       return notify.warning(locale === "pt" ? "Senhas não coincidem" : "Passwords don't match");
     if (!terms || !privacy)
-      return notify.warning(locale === "pt" ? "Aceite os termos e a política" : "Accept terms & privacy");
+      return notify.warning(
+        locale === "pt" ? "Aceite os termos e a política" : "Accept terms & privacy",
+      );
     setLoading(true);
     try {
       await apiFetch("/v1/auth/register", {

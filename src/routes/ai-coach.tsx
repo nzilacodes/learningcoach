@@ -16,7 +16,11 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
-import { HeaderActionLinks, MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 import { startRecording, transcribe, type Recorder } from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
 import { SITE_URL } from "@/lib/site-url";
@@ -122,25 +126,38 @@ function AICoachPage() {
       // Always 201 now — a failed AI reply is reported as status:"failed" with
       // the user's message still persisted (see backend sendCoachMessage),
       // never thrown as an HTTP error that would make it look lost.
-      const result = await apiFetch<{ userMessage: CoachMessage; assistantMessage: CoachMessage | null; status: "ok" | "failed" }>(
-        `/v1/ai/conversations/${conversationId}/messages`,
-        { method: "POST", body: JSON.stringify({ content }) },
-      );
+      const result = await apiFetch<{
+        userMessage: CoachMessage;
+        assistantMessage: CoachMessage | null;
+        status: "ok" | "failed";
+      }>(`/v1/ai/conversations/${conversationId}/messages`, {
+        method: "POST",
+        body: JSON.stringify({ content }),
+      });
       qc.invalidateQueries({ queryKey: ["ai_messages", conversationId] });
       qc.invalidateQueries({ queryKey: ["ai_conversations", user?.id] });
       if (result.status === "failed") {
         setFailedMessageIds((prev) => new Set(prev).add(result.userMessage.id));
-        notify.warning(locale === "pt" ? "O Coach está temporariamente indisponível" : "Coach is temporarily unavailable", {
-          description:
-            locale === "pt"
-              ? "Não conseguimos processar a sua mensagem agora. A sua mensagem não foi perdida."
-              : "We couldn't process your message right now. Your message wasn't lost.",
-          dedupeKey: "ai-coach:reply-failed",
-        });
+        notify.warning(
+          locale === "pt"
+            ? "O Coach está temporariamente indisponível"
+            : "Coach is temporarily unavailable",
+          {
+            description:
+              locale === "pt"
+                ? "Não conseguimos processar a sua mensagem agora. A sua mensagem não foi perdida."
+                : "We couldn't process your message right now. Your message wasn't lost.",
+            dedupeKey: "ai-coach:reply-failed",
+          },
+        );
       }
     } catch (e) {
       setInput(content);
-      notify.fromError(e, { dedupeKey: "ai-coach:send", onRetry: () => send(), onUpgrade: () => navigate({ to: "/pricing" }) });
+      notify.fromError(e, {
+        dedupeKey: "ai-coach:send",
+        onRetry: () => send(),
+        onUpgrade: () => navigate({ to: "/pricing" }),
+      });
     } finally {
       setSending(false);
     }
@@ -150,10 +167,10 @@ function AICoachPage() {
     if (!activeId || retryingId) return;
     setRetryingId(messageId);
     try {
-      const result = await apiFetch<{ assistantMessage: CoachMessage | null; status: "ok" | "failed" }>(
-        `/v1/ai/conversations/${activeId}/messages/${messageId}/retry`,
-        { method: "POST" },
-      );
+      const result = await apiFetch<{
+        assistantMessage: CoachMessage | null;
+        status: "ok" | "failed";
+      }>(`/v1/ai/conversations/${activeId}/messages/${messageId}/retry`, { method: "POST" });
       qc.invalidateQueries({ queryKey: ["ai_messages", activeId] });
       if (result.status === "ok") {
         setFailedMessageIds((prev) => {
@@ -162,13 +179,20 @@ function AICoachPage() {
           return next;
         });
       } else {
-        notify.warning(locale === "pt" ? "Ainda sem resposta do Coach" : "Still no reply from Coach", {
-          description: locale === "pt" ? "Tente novamente em instantes." : "Please try again shortly.",
-          dedupeKey: "ai-coach:retry-failed",
-        });
+        notify.warning(
+          locale === "pt" ? "Ainda sem resposta do Coach" : "Still no reply from Coach",
+          {
+            description:
+              locale === "pt" ? "Tente novamente em instantes." : "Please try again shortly.",
+            dedupeKey: "ai-coach:retry-failed",
+          },
+        );
       }
     } catch (e) {
-      notify.fromError(e, { dedupeKey: "ai-coach:retry", onUpgrade: () => navigate({ to: "/pricing" }) });
+      notify.fromError(e, {
+        dedupeKey: "ai-coach:retry",
+        onUpgrade: () => navigate({ to: "/pricing" }),
+      });
     } finally {
       setRetryingId(null);
     }
@@ -272,7 +296,10 @@ function AICoachPage() {
                   </div>
                 ) : (
                   transcript.map((m) => (
-                    <div key={m.id} className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}>
+                    <div
+                      key={m.id}
+                      className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}
+                    >
                       <div
                         className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
                           m.role === "user"
@@ -284,7 +311,9 @@ function AICoachPage() {
                       </div>
                       {m.role === "user" && failedMessageIds.has(m.id) && (
                         <div className="mt-1.5 flex items-center gap-2 text-xs text-amber-600">
-                          <span>{locale === "pt" ? "Sem resposta do Coach." : "No reply from Coach."}</span>
+                          <span>
+                            {locale === "pt" ? "Sem resposta do Coach." : "No reply from Coach."}
+                          </span>
                           <button
                             type="button"
                             onClick={() => retry(m.id)}
@@ -292,8 +321,12 @@ function AICoachPage() {
                             className="font-semibold underline underline-offset-2 hover:no-underline disabled:opacity-50"
                           >
                             {retryingId === m.id
-                              ? locale === "pt" ? "A tentar…" : "Retrying…"
-                              : locale === "pt" ? "Tentar novamente" : "Try again"}
+                              ? locale === "pt"
+                                ? "A tentar…"
+                                : "Retrying…"
+                              : locale === "pt"
+                                ? "Tentar novamente"
+                                : "Try again"}
                           </button>
                         </div>
                       )}
@@ -333,8 +366,12 @@ function AICoachPage() {
                     }}
                     placeholder={
                       transcribing
-                        ? locale === "pt" ? "Transcrevendo áudio…" : "Transcribing audio…"
-                        : locale === "pt" ? "Digite sua pergunta..." : "Ask anything..."
+                        ? locale === "pt"
+                          ? "Transcrevendo áudio…"
+                          : "Transcribing audio…"
+                        : locale === "pt"
+                          ? "Digite sua pergunta..."
+                          : "Ask anything..."
                     }
                     disabled={transcribing}
                     rows={1}
@@ -363,11 +400,19 @@ function AICoachPage() {
                           : "bg-white border-gray-200/50 hover:bg-gray-50 text-gray-500"
                       }`}
                     >
-                      {recorder ? <Square className="w-4 h-4 fill-current" /> : <Mic className="w-4 h-4" />}
+                      {recorder ? (
+                        <Square className="w-4 h-4 fill-current" />
+                      ) : (
+                        <Mic className="w-4 h-4" />
+                      )}
                       <span className="text-[11px] font-medium">
                         {recorder
-                          ? locale === "pt" ? "Parar" : "Stop"
-                          : locale === "pt" ? "Mensagem de voz" : "Voice Message"}
+                          ? locale === "pt"
+                            ? "Parar"
+                            : "Stop"
+                          : locale === "pt"
+                            ? "Mensagem de voz"
+                            : "Voice Message"}
                       </span>
                     </button>
                   </div>

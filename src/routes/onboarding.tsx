@@ -102,7 +102,9 @@ function OnboardingWizard() {
                       {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
                     </div>
                     <div className="min-w-0 hidden sm:block">
-                      <div className={`truncate text-xs font-semibold ${active ? "text-foreground" : "text-muted-foreground"}`}>
+                      <div
+                        className={`truncate text-xs font-semibold ${active ? "text-foreground" : "text-muted-foreground"}`}
+                      >
                         {locale === "pt" ? s.labelPt : s.labelEn}
                       </div>
                     </div>
@@ -135,7 +137,10 @@ function UnknownStatusStep({ onDone }: { onDone: () => Promise<void> }) {
   const reset = async () => {
     setResetting(true);
     try {
-      await apiFetch("/v1/me", { method: "PATCH", body: JSON.stringify({ onboardingStatus: "profile" }) });
+      await apiFetch("/v1/me", {
+        method: "PATCH",
+        body: JSON.stringify({ onboardingStatus: "profile" }),
+      });
     } catch (e) {
       setResetting(false);
       return notify.fromError(e, { dedupeKey: "onboarding:reset" });
@@ -147,15 +152,28 @@ function UnknownStatusStep({ onDone }: { onDone: () => Promise<void> }) {
   return (
     <div className="glass rounded-3xl p-8 shadow-glow text-center">
       <h2 className="font-display text-xl font-bold">
-        {locale === "pt" ? "Algo correu mal com o seu progresso" : "Something went wrong with your progress"}
+        {locale === "pt"
+          ? "Algo correu mal com o seu progresso"
+          : "Something went wrong with your progress"}
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
         {locale === "pt"
           ? "Não foi possível determinar o passo atual do onboarding. Reinicie para continuar."
           : "We couldn't determine your current onboarding step. Restart to continue."}
       </p>
-      <Button onClick={reset} disabled={resetting} size="lg" className="bg-gradient-sunset mt-6 text-white shadow-soft hover:opacity-90">
-        {resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : locale === "pt" ? "Reiniciar onboarding" : "Restart onboarding"}
+      <Button
+        onClick={reset}
+        disabled={resetting}
+        size="lg"
+        className="bg-gradient-sunset mt-6 text-white shadow-soft hover:opacity-90"
+      >
+        {resetting ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : locale === "pt" ? (
+          "Reiniciar onboarding"
+        ) : (
+          "Restart onboarding"
+        )}
       </Button>
     </div>
   );
@@ -163,13 +181,7 @@ function UnknownStatusStep({ onDone }: { onDone: () => Promise<void> }) {
 
 /* ---------------- STEP 1: PROFILE ---------------- */
 
-function ProfileStep({
-  user,
-  onDone,
-}: {
-  user: AuthUser;
-  onDone: () => Promise<void>;
-}) {
+function ProfileStep({ user, onDone }: { user: AuthUser; onDone: () => Promise<void> }) {
   const { locale } = useLocale();
   const notify = useNotification();
   const { setTheme } = useAgeTheme();
@@ -187,14 +199,21 @@ function ProfileStep({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const ageNum = parseInt(age, 10);
-    if (!fullName.trim()) return notify.warning(locale === "pt" ? "Nome obrigatório" : "Name required");
+    if (!fullName.trim())
+      return notify.warning(locale === "pt" ? "Nome obrigatório" : "Name required");
     if (!Number.isFinite(ageNum) || ageNum < 4 || ageNum > 120)
       return notify.warning(locale === "pt" ? "Idade inválida (4–120)" : "Invalid age (4–120)");
-    if (!country.trim()) return notify.warning(locale === "pt" ? "País obrigatório" : "Country required");
-    if (!nativeLang.trim()) return notify.warning(locale === "pt" ? "Língua materna obrigatória" : "Native language required");
+    if (!country.trim())
+      return notify.warning(locale === "pt" ? "País obrigatório" : "Country required");
+    if (!nativeLang.trim())
+      return notify.warning(
+        locale === "pt" ? "Língua materna obrigatória" : "Native language required",
+      );
     if (!goal) return notify.warning(locale === "pt" ? "Escolha um objetivo" : "Choose a goal");
     if (interests.length === 0)
-      return notify.warning(locale === "pt" ? "Escolha pelo menos 1 interesse" : "Pick at least 1 interest");
+      return notify.warning(
+        locale === "pt" ? "Escolha pelo menos 1 interesse" : "Pick at least 1 interest",
+      );
 
     setSaving(true);
     try {
@@ -233,24 +252,53 @@ function ProfileStep({
 
       <form onSubmit={submit} className="mt-6 space-y-5">
         <Field icon={User} label={locale === "pt" ? "Nome completo" : "Full name"}>
-          <Input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Maria Silva" className="pl-9" />
+          <Input
+            required
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Maria Silva"
+            className="pl-9"
+          />
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field icon={Cake} label={locale === "pt" ? "Idade" : "Age"}>
-            <Input required type="number" min={4} max={120} value={age} onChange={(e) => setAge(e.target.value)} placeholder="18" className="pl-9" />
+            <Input
+              required
+              type="number"
+              min={4}
+              max={120}
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              placeholder="18"
+              className="pl-9"
+            />
           </Field>
           <Field icon={Globe} label={locale === "pt" ? "País" : "Country"}>
-            <Input required value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Angola" className="pl-9" />
+            <Input
+              required
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              placeholder="Angola"
+              className="pl-9"
+            />
           </Field>
         </div>
 
         <Field icon={Languages} label={locale === "pt" ? "Língua materna" : "Native language"}>
-          <Input required value={nativeLang} onChange={(e) => setNativeLang(e.target.value)} placeholder={locale === "pt" ? "Português" : "Portuguese"} className="pl-9" />
+          <Input
+            required
+            value={nativeLang}
+            onChange={(e) => setNativeLang(e.target.value)}
+            placeholder={locale === "pt" ? "Português" : "Portuguese"}
+            className="pl-9"
+          />
         </Field>
 
         <div className="space-y-2">
-          <Label className="flex items-center gap-2"><Target className="h-4 w-4" /> {locale === "pt" ? "Objetivo principal" : "Main goal"}</Label>
+          <Label className="flex items-center gap-2">
+            <Target className="h-4 w-4" /> {locale === "pt" ? "Objetivo principal" : "Main goal"}
+          </Label>
           <div className="grid gap-2 sm:grid-cols-2">
             {GOAL_OPTIONS.map((g) => {
               const active = goal === g.id;
@@ -260,7 +308,9 @@ function ProfileStep({
                   type="button"
                   onClick={() => setGoal(g.id)}
                   className={`rounded-xl border-2 p-3 text-left text-sm font-medium transition ${
-                    active ? "border-sunset bg-sunset/10 shadow-soft" : "border-border bg-background/60 hover:border-magenta/50"
+                    active
+                      ? "border-sunset bg-sunset/10 shadow-soft"
+                      : "border-border bg-background/60 hover:border-magenta/50"
                   }`}
                 >
                   {locale === "pt" ? g.pt : g.en}
@@ -271,7 +321,9 @@ function ProfileStep({
         </div>
 
         <div className="space-y-2">
-          <Label className="flex items-center gap-2"><Heart className="h-4 w-4" /> {locale === "pt" ? "Interesses" : "Interests"}</Label>
+          <Label className="flex items-center gap-2">
+            <Heart className="h-4 w-4" /> {locale === "pt" ? "Interesses" : "Interests"}
+          </Label>
           <div className="flex flex-wrap gap-2">
             {INTEREST_OPTIONS.map((i) => {
               const active = interests.includes(i.id);
@@ -281,7 +333,9 @@ function ProfileStep({
                   type="button"
                   onClick={() => toggleInterest(i.id)}
                   className={`rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition ${
-                    active ? "border-magenta bg-magenta text-white" : "border-border bg-background/60 hover:border-magenta/50"
+                    active
+                      ? "border-magenta bg-magenta text-white"
+                      : "border-border bg-background/60 hover:border-magenta/50"
                   }`}
                 >
                   {locale === "pt" ? i.pt : i.en}
@@ -291,8 +345,19 @@ function ProfileStep({
           </div>
         </div>
 
-        <Button type="submit" size="lg" disabled={saving} className="bg-gradient-sunset w-full text-white shadow-soft hover:opacity-90">
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{locale === "pt" ? "Continuar" : "Continue"} <ArrowRight className="ml-1.5 h-4 w-4" /></>}
+        <Button
+          type="submit"
+          size="lg"
+          disabled={saving}
+          className="bg-gradient-sunset w-full text-white shadow-soft hover:opacity-90"
+        >
+          {saving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              {locale === "pt" ? "Continuar" : "Continue"} <ArrowRight className="ml-1.5 h-4 w-4" />
+            </>
+          )}
         </Button>
       </form>
     </div>
@@ -301,14 +366,21 @@ function ProfileStep({
 
 /* ---------------- STEP 2: PLACEMENT (redirects to full /placement diagnostic) ---------------- */
 
-
-
-function PlacementStep({}: { onDone: () => Promise<void> }) {
+function PlacementStep({ onDone }: { onDone: () => Promise<void> }) {
+  // Unlike the other steps, this one hands off entirely to /placement — its
+  // own success screen navigates straight to /dashboard rather than back into
+  // this wizard, so there's no "advance to next step" moment here to call
+  // onDone() from. Kept in the signature only for parity with the sibling
+  // steps at the call site below.
+  void onDone;
   const { locale } = useLocale();
   const navigate = useNavigate();
   return (
     <div className="glass rounded-3xl p-8 shadow-glow">
-      <Badge icon={GraduationCap} label={locale === "pt" ? "Passo 4 · Diagnóstico completo" : "Step 4 · Full diagnostic"} />
+      <Badge
+        icon={GraduationCap}
+        label={locale === "pt" ? "Passo 4 · Diagnóstico completo" : "Step 4 · Full diagnostic"}
+      />
       <h2 className="mt-4 font-display text-2xl font-bold">
         {locale === "pt" ? "Vamos avaliar 7 skills do seu inglês" : "Let's assess 7 English skills"}
       </h2>
@@ -324,7 +396,10 @@ function PlacementStep({}: { onDone: () => Promise<void> }) {
           locale === "pt" ? "Pontos fortes/fracos" : "Strengths/weaknesses",
           locale === "pt" ? "Plano de 4 semanas" : "4-week learning plan",
         ].map((it) => (
-          <li key={it} className="flex items-center gap-2 rounded-xl border border-border bg-background/60 p-3">
+          <li
+            key={it}
+            className="flex items-center gap-2 rounded-xl border border-border bg-background/60 p-3"
+          >
             <Check className="h-4 w-4 text-magenta" /> {it}
           </li>
         ))}
@@ -334,39 +409,111 @@ function PlacementStep({}: { onDone: () => Promise<void> }) {
         className="mt-6 bg-gradient-sunset text-white shadow-soft hover:opacity-90"
         onClick={() => navigate({ to: "/placement" })}
       >
-        {locale === "pt" ? "Começar diagnóstico" : "Start diagnostic"} <ArrowRight className="ml-1.5 h-4 w-4" />
+        {locale === "pt" ? "Começar diagnóstico" : "Start diagnostic"}{" "}
+        <ArrowRight className="ml-1.5 h-4 w-4" />
       </Button>
     </div>
   );
 }
 
-
 /* ---------------- STEP 3: PLAN (CEFR result + personalized plan) ---------------- */
 
 const PLAN_BY_LEVEL: Record<string, { pt: string[]; en: string[] }> = {
   A1: {
-    pt: ["Fundamentos: alfabeto, saudações, números", "Verbo to be, artigos, plurais", "Vocabulário do dia-a-dia (100 palavras)", "Frases simples e presentes", "Pronúncia básica com Coach"],
-    en: ["Fundamentals: alphabet, greetings, numbers", "Verb to be, articles, plurals", "Everyday vocabulary (100 words)", "Simple sentences & present tense", "Basic pronunciation with Coach"],
+    pt: [
+      "Fundamentos: alfabeto, saudações, números",
+      "Verbo to be, artigos, plurais",
+      "Vocabulário do dia-a-dia (100 palavras)",
+      "Frases simples e presentes",
+      "Pronúncia básica com Coach",
+    ],
+    en: [
+      "Fundamentals: alphabet, greetings, numbers",
+      "Verb to be, articles, plurals",
+      "Everyday vocabulary (100 words)",
+      "Simple sentences & present tense",
+      "Basic pronunciation with Coach",
+    ],
   },
   A2: {
-    pt: ["Passado simples e futuro com will/going to", "Vocabulário de rotinas, viagens e comida", "Conversação básica com Coach IA", "Compreensão auditiva guiada", "Leitura de textos curtos"],
-    en: ["Past simple & future with will/going to", "Vocabulary: routines, travel, food", "Basic conversation with AI Coach", "Guided listening comprehension", "Reading short texts"],
+    pt: [
+      "Passado simples e futuro com will/going to",
+      "Vocabulário de rotinas, viagens e comida",
+      "Conversação básica com Coach IA",
+      "Compreensão auditiva guiada",
+      "Leitura de textos curtos",
+    ],
+    en: [
+      "Past simple & future with will/going to",
+      "Vocabulary: routines, travel, food",
+      "Basic conversation with AI Coach",
+      "Guided listening comprehension",
+      "Reading short texts",
+    ],
   },
   B1: {
-    pt: ["Present perfect e condicionais 1", "Expressões idiomáticas comuns", "Debates simples com Coach IA", "Redação de emails e opiniões", "Compreensão de podcasts curtos"],
-    en: ["Present perfect & first conditional", "Common idiomatic expressions", "Simple debates with AI Coach", "Writing emails & opinions", "Understanding short podcasts"],
+    pt: [
+      "Present perfect e condicionais 1",
+      "Expressões idiomáticas comuns",
+      "Debates simples com Coach IA",
+      "Redação de emails e opiniões",
+      "Compreensão de podcasts curtos",
+    ],
+    en: [
+      "Present perfect & first conditional",
+      "Common idiomatic expressions",
+      "Simple debates with AI Coach",
+      "Writing emails & opinions",
+      "Understanding short podcasts",
+    ],
   },
   B2: {
-    pt: ["Condicionais avançadas e passiva", "Vocabulário académico e profissional", "Reuniões e apresentações simuladas", "Leitura de artigos jornalísticos", "Redação argumentativa"],
-    en: ["Advanced conditionals & passive voice", "Academic & professional vocabulary", "Simulated meetings & presentations", "Reading journalistic articles", "Argumentative writing"],
+    pt: [
+      "Condicionais avançadas e passiva",
+      "Vocabulário académico e profissional",
+      "Reuniões e apresentações simuladas",
+      "Leitura de artigos jornalísticos",
+      "Redação argumentativa",
+    ],
+    en: [
+      "Advanced conditionals & passive voice",
+      "Academic & professional vocabulary",
+      "Simulated meetings & presentations",
+      "Reading journalistic articles",
+      "Argumentative writing",
+    ],
   },
   C1: {
-    pt: ["Nuances de estilo e registo", "Debate avançado com Coach IA", "Análise de literatura contemporânea", "Escrita académica e ensaios", "Preparação IELTS/TOEFL"],
-    en: ["Style & register nuances", "Advanced debate with AI Coach", "Contemporary literature analysis", "Academic writing & essays", "IELTS/TOEFL preparation"],
+    pt: [
+      "Nuances de estilo e registo",
+      "Debate avançado com Coach IA",
+      "Análise de literatura contemporânea",
+      "Escrita académica e ensaios",
+      "Preparação IELTS/TOEFL",
+    ],
+    en: [
+      "Style & register nuances",
+      "Advanced debate with AI Coach",
+      "Contemporary literature analysis",
+      "Academic writing & essays",
+      "IELTS/TOEFL preparation",
+    ],
   },
   C2: {
-    pt: ["Domínio de expressões idiomáticas raras", "Retórica e persuasão avançada", "Tradução literária e técnica", "Debates a nível nativo", "Certificação C2 Proficiency"],
-    en: ["Mastery of rare idioms", "Advanced rhetoric & persuasion", "Literary & technical translation", "Native-level debates", "C2 Proficiency certification"],
+    pt: [
+      "Domínio de expressões idiomáticas raras",
+      "Retórica e persuasão avançada",
+      "Tradução literária e técnica",
+      "Debates a nível nativo",
+      "Certificação C2 Proficiency",
+    ],
+    en: [
+      "Mastery of rare idioms",
+      "Advanced rhetoric & persuasion",
+      "Literary & technical translation",
+      "Native-level debates",
+      "C2 Proficiency certification",
+    ],
   },
 };
 
@@ -380,7 +527,10 @@ function PlanStep({ user, onDone }: { user: AuthUser; onDone: () => Promise<void
   const advance = async () => {
     setAdvancing(true);
     try {
-      await apiFetch("/v1/me", { method: "PATCH", body: JSON.stringify({ onboardingStatus: "demo" }) });
+      await apiFetch("/v1/me", {
+        method: "PATCH",
+        body: JSON.stringify({ onboardingStatus: "demo" }),
+      });
     } catch (e) {
       setAdvancing(false);
       return notify.fromError(e, { dedupeKey: "onboarding:plan" });
@@ -391,7 +541,10 @@ function PlanStep({ user, onDone }: { user: AuthUser; onDone: () => Promise<void
 
   return (
     <div className="glass rounded-3xl p-8 shadow-glow">
-      <Badge icon={Target} label={locale === "pt" ? "Passos 5–6 · Nível e plano" : "Steps 5–6 · Level & plan"} />
+      <Badge
+        icon={Target}
+        label={locale === "pt" ? "Passos 5–6 · Nível e plano" : "Steps 5–6 · Level & plan"}
+      />
       <div className="mt-6 text-center">
         <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {locale === "pt" ? "O seu nível CEFR" : "Your CEFR level"}
@@ -406,7 +559,10 @@ function PlanStep({ user, onDone }: { user: AuthUser; onDone: () => Promise<void
         </h2>
         <ul className="mt-4 space-y-2">
           {plan[locale].map((item, i) => (
-            <li key={i} className="flex items-start gap-2 rounded-xl border border-border bg-background/60 p-3 text-sm">
+            <li
+              key={i}
+              className="flex items-start gap-2 rounded-xl border border-border bg-background/60 p-3 text-sm"
+            >
               <Check className="mt-0.5 h-4 w-4 shrink-0 text-magenta" />
               <span>{item}</span>
             </li>
@@ -414,9 +570,19 @@ function PlanStep({ user, onDone }: { user: AuthUser; onDone: () => Promise<void
         </ul>
       </div>
 
-      <Button onClick={advance} disabled={advancing} size="lg" className="bg-gradient-sunset mt-8 w-full text-white shadow-soft hover:opacity-90">
-        {advancing ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-          <>{locale === "pt" ? "Continuar para aula demo" : "Continue to demo lesson"} <ArrowRight className="ml-1.5 h-4 w-4" /></>
+      <Button
+        onClick={advance}
+        disabled={advancing}
+        size="lg"
+        className="bg-gradient-sunset mt-8 w-full text-white shadow-soft hover:opacity-90"
+      >
+        {advancing ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <>
+            {locale === "pt" ? "Continuar para aula demo" : "Continue to demo lesson"}{" "}
+            <ArrowRight className="ml-1.5 h-4 w-4" />
+          </>
         )}
       </Button>
     </div>
@@ -469,12 +635,17 @@ function DemoStep({ onDone }: { onDone: () => Promise<void> }) {
 
   return (
     <div className="glass rounded-3xl p-8 shadow-glow">
-      <Badge icon={PlayCircle} label={locale === "pt" ? "Passo 7 · Aula de demonstração" : "Step 7 · Demo lesson"} />
+      <Badge
+        icon={PlayCircle}
+        label={locale === "pt" ? "Passo 7 · Aula de demonstração" : "Step 7 · Demo lesson"}
+      />
       <h2 className="mt-4 font-display text-2xl font-bold">
         {locale === "pt" ? "Experimente uma aula" : "Try a lesson"}
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        {locale === "pt" ? "Toque no cartão para ouvir e ver a tradução." : "Tap the card to hear and see the translation."}
+        {locale === "pt"
+          ? "Toque no cartão para ouvir e ver a tradução."
+          : "Tap the card to hear and see the translation."}
       </p>
 
       <div className="mt-6">
@@ -482,7 +653,10 @@ function DemoStep({ onDone }: { onDone: () => Promise<void> }) {
           {locale === "pt" ? "Cartão" : "Card"} {i + 1} / {DEMO_CARDS.length}
         </div>
         <button
-          onClick={() => { setRevealed(true); speak(card.en); }}
+          onClick={() => {
+            setRevealed(true);
+            speak(card.en);
+          }}
           className="w-full rounded-3xl border-2 border-border bg-background/60 p-8 text-center transition hover:border-magenta shadow-soft"
         >
           <div className="font-display text-2xl font-bold">{card.en}</div>
@@ -494,7 +668,14 @@ function DemoStep({ onDone }: { onDone: () => Promise<void> }) {
       </div>
 
       <div className="mt-6 flex items-center justify-between">
-        <Button variant="ghost" disabled={i === 0} onClick={() => { setI(i - 1); setRevealed(false); }}>
+        <Button
+          variant="ghost"
+          disabled={i === 0}
+          onClick={() => {
+            setI(i - 1);
+            setRevealed(false);
+          }}
+        >
           <ArrowLeft className="mr-1.5 h-4 w-4" /> {locale === "pt" ? "Anterior" : "Back"}
         </Button>
         {!done ? (
@@ -502,7 +683,10 @@ function DemoStep({ onDone }: { onDone: () => Promise<void> }) {
             size="lg"
             disabled={!revealed}
             className="bg-gradient-sunset text-white shadow-soft hover:opacity-90"
-            onClick={() => { setI(i + 1); setRevealed(false); }}
+            onClick={() => {
+              setI(i + 1);
+              setRevealed(false);
+            }}
           >
             {locale === "pt" ? "Próximo" : "Next"} <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
@@ -513,8 +697,13 @@ function DemoStep({ onDone }: { onDone: () => Promise<void> }) {
             onClick={finish}
             className="bg-gradient-sunset text-white shadow-soft hover:opacity-90"
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-              <>{locale === "pt" ? "Escolher plano" : "Choose plan"} <ArrowRight className="ml-1.5 h-4 w-4" /></>
+            {saving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                {locale === "pt" ? "Escolher plano" : "Choose plan"}{" "}
+                <ArrowRight className="ml-1.5 h-4 w-4" />
+              </>
             )}
           </Button>
         )}
@@ -526,24 +715,79 @@ function DemoStep({ onDone }: { onDone: () => Promise<void> }) {
 /* ---------------- STEP 5: CHECKOUT ---------------- */
 
 type PlanKey = "free" | "pro" | "premium";
-const PLANS: { key: PlanKey; icon: typeof Rocket; pt: { name: string; price: string; desc: string; features: string[] }; en: { name: string; price: string; desc: string; features: string[] } }[] = [
+const PLANS: {
+  key: PlanKey;
+  icon: typeof Rocket;
+  pt: { name: string; price: string; desc: string; features: string[] };
+  en: { name: string; price: string; desc: string; features: string[] };
+}[] = [
   {
     key: "free",
     icon: Rocket,
-    pt: { name: "Grátis", price: "0€ / mês", desc: "Comece a aprender sem custo", features: ["3 aulas / semana", "Coach IA (limitado)", "Progresso básico"] },
-    en: { name: "Free", price: "0€ / mo", desc: "Start learning at no cost", features: ["3 lessons / week", "AI Coach (limited)", "Basic progress"] },
+    pt: {
+      name: "Grátis",
+      price: "0€ / mês",
+      desc: "Comece a aprender sem custo",
+      features: ["3 aulas / semana", "Coach IA (limitado)", "Progresso básico"],
+    },
+    en: {
+      name: "Free",
+      price: "0€ / mo",
+      desc: "Start learning at no cost",
+      features: ["3 lessons / week", "AI Coach (limited)", "Basic progress"],
+    },
   },
   {
     key: "pro",
     icon: Sparkles,
-    pt: { name: "Pro", price: "9,99€ / mês", desc: "Para aprendizes sérios", features: ["Aulas ilimitadas", "Coach IA ilimitado", "Certificados CEFR", "Análise de pronúncia"] },
-    en: { name: "Pro", price: "9.99€ / mo", desc: "For serious learners", features: ["Unlimited lessons", "Unlimited AI Coach", "CEFR certificates", "Pronunciation analysis"] },
+    pt: {
+      name: "Pro",
+      price: "9,99€ / mês",
+      desc: "Para aprendizes sérios",
+      features: [
+        "Aulas ilimitadas",
+        "Coach IA ilimitado",
+        "Certificados CEFR",
+        "Análise de pronúncia",
+      ],
+    },
+    en: {
+      name: "Pro",
+      price: "9.99€ / mo",
+      desc: "For serious learners",
+      features: [
+        "Unlimited lessons",
+        "Unlimited AI Coach",
+        "CEFR certificates",
+        "Pronunciation analysis",
+      ],
+    },
   },
   {
     key: "premium",
     icon: Crown,
-    pt: { name: "Premium", price: "19,99€ / mês", desc: "Tudo + sessões 1:1", features: ["Tudo do Pro", "Aulas ao vivo semanais", "Correções de escrita humanas", "Prioridade no suporte"] },
-    en: { name: "Premium", price: "19.99€ / mo", desc: "Everything + 1:1 sessions", features: ["Everything in Pro", "Weekly live classes", "Human writing feedback", "Priority support"] },
+    pt: {
+      name: "Premium",
+      price: "19,99€ / mês",
+      desc: "Tudo + sessões 1:1",
+      features: [
+        "Tudo do Pro",
+        "Aulas ao vivo semanais",
+        "Correções de escrita humanas",
+        "Prioridade no suporte",
+      ],
+    },
+    en: {
+      name: "Premium",
+      price: "19.99€ / mo",
+      desc: "Everything + 1:1 sessions",
+      features: [
+        "Everything in Pro",
+        "Weekly live classes",
+        "Human writing feedback",
+        "Priority support",
+      ],
+    },
   },
 ];
 
@@ -575,7 +819,10 @@ function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
 
   return (
     <div className="glass rounded-3xl p-8 shadow-glow">
-      <Badge icon={CreditCard} label={locale === "pt" ? "Passos 8–9 · Plano & pagamento" : "Steps 8–9 · Plan & payment"} />
+      <Badge
+        icon={CreditCard}
+        label={locale === "pt" ? "Passos 8–9 · Plano & pagamento" : "Steps 8–9 · Plan & payment"}
+      />
       <h2 className="mt-4 font-display text-2xl font-bold">
         {locale === "pt" ? "Escolha o seu plano" : "Choose your plan"}
       </h2>
@@ -591,7 +838,9 @@ function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
               type="button"
               onClick={() => setSelected(p.key)}
               className={`rounded-2xl border-2 p-5 text-left transition ${
-                active ? "border-sunset bg-sunset/10 shadow-soft" : "border-border bg-background/60 hover:border-magenta/50"
+                active
+                  ? "border-sunset bg-sunset/10 shadow-soft"
+                  : "border-border bg-background/60 hover:border-magenta/50"
               }`}
             >
               <div className="flex items-center gap-2">
@@ -618,7 +867,9 @@ function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
             <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {locale === "pt" ? "Selecionado" : "Selected"}
             </div>
-            <div className="font-bold">{currentPlan[locale].name} · {currentPlan[locale].price}</div>
+            <div className="font-bold">
+              {currentPlan[locale].name} · {currentPlan[locale].price}
+            </div>
           </div>
           <Button
             size="lg"
@@ -626,11 +877,17 @@ function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
             onClick={confirm}
             className="bg-gradient-sunset text-white shadow-soft hover:opacity-90"
           >
-            {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+            {processing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
               <>
                 {selected === "free"
-                  ? (locale === "pt" ? "Ativar plano grátis" : "Activate free plan")
-                  : (locale === "pt" ? "Ativar plano" : "Activate plan")}
+                  ? locale === "pt"
+                    ? "Ativar plano grátis"
+                    : "Activate free plan"
+                  : locale === "pt"
+                    ? "Ativar plano"
+                    : "Activate plan"}
                 <ArrowRight className="ml-1.5 h-4 w-4" />
               </>
             )}
@@ -659,7 +916,15 @@ function Badge({ icon: Icon, label }: { icon: typeof Sparkles; label: string }) 
   );
 }
 
-function Field({ icon: Icon, label, children }: { icon: typeof User; label: string; children: React.ReactNode }) {
+function Field({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: typeof User;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-2">
       <Label>{label}</Label>

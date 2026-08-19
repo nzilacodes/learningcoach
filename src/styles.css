@@ -60,12 +60,12 @@
   --radius: 0.875rem;
 
   /* Professional base — Navy Trust + teal accent (default: admin / adults) */
-  --sunset:  oklch(0.55 0.14 250);   /* indigo/steel */
-  --amber:   oklch(0.72 0.12 220);   /* steel blue */
-  --magenta: oklch(0.55 0.11 210);   /* deep teal */
-  --violet:  oklch(0.40 0.12 260);   /* deep indigo */
-  --ink:     oklch(0.18 0.03 260);
-  --cream:   oklch(0.985 0.005 250);
+  --sunset: oklch(0.55 0.14 250); /* indigo/steel */
+  --amber: oklch(0.72 0.12 220); /* steel blue */
+  --magenta: oklch(0.55 0.11 210); /* deep teal */
+  --violet: oklch(0.4 0.12 260); /* deep indigo */
+  --ink: oklch(0.18 0.03 260);
+  --cream: oklch(0.985 0.005 250);
 
   --background: oklch(0.985 0.005 250);
   --foreground: oklch(0.18 0.03 260);
@@ -95,12 +95,30 @@
   --ring: var(--violet);
 
   /* Gradients */
-  --gradient-sunset: linear-gradient(135deg, var(--sunset) 0%, var(--amber) 50%, var(--magenta) 100%);
+  --gradient-sunset: linear-gradient(
+    135deg,
+    var(--sunset) 0%,
+    var(--amber) 50%,
+    var(--magenta) 100%
+  );
   --gradient-aurora: linear-gradient(135deg, var(--magenta) 0%, var(--violet) 100%);
-  --gradient-warm:   linear-gradient(135deg, var(--amber) 0%, var(--sunset) 100%);
-  --gradient-hero:   radial-gradient(1200px 600px at 15% -10%, color-mix(in oklab, var(--amber) 40%, transparent) 0%, transparent 60%),
-                     radial-gradient(900px 500px at 90% 10%, color-mix(in oklab, var(--magenta) 35%, transparent) 0%, transparent 60%),
-                     radial-gradient(700px 500px at 60% 100%, color-mix(in oklab, var(--violet) 30%, transparent) 0%, transparent 60%);
+  --gradient-warm: linear-gradient(135deg, var(--amber) 0%, var(--sunset) 100%);
+  --gradient-hero:
+    radial-gradient(
+      1200px 600px at 15% -10%,
+      color-mix(in oklab, var(--amber) 40%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at 90% 10%,
+      color-mix(in oklab, var(--magenta) 35%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      700px 500px at 60% 100%,
+      color-mix(in oklab, var(--violet) 30%, transparent) 0%,
+      transparent 60%
+    );
 
   /* Shadows */
   --shadow-soft: 0 10px 30px -12px color-mix(in oklab, var(--violet) 30%, transparent);
@@ -116,10 +134,10 @@
 
 /* Kids — playful, warm, high energy */
 .theme-kids {
-  --sunset:  oklch(0.75 0.19 45);    /* orange */
-  --amber:   oklch(0.82 0.16 85);    /* sunny yellow */
-  --magenta: oklch(0.68 0.22 350);   /* pink */
-  --violet:  oklch(0.62 0.20 300);   /* fun purple */
+  --sunset: oklch(0.75 0.19 45); /* orange */
+  --amber: oklch(0.82 0.16 85); /* sunny yellow */
+  --magenta: oklch(0.68 0.22 350); /* pink */
+  --violet: oklch(0.62 0.2 300); /* fun purple */
   --primary: var(--sunset);
   --ring: var(--magenta);
   --accent: oklch(0.95 0.06 85 / 0.7);
@@ -128,10 +146,10 @@
 
 /* Teens — vibrant, modern, electric */
 .theme-teens {
-  --sunset:  oklch(0.68 0.22 20);    /* coral */
-  --amber:   oklch(0.75 0.18 55);    /* orange */
-  --magenta: oklch(0.60 0.25 340);   /* hot pink */
-  --violet:  oklch(0.55 0.24 285);   /* electric violet */
+  --sunset: oklch(0.68 0.22 20); /* coral */
+  --amber: oklch(0.75 0.18 55); /* orange */
+  --magenta: oklch(0.6 0.25 340); /* hot pink */
+  --violet: oklch(0.55 0.24 285); /* electric violet */
   --primary: var(--magenta);
   --ring: var(--violet);
   --accent: oklch(0.94 0.06 340 / 0.7);
@@ -140,10 +158,10 @@
 
 /* Adults — refined, calm, professional (matches base) */
 .theme-adults {
-  --sunset:  oklch(0.55 0.14 250);
-  --amber:   oklch(0.72 0.12 220);
+  --sunset: oklch(0.55 0.14 250);
+  --amber: oklch(0.72 0.12 220);
   --magenta: oklch(0.55 0.11 210);
-  --violet:  oklch(0.40 0.12 260);
+  --violet: oklch(0.4 0.12 260);
   --primary: var(--violet);
   --ring: var(--violet);
   --accent: oklch(0.94 0.03 220 / 0.7);
@@ -289,7 +307,7 @@
 }
 
 .card-wrapper:not(:last-child)::after {
-  content: '';
+  content: "";
   position: absolute;
   right: 0;
   top: 0;
@@ -352,15 +370,21 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  transition: border-color 0.4s, background-color 0.4s;
+  transition:
+    border-color 0.4s,
+    background-color 0.4s;
   will-change: transform, opacity;
 }
 
 .bento-card::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(600px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(20, 184, 166, 0.06), transparent 40%);
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 0) var(--mouse-y, 0),
+    rgba(20, 184, 166, 0.06),
+    transparent 40%
+  );
   z-index: 1;
   pointer-events: none;
   opacity: 0;
@@ -439,7 +463,12 @@
     font-family: var(--font-sans);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
@@ -449,8 +478,13 @@
    Videos Page — Kombai Design Styles
    ========================================================= */
 
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 .glass-card {
   background: rgba(255, 255, 255, 0.7);
@@ -459,16 +493,28 @@
   border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-.premium-shadow { box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.08); }
+.premium-shadow {
+  box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.08);
+}
 
-.video-card:hover .play-overlay { opacity: 1; }
-.video-card:hover img { transform: scale(1.05); }
+.video-card:hover .play-overlay {
+  opacity: 1;
+}
+.video-card:hover img {
+  transform: scale(1.05);
+}
 
 /* Dropdown Menu Animation */
 .dropdown-enter {
   animation: slideIn 0.2s ease-out;
 }
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -217,11 +217,7 @@ export function useDashboardData() {
   const { user } = useAuth();
   useStudyHeartbeat();
 
-  const {
-    data: userStats,
-    isError: userStatsError,
-    refetch: refetchUserStats,
-  } = useUserStats();
+  const { data: userStats, isError: userStatsError, refetch: refetchUserStats } = useUserStats();
   const {
     data: progress = [],
     isLoading: progressLoading,
@@ -355,7 +351,12 @@ export function useDashboardData() {
   // no-subscription state for an active subscriber.
   const isLoading = curriculumLoading || progressLoading || subLoading;
   const isError =
-    curriculumError || progressError || subError || userStatsError || unlockedLevelError || weekError;
+    curriculumError ||
+    progressError ||
+    subError ||
+    userStatsError ||
+    unlockedLevelError ||
+    weekError;
   const refetch = () => {
     refetchCurriculum();
     refetchProgress();

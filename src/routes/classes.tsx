@@ -259,48 +259,51 @@ function ClassesPage() {
                         </TableCell>
                       </TableRow>
                     )}
-                    {!rosterLoading && roster.map((r) => (
-                      <TableRow key={r.student_id}>
-                        <TableCell className="font-medium">{r.full_name || "—"}</TableCell>
-                        <TableCell>{r.age ?? "—"}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{r.cefr_level || "—"}</Badge>
-                        </TableCell>
-                        <TableCell>{r.xp.toLocaleString()}</TableCell>
-                        <TableCell>{r.streak_days}</TableCell>
-                        <TableCell>{r.completed_lessons}</TableCell>
-                        <TableCell>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <button
-                                disabled={removeMember.isPending}
-                                className="text-xs font-semibold text-red-400 hover:text-red-600 disabled:opacity-50"
-                              >
-                                {locale === "pt" ? "Remover" : "Remove"}
-                              </button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  {locale === "pt"
-                                    ? `Remover ${r.full_name || "aluno"} da turma?`
-                                    : `Remove ${r.full_name || "student"} from class?`}
-                                </AlertDialogTitle>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>{locale === "pt" ? "Cancelar" : "Cancel"}</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => removeMember.mutate(r.student_id)}
-                                  className="bg-red-500 hover:bg-red-600"
+                    {!rosterLoading &&
+                      roster.map((r) => (
+                        <TableRow key={r.student_id}>
+                          <TableCell className="font-medium">{r.full_name || "—"}</TableCell>
+                          <TableCell>{r.age ?? "—"}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{r.cefr_level || "—"}</Badge>
+                          </TableCell>
+                          <TableCell>{r.xp.toLocaleString()}</TableCell>
+                          <TableCell>{r.streak_days}</TableCell>
+                          <TableCell>{r.completed_lessons}</TableCell>
+                          <TableCell>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <button
+                                  disabled={removeMember.isPending}
+                                  className="text-xs font-semibold text-red-400 hover:text-red-600 disabled:opacity-50"
                                 >
                                   {locale === "pt" ? "Remover" : "Remove"}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                                </button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    {locale === "pt"
+                                      ? `Remover ${r.full_name || "aluno"} da turma?`
+                                      : `Remove ${r.full_name || "student"} from class?`}
+                                  </AlertDialogTitle>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>
+                                    {locale === "pt" ? "Cancelar" : "Cancel"}
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => removeMember.mutate(r.student_id)}
+                                    className="bg-red-500 hover:bg-red-600"
+                                  >
+                                    {locale === "pt" ? "Remover" : "Remove"}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </div>
@@ -430,7 +433,9 @@ function ClassesPage() {
                       >
                         <div className="min-w-0">
                           <div className="truncate font-medium">{c.name}</div>
-                          <div className="truncate text-xs text-muted-foreground">{c.owner_name}</div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            {c.owner_name}
+                          </div>
                         </div>
                         <button
                           onClick={() => leaveClass.mutate(c.id)}

@@ -103,7 +103,9 @@ export function LeaderboardCard() {
       </div>
       <ol className="space-y-2">
         {isLoading && <li className="text-xs text-muted-foreground">A carregar…</li>}
-        {!isLoading && data.length === 0 && <li className="text-xs text-muted-foreground">Sem alunos ainda.</li>}
+        {!isLoading && data.length === 0 && (
+          <li className="text-xs text-muted-foreground">Sem alunos ainda.</li>
+        )}
         {data.map((row) => {
           const isMe = row.user_id === user?.id;
           const medal =
@@ -491,7 +493,11 @@ export function ReminderCard({
               if (Notification.permission === "default") {
                 const p = await Notification.requestPermission();
                 if (p !== "granted") {
-                  notify.warning(locale === "pt" ? "Permita notificações no navegador" : "Please allow notifications");
+                  notify.warning(
+                    locale === "pt"
+                      ? "Permita notificações no navegador"
+                      : "Please allow notifications",
+                  );
                   return;
                 }
               }

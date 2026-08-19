@@ -70,6 +70,10 @@ const serverEntry: ServerEntry = {
 // from Lovable's default cloudflare-module nitro preset; this project overrides
 // to node-server, where env/ctx go unused) is a static-typing-only concern, not
 // a runtime one, hence the cast.
-Sentry.wrapFetchWithSentry(serverEntry as unknown as { fetch: (request: Request, opts?: unknown) => Promise<Response> | Response });
+Sentry.wrapFetchWithSentry(
+  serverEntry as unknown as {
+    fetch: (request: Request, opts?: unknown) => Promise<Response> | Response;
+  },
+);
 
 export default serverEntry;

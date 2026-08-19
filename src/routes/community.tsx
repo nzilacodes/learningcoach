@@ -1,6 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Users, Send, Baby, GraduationCap, User, Shield, Mic, MicOff, Lock, Play, AlertTriangle } from "lucide-react";
+import {
+  Users,
+  Send,
+  Baby,
+  GraduationCap,
+  User,
+  Shield,
+  Mic,
+  MicOff,
+  Lock,
+  Play,
+  AlertTriangle,
+} from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -40,13 +52,41 @@ export const Route = createFileRoute("/community")({
 
 type Room = AgeTheme;
 
-const roomsMeta: Record<Room, { pt: string; en: string; range: string; icon: typeof Baby; gradient: string }> = {
-  kids: { pt: "Sala Crianças", en: "Kids Room", range: "6–12", icon: Baby, gradient: "from-amber to-sunset" },
-  teens: { pt: "Sala Adolescentes", en: "Teen Room", range: "13–17", icon: GraduationCap, gradient: "from-sunset to-magenta" },
-  adults: { pt: "Sala Adultos", en: "Adult Room", range: "18+", icon: User, gradient: "from-magenta to-violet" },
+const roomsMeta: Record<
+  Room,
+  { pt: string; en: string; range: string; icon: typeof Baby; gradient: string }
+> = {
+  kids: {
+    pt: "Sala Crianças",
+    en: "Kids Room",
+    range: "6–12",
+    icon: Baby,
+    gradient: "from-amber to-sunset",
+  },
+  teens: {
+    pt: "Sala Adolescentes",
+    en: "Teen Room",
+    range: "13–17",
+    icon: GraduationCap,
+    gradient: "from-sunset to-magenta",
+  },
+  adults: {
+    pt: "Sala Adultos",
+    en: "Adult Room",
+    range: "18+",
+    icon: User,
+    gradient: "from-magenta to-violet",
+  },
 };
 
-type Message = { id: string; user_id: string; display_name: string; content: string; kind: string; created_at: string };
+type Message = {
+  id: string;
+  user_id: string;
+  display_name: string;
+  content: string;
+  kind: string;
+  created_at: string;
+};
 
 function CommunityPage() {
   const { locale } = useLocale();
@@ -98,7 +138,8 @@ function CommunityPage() {
         method: "POST",
         body: JSON.stringify({ content: raw, kind }),
       });
-      if (sent.content !== raw) showToast(locale === "pt" ? "Mensagem filtrada pela IA 💛" : "Message filtered by AI 💛");
+      if (sent.content !== raw)
+        showToast(locale === "pt" ? "Mensagem filtrada pela IA 💛" : "Message filtered by AI 💛");
       setInput("");
       await qc.invalidateQueries({ queryKey: ["community_messages", room] });
     } catch (e) {
@@ -157,7 +198,9 @@ function CommunityPage() {
         <SiteHeader />
         <div className="mx-auto max-w-lg px-6 py-16">
           <div className="glass rounded-3xl p-8 text-center shadow-glow">
-            <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${meta.gradient} text-white shadow-soft`}>
+            <div
+              className={`mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${meta.gradient} text-white shadow-soft`}
+            >
               <Icon className="h-7 w-7" />
             </div>
             <h1 className="mt-5 font-display text-2xl font-bold">
@@ -178,7 +221,9 @@ function CommunityPage() {
                   <div
                     key={r}
                     className={`rounded-xl border p-3 text-xs ${
-                      locked ? "border-border bg-muted/40 text-muted-foreground" : "border-magenta bg-magenta/5 text-foreground"
+                      locked
+                        ? "border-border bg-muted/40 text-muted-foreground"
+                        : "border-magenta bg-magenta/5 text-foreground"
                     }`}
                   >
                     <div className="flex items-center gap-1.5 font-semibold">
@@ -239,7 +284,9 @@ function CommunityPage() {
               {locale === "pt" ? "Sala de Prática" : "Practice Room"}
             </h1>
             <p className="mt-2 text-muted-foreground">
-              {locale === "pt" ? `Praticando como ${displayName}.` : `Practicing as ${displayName}.`}
+              {locale === "pt"
+                ? `Praticando como ${displayName}.`
+                : `Practicing as ${displayName}.`}
             </p>
           </div>
           <div className="glass flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
@@ -252,7 +299,9 @@ function CommunityPage() {
           <div className="glass flex h-[600px] flex-col overflow-hidden rounded-3xl shadow-card">
             <div className="flex items-center justify-between border-b border-border bg-background/60 px-6 py-4">
               <div>
-                <div className="font-display text-lg font-bold">{locale === "pt" ? meta.pt : meta.en}</div>
+                <div className="font-display text-lg font-bold">
+                  {locale === "pt" ? meta.pt : meta.en}
+                </div>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -264,7 +313,9 @@ function CommunityPage() {
               <button
                 onClick={() => setVoiceMode((v) => !v)}
                 className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  voiceMode ? "bg-gradient-sunset text-white" : "border border-border bg-background text-muted-foreground hover:text-foreground"
+                  voiceMode
+                    ? "bg-gradient-sunset text-white"
+                    : "border border-border bg-background text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {voiceMode ? <Mic className="h-3.5 w-3.5" /> : <MicOff className="h-3.5 w-3.5" />}
@@ -275,7 +326,11 @@ function CommunityPage() {
             <div className="flex-1 space-y-4 overflow-y-auto p-6">
               {isError && (
                 <div className="py-16 text-center text-sm text-muted-foreground">
-                  <p>{locale === "pt" ? "Não foi possível carregar as mensagens." : "Couldn't load messages."}</p>
+                  <p>
+                    {locale === "pt"
+                      ? "Não foi possível carregar as mensagens."
+                      : "Couldn't load messages."}
+                  </p>
                   <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
                     {locale === "pt" ? "Tentar novamente" : "Try again"}
                   </Button>
@@ -291,17 +346,28 @@ function CommunityPage() {
                 return (
                   <div key={m.id} className={`flex ${me ? "justify-end" : "justify-start"}`}>
                     <div className="max-w-[75%]">
-                      {!me && <div className="mb-1 text-xs font-semibold text-muted-foreground">{m.display_name}</div>}
+                      {!me && (
+                        <div className="mb-1 text-xs font-semibold text-muted-foreground">
+                          {m.display_name}
+                        </div>
+                      )}
                       <div
                         className={`rounded-2xl px-4 py-2.5 text-sm ${
-                          me ? "bg-gradient-sunset text-white shadow-soft" : "border border-border bg-background"
+                          me
+                            ? "bg-gradient-sunset text-white shadow-soft"
+                            : "border border-border bg-background"
                         }`}
                       >
                         {m.kind === "voice" && <span className="mr-1.5">▶️</span>}
                         {m.content}
                       </div>
-                      <div className={`mt-1 text-[10px] text-muted-foreground ${me ? "text-right" : ""}`}>
-                        {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      <div
+                        className={`mt-1 text-[10px] text-muted-foreground ${me ? "text-right" : ""}`}
+                      >
+                        {new Date(m.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </div>
                     </div>
                   </div>
@@ -326,10 +392,16 @@ function CommunityPage() {
                 >
                   <Mic className="mr-2 h-4 w-4" />
                   {transcribing
-                    ? locale === "pt" ? "Transcrevendo…" : "Transcribing…"
+                    ? locale === "pt"
+                      ? "Transcrevendo…"
+                      : "Transcribing…"
                     : recording
-                      ? locale === "pt" ? "● Gravando… toque para enviar" : "● Recording… tap to send"
-                      : locale === "pt" ? "Toque para gravar" : "Tap to record"}
+                      ? locale === "pt"
+                        ? "● Gravando… toque para enviar"
+                        : "● Recording… tap to send"
+                      : locale === "pt"
+                        ? "Toque para gravar"
+                        : "Tap to record"}
                 </Button>
               ) : (
                 <div className="flex items-center gap-2">
@@ -339,7 +411,12 @@ function CommunityPage() {
                     onKeyDown={(e) => e.key === "Enter" && send()}
                     placeholder={locale === "pt" ? "Escreva em inglês…" : "Type in English…"}
                   />
-                  <Button aria-label={locale === "pt" ? "Enviar mensagem" : "Send message"} onClick={() => send()} disabled={!input.trim()} className="bg-gradient-sunset text-white">
+                  <Button
+                    aria-label={locale === "pt" ? "Enviar mensagem" : "Send message"}
+                    onClick={() => send()}
+                    disabled={!input.trim()}
+                    className="bg-gradient-sunset text-white"
+                  >
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
@@ -356,8 +433,16 @@ function CommunityPage() {
               <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
                 <li>✓ {locale === "pt" ? "Fale sempre em inglês" : "Speak in English"}</li>
                 <li>✓ {locale === "pt" ? "Respeito e gentileza" : "Be kind and respectful"}</li>
-                <li>✓ {locale === "pt" ? "Sem palavras ofensivas (filtradas pela IA)" : "No offensive language (AI-filtered)"}</li>
-                <li>✓ {locale === "pt" ? "Sem partilha de dados pessoais" : "Never share personal data"}</li>
+                <li>
+                  ✓{" "}
+                  {locale === "pt"
+                    ? "Sem palavras ofensivas (filtradas pela IA)"
+                    : "No offensive language (AI-filtered)"}
+                </li>
+                <li>
+                  ✓{" "}
+                  {locale === "pt" ? "Sem partilha de dados pessoais" : "Never share personal data"}
+                </li>
               </ul>
             </div>
             <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs text-emerald-800 dark:text-emerald-200">
@@ -372,7 +457,10 @@ function CommunityPage() {
               </p>
             </div>
             <div className="text-center">
-              <Link to="/dashboard" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
+              <Link
+                to="/dashboard"
+                className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+              >
                 ← {locale === "pt" ? "Voltar ao painel" : "Back to dashboard"}
               </Link>
             </div>

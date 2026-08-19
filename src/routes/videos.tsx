@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useRef } from "react";
 import {
   Search,
   Play,
@@ -56,8 +56,27 @@ const FILTERS = ["All Videos", "Grammar", "Business English", "Listening", "Pron
 // some categories may come up empty for a given age group whose content
 // doesn't naturally fit these labels (e.g. kids' songs vs. "Business English").
 const FILTER_KEYWORDS: Record<string, string[]> = {
-  Grammar: ["grammar", "gramática", "tense", "verb", "conjugat", "sentence", "article", "preposition"],
-  "Business English": ["business", "interview", "meeting", "email", "negotiat", "career", "professional", "office", "work"],
+  Grammar: [
+    "grammar",
+    "gramática",
+    "tense",
+    "verb",
+    "conjugat",
+    "sentence",
+    "article",
+    "preposition",
+  ],
+  "Business English": [
+    "business",
+    "interview",
+    "meeting",
+    "email",
+    "negotiat",
+    "career",
+    "professional",
+    "office",
+    "work",
+  ],
   Listening: ["listening", "podcast", "news", "song", "music", "story", "stories"],
   Pronunciation: ["pronunciation", "pronúncia", "accent", "phonics", "sound", "speak"],
 };
@@ -192,7 +211,10 @@ function VideosPage() {
               </button>
             </div>
             {/* Avatar — desktop only (sidebar's own menu covers desktop; this just links straight to the profile page) */}
-            <Link to="/profile" className="hidden md:block h-10 w-10 rounded-full border-2 border-white shadow-sm overflow-hidden hover:border-[var(--violet)] transition-all">
+            <Link
+              to="/profile"
+              className="hidden md:block h-10 w-10 rounded-full border-2 border-white shadow-sm overflow-hidden hover:border-[var(--violet)] transition-all"
+            >
               <div className="w-full h-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-white text-sm font-bold">
                 {user?.email?.charAt(0).toUpperCase() || "U"}
               </div>
@@ -436,8 +458,14 @@ function VideosPage() {
                                     completed: true,
                                   }),
                                 });
-                                notify.success(locale === "pt" ? "Marcado como concluído" : "Marked as completed");
-                                qc.invalidateQueries({ queryKey: ["video_history_list", user?.id] });
+                                notify.success(
+                                  locale === "pt"
+                                    ? "Marcado como concluído"
+                                    : "Marked as completed",
+                                );
+                                qc.invalidateQueries({
+                                  queryKey: ["video_history_list", user?.id],
+                                });
                               } catch (e) {
                                 notify.fromError(e, { dedupeKey: "videos:mark-complete" });
                               }

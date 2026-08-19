@@ -9,7 +9,11 @@ import { ageFromYears, type AgeGroup } from "@/lib/age-tracks";
  * age-theme when there is no age set. Also keeps the visual age-theme in
  * sync with the registered age automatically.
  */
-export function useAgeGroup(): { group: AgeGroup; source: "profile" | "manual"; age: number | null } {
+export function useAgeGroup(): {
+  group: AgeGroup;
+  source: "profile" | "manual";
+  age: number | null;
+} {
   const { user } = useAuth();
   const { theme, setTheme } = useAgeTheme();
 

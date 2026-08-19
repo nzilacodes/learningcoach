@@ -19,7 +19,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
-import { HeaderActionLinks, MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/lib/i18n";
@@ -58,7 +62,17 @@ export const Route = createFileRoute("/placement")({
 
 /* ---------------- Types ---------------- */
 
-type Section = "intro" | "grammar" | "vocab" | "reading" | "listening" | "writing" | "speaking" | "pron" | "loading" | "report";
+type Section =
+  | "intro"
+  | "grammar"
+  | "vocab"
+  | "reading"
+  | "listening"
+  | "writing"
+  | "speaking"
+  | "pron"
+  | "loading"
+  | "report";
 
 interface Report {
   scores: {
@@ -124,7 +138,8 @@ function DiagnosticPage() {
   const submit = async () => {
     if (!user) {
       notify.warning(locale === "pt" ? "A sua sessão expirou" : "Your session expired", {
-        description: locale === "pt" ? "Entre novamente para submeter." : "Sign in again to submit.",
+        description:
+          locale === "pt" ? "Entre novamente para submeter." : "Sign in again to submit.",
       });
       navigate({ to: "/auth" });
       return;
@@ -167,7 +182,11 @@ function DiagnosticPage() {
       // could otherwise farm the reward without ever taking the test).
       setReport(data);
       setSection("report");
-      notify.success(locale === "pt" ? `Nível ${data.cefr_level} identificado!` : `Level ${data.cefr_level} identified!`);
+      notify.success(
+        locale === "pt"
+          ? `Nível ${data.cefr_level} identificado!`
+          : `Level ${data.cefr_level} identified!`,
+      );
     } catch (e) {
       // Clear any report left over from a previous attempt/session — otherwise
       // this failed retake would render the old ReportView dressed with the
@@ -178,7 +197,6 @@ function DiagnosticPage() {
       notify.fromError(e, { dedupeKey: "placement:evaluate", onRetry: submit });
     }
   };
-
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
@@ -315,7 +333,15 @@ function DiagnosticPage() {
 
 /* ---------------- Intro ---------------- */
 
-function Intro({ hasPrevious, onStart, onSeeReport }: { hasPrevious: boolean; onStart: () => void; onSeeReport: () => void }) {
+function Intro({
+  hasPrevious,
+  onStart,
+  onSeeReport,
+}: {
+  hasPrevious: boolean;
+  onStart: () => void;
+  onSeeReport: () => void;
+}) {
   const { locale } = useLocale();
   const items = [
     { icon: GraduationCap, label: locale === "pt" ? "Gramática" : "Grammar" },
@@ -354,7 +380,10 @@ function Intro({ hasPrevious, onStart, onSeeReport }: { hasPrevious: boolean; on
             {items.map((s) => {
               const Icon = s.icon;
               return (
-                <div key={s.label} className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col gap-3 hover:border-[var(--violet)]/50 transition-all shadow-sm">
+                <div
+                  key={s.label}
+                  className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col gap-3 hover:border-[var(--violet)]/50 transition-all shadow-sm"
+                >
                   <Icon className="h-6 w-6 text-[var(--violet)]" />
                   <span className="text-xs font-bold uppercase tracking-wider text-gray-700">
                     {s.label}
@@ -402,7 +431,10 @@ function Intro({ hasPrevious, onStart, onSeeReport }: { hasPrevious: boolean; on
           {items.map((s) => {
             const Icon = s.icon;
             return (
-              <div key={s.label} className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50/80 p-3 text-sm text-gray-600">
+              <div
+                key={s.label}
+                className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50/80 p-3 text-sm text-gray-600"
+              >
                 <Icon className="h-4 w-4 text-[var(--violet)]" />
                 {s.label}
               </div>
@@ -410,7 +442,11 @@ function Intro({ hasPrevious, onStart, onSeeReport }: { hasPrevious: boolean; on
           })}
         </div>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Button size="lg" onClick={onStart} className="bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] text-white shadow-md hover:opacity-90">
+          <Button
+            size="lg"
+            onClick={onStart}
+            className="bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] text-white shadow-md hover:opacity-90"
+          >
             {locale === "pt" ? "Começar" : "Start"} <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
           {hasPrevious && (
@@ -466,7 +502,9 @@ function McqSection({
                       setAnswers(next);
                     }}
                     className={`flex items-center justify-between rounded-xl border-2 p-3 text-left text-sm transition ${
-                      active ? "border-[var(--violet)] bg-[var(--violet)]/10" : "border-gray-200 bg-gray-50/80 hover:border-[var(--violet)]/50"
+                      active
+                        ? "border-[var(--violet)] bg-[var(--violet)]/10"
+                        : "border-gray-200 bg-gray-50/80 hover:border-[var(--violet)]/50"
                     }`}
                   >
                     <span>{opt}</span>
@@ -478,7 +516,12 @@ function McqSection({
           </div>
         ))}
       </div>
-      <NavBar onBack={onBack} onNext={onNext} disabled={!complete} disabledMsg={locale === "pt" ? "Responda a todas" : "Answer all"} />
+      <NavBar
+        onBack={onBack}
+        onNext={onNext}
+        disabled={!complete}
+        disabledMsg={locale === "pt" ? "Responda a todas" : "Answer all"}
+      />
     </div>
   );
 }
@@ -505,7 +548,9 @@ function ReadingSection({
       <div className="mt-6 space-y-8">
         {READING.map((p) => (
           <div key={p.id} className="rounded-2xl border border-gray-100 bg-gray-50/80 p-5">
-            <div className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--violet)]">{p.level}</div>
+            <div className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--violet)]">
+              {p.level}
+            </div>
             <p className="text-sm leading-relaxed text-gray-700">{p.passage}</p>
             <div className="mt-4 space-y-4">
               {p.questions.map((q) => {
@@ -525,7 +570,9 @@ function ReadingSection({
                               setAnswers(next);
                             }}
                             className={`flex items-center justify-between rounded-xl border-2 p-2.5 text-left text-sm transition ${
-                              active ? "border-[var(--violet)] bg-[var(--violet)]/10" : "border-gray-200 bg-gray-50/80 hover:border-[var(--violet)]/50"
+                              active
+                                ? "border-[var(--violet)] bg-[var(--violet)]/10"
+                                : "border-gray-200 bg-gray-50/80 hover:border-[var(--violet)]/50"
                             }`}
                           >
                             <span>{opt}</span>
@@ -541,7 +588,12 @@ function ReadingSection({
           </div>
         ))}
       </div>
-      <NavBar onBack={onBack} onNext={onNext} disabled={!complete} disabledMsg={locale === "pt" ? "Responda a todas" : "Answer all"} />
+      <NavBar
+        onBack={onBack}
+        onNext={onNext}
+        disabled={!complete}
+        disabledMsg={locale === "pt" ? "Responda a todas" : "Answer all"}
+      />
     </div>
   );
 }
@@ -589,14 +641,28 @@ function ListeningSection({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-8 premium-shadow">
-      <SectionHeader icon={Headphones} title={locale === "pt" ? "Compreensão auditiva" : "Listening"} />
+      <SectionHeader
+        icon={Headphones}
+        title={locale === "pt" ? "Compreensão auditiva" : "Listening"}
+      />
       <div className="mt-6 space-y-6">
         {LISTENING.map((it, i) => (
           <div key={it.id} className="rounded-2xl border border-gray-100 bg-gray-50/80 p-5">
             <div className="flex items-center justify-between">
-              <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">{it.level}</div>
-              <Button size="sm" variant="outline" onClick={() => play(i)} disabled={playingIdx !== null}>
-                {playingIdx === i ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+              <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">
+                {it.level}
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => play(i)}
+                disabled={playingIdx !== null}
+              >
+                {playingIdx === i ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Volume2 className="h-4 w-4" />
+                )}
                 <span className="ml-1.5">{locale === "pt" ? "Ouvir" : "Play"}</span>
               </Button>
             </div>
@@ -613,7 +679,9 @@ function ListeningSection({
                       setAnswers(next);
                     }}
                     className={`flex items-center justify-between rounded-xl border-2 p-2.5 text-left text-sm transition ${
-                      active ? "border-[var(--violet)] bg-[var(--violet)]/10" : "border-gray-200 bg-gray-50/80 hover:border-[var(--violet)]/50"
+                      active
+                        ? "border-[var(--violet)] bg-[var(--violet)]/10"
+                        : "border-gray-200 bg-gray-50/80 hover:border-[var(--violet)]/50"
                     }`}
                   >
                     <span>{opt}</span>
@@ -625,7 +693,12 @@ function ListeningSection({
           </div>
         ))}
       </div>
-      <NavBar onBack={onBack} onNext={onNext} disabled={!complete} disabledMsg={locale === "pt" ? "Responda a todas" : "Answer all"} />
+      <NavBar
+        onBack={onBack}
+        onNext={onNext}
+        disabled={!complete}
+        disabledMsg={locale === "pt" ? "Responda a todas" : "Answer all"}
+      />
     </div>
   );
 }
@@ -644,7 +717,9 @@ function WritingSection({
   onBack: () => void;
 }) {
   const { locale } = useLocale();
-  const complete = WRITING.every((w, i) => (answers[i] ?? "").trim().split(/\s+/).filter(Boolean).length >= w.minWords);
+  const complete = WRITING.every(
+    (w, i) => (answers[i] ?? "").trim().split(/\s+/).filter(Boolean).length >= w.minWords,
+  );
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-8 premium-shadow">
       <SectionHeader icon={PenTool} title={locale === "pt" ? "Escrita" : "Writing"} />
@@ -653,7 +728,9 @@ function WritingSection({
           const words = (answers[i] ?? "").trim().split(/\s+/).filter(Boolean).length;
           return (
             <div key={w.id} className="rounded-2xl border border-gray-100 bg-gray-50/80 p-5">
-              <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">{w.level}</div>
+              <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">
+                {w.level}
+              </div>
               <div className="mt-2 text-sm font-semibold text-gray-700">{w.prompt}</div>
               <Textarea
                 className="mt-3 min-h-32"
@@ -672,7 +749,14 @@ function WritingSection({
           );
         })}
       </div>
-      <NavBar onBack={onBack} onNext={onNext} disabled={!complete} disabledMsg={locale === "pt" ? "Complete os mínimos de palavras" : "Meet minimum word counts"} />
+      <NavBar
+        onBack={onBack}
+        onNext={onNext}
+        disabled={!complete}
+        disabledMsg={
+          locale === "pt" ? "Complete os mínimos de palavras" : "Meet minimum word counts"
+        }
+      />
     </div>
   );
 }
@@ -697,7 +781,12 @@ function RecordSection({
   const { locale } = useLocale();
   const items =
     kind === "speaking"
-      ? SPEAKING.map((s) => ({ id: s.id, level: s.level, prompt: s.prompt, hint: `≥${s.minWords} ${locale === "pt" ? "palavras" : "words"}` }))
+      ? SPEAKING.map((s) => ({
+          id: s.id,
+          level: s.level,
+          prompt: s.prompt,
+          hint: `≥${s.minWords} ${locale === "pt" ? "palavras" : "words"}`,
+        }))
       : PRONUNCIATION.map((p) => ({
           id: p.id,
           level: p.level,
@@ -711,13 +800,23 @@ function RecordSection({
     <div className="bg-white rounded-2xl border border-gray-100 p-8 premium-shadow">
       <SectionHeader
         icon={kind === "speaking" ? MessageSquare : Volume2}
-        title={kind === "speaking" ? (locale === "pt" ? "Fala" : "Speaking") : locale === "pt" ? "Pronúncia" : "Pronunciation"}
+        title={
+          kind === "speaking"
+            ? locale === "pt"
+              ? "Fala"
+              : "Speaking"
+            : locale === "pt"
+              ? "Pronúncia"
+              : "Pronunciation"
+        }
       />
       <div className="mt-6 space-y-6">
         {items.map((it, i) => (
           <div key={it.id} className="rounded-2xl border border-gray-100 bg-gray-50/80 p-5">
             <div className="flex items-center justify-between">
-              <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">{it.level}</div>
+              <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">
+                {it.level}
+              </div>
               <div className="text-xs text-gray-400">{it.hint}</div>
             </div>
             <div className="mt-2 text-sm font-semibold text-gray-700">{it.prompt}</div>
@@ -744,7 +843,13 @@ function RecordSection({
           </div>
         ))}
       </div>
-      <NavBar onBack={onBack} onNext={onNext} disabled={!complete} nextLabel={nextLabel} disabledMsg={locale === "pt" ? "Grave todas as respostas" : "Record all responses"} />
+      <NavBar
+        onBack={onBack}
+        onNext={onNext}
+        disabled={!complete}
+        nextLabel={nextLabel}
+        disabledMsg={locale === "pt" ? "Grave todas as respostas" : "Record all responses"}
+      />
     </div>
   );
 }
@@ -799,7 +904,12 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
       if (blob.size < 4096) {
         notify.warning(
           locale === "pt" ? "Áudio muito curto ou silencioso" : "Audio too short or silent",
-          { description: locale === "pt" ? "Fale mais alto e tente novamente." : "Please speak louder and try again." },
+          {
+            description:
+              locale === "pt"
+                ? "Fale mais alto e tente novamente."
+                : "Please speak louder and try again.",
+          },
         );
         setState("idle");
         return;
@@ -811,7 +921,12 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
       if (!text) {
         notify.warning(
           locale === "pt" ? "Não conseguimos ouvir a sua voz" : "We couldn't hear your voice",
-          { description: locale === "pt" ? "Tente novamente mais perto do microfone." : "Try again closer to the mic." },
+          {
+            description:
+              locale === "pt"
+                ? "Tente novamente mais perto do microfone."
+                : "Try again closer to the mic.",
+          },
         );
       } else {
         onTranscript(text);
@@ -827,13 +942,15 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
     <div className="mt-3 flex items-center gap-3">
       {state === "idle" && (
         <Button type="button" size="sm" variant="outline" onClick={start}>
-          <Mic className="h-4 w-4" /> <span className="ml-1.5">{locale === "pt" ? "Gravar" : "Record"}</span>
+          <Mic className="h-4 w-4" />{" "}
+          <span className="ml-1.5">{locale === "pt" ? "Gravar" : "Record"}</span>
         </Button>
       )}
       {state === "recording" && (
         <>
           <Button type="button" size="sm" variant="destructive" onClick={stop}>
-            <Square className="h-4 w-4" /> <span className="ml-1.5">{locale === "pt" ? "Parar" : "Stop"}</span>
+            <Square className="h-4 w-4" />{" "}
+            <span className="ml-1.5">{locale === "pt" ? "Parar" : "Stop"}</span>
           </Button>
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
@@ -843,7 +960,8 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
       )}
       {state === "processing" && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> {locale === "pt" ? "A transcrever…" : "Transcribing…"}
+          <Loader2 className="h-4 w-4 animate-spin" />{" "}
+          {locale === "pt" ? "A transcrever…" : "Transcribing…"}
         </div>
       )}
     </div>
@@ -889,7 +1007,8 @@ function NavBar({
             className="bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] text-white shadow-md hover:opacity-90"
             onClick={onNext}
           >
-            {nextLabel ?? (locale === "pt" ? "Continuar" : "Continue")} <ArrowRight className="ml-1.5 h-4 w-4" />
+            {nextLabel ?? (locale === "pt" ? "Continuar" : "Continue")}{" "}
+            <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -958,7 +1077,9 @@ function SubmitFailedView({
       <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center premium-shadow">
         <AlertCircle className="mx-auto h-10 w-10 text-destructive" />
         <h2 className="mt-4 font-display text-xl font-bold text-[var(--ink)]">
-          {locale === "pt" ? "Não foi possível avaliar o seu diagnóstico" : "We couldn't evaluate your diagnostic"}
+          {locale === "pt"
+            ? "Não foi possível avaliar o seu diagnóstico"
+            : "We couldn't evaluate your diagnostic"}
         </h2>
         <p className="mt-2 text-sm text-gray-500">
           {locale === "pt"
@@ -972,7 +1093,8 @@ function SubmitFailedView({
         )}
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
           <Button variant="outline" onClick={onBack}>
-            <ArrowLeft className="mr-1.5 h-4 w-4" /> {locale === "pt" ? "Rever respostas" : "Review answers"}
+            <ArrowLeft className="mr-1.5 h-4 w-4" />{" "}
+            {locale === "pt" ? "Rever respostas" : "Review answers"}
           </Button>
           <Button onClick={onRetry} className="bg-gradient-sunset text-white hover:opacity-90">
             {locale === "pt" ? "Tentar novamente" : "Try again"}
@@ -996,7 +1118,13 @@ function ReportView({
 }) {
   const { locale } = useLocale();
   const skills: (keyof typeof SKILL_LABEL)[] = [
-    "grammar", "vocabulary", "reading", "listening", "writing", "speaking", "pronunciation",
+    "grammar",
+    "vocabulary",
+    "reading",
+    "listening",
+    "writing",
+    "speaking",
+    "pronunciation",
   ];
   return (
     <div className="space-y-6">
@@ -1004,11 +1132,15 @@ function ReportView({
         <div className="text-xs font-semibold uppercase tracking-widest text-gray-400">
           {locale === "pt" ? "O seu nível CEFR" : "Your CEFR level"}
         </div>
-        <div className="mt-2 font-display text-7xl font-bold bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] bg-clip-text text-transparent">{report.cefr_level}</div>
+        <div className="mt-2 font-display text-7xl font-bold bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] bg-clip-text text-transparent">
+          {report.cefr_level}
+        </div>
         <div className="mt-2 text-lg font-semibold text-[var(--ink)]">
           {locale === "pt" ? "Pontuação global" : "Overall score"}: {report.scores.overall}%
         </div>
-        {report.feedback && <p className="mx-auto mt-4 max-w-2xl text-sm text-gray-500">{report.feedback}</p>}
+        {report.feedback && (
+          <p className="mx-auto mt-4 max-w-2xl text-sm text-gray-500">{report.feedback}</p>
+        )}
         {error && (
           <div className="mx-auto mt-4 max-w-xl text-left">
             <InlineStatusFromError error={error} />
@@ -1017,7 +1149,9 @@ function ReportView({
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 p-6 premium-shadow">
-        <h3 className="font-display text-xl font-bold text-[var(--ink)]">{locale === "pt" ? "Pontuação por skill" : "Score by skill"}</h3>
+        <h3 className="font-display text-xl font-bold text-[var(--ink)]">
+          {locale === "pt" ? "Pontuação por skill" : "Score by skill"}
+        </h3>
         <div className="mt-4 space-y-3">
           {skills.map((k) => {
             const meta = SKILL_LABEL[k];
@@ -1032,7 +1166,10 @@ function ReportView({
                   <span className="font-mono text-gray-500">{v}%</span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
-                  <div className="h-full bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] transition-all" style={{ width: `${v}%` }} />
+                  <div
+                    className="h-full bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] transition-all"
+                    style={{ width: `${v}%` }}
+                  />
                 </div>
               </div>
             );
@@ -1043,7 +1180,8 @@ function ReportView({
       <div className="grid gap-4 md:grid-cols-2">
         <div className="bg-white rounded-2xl border border-gray-100 p-6 premium-shadow">
           <h3 className="flex items-center gap-2 font-display text-lg font-bold text-[var(--ink)]">
-            <Trophy className="h-5 w-5 text-emerald-500" /> {locale === "pt" ? "Pontos fortes" : "Strengths"}
+            <Trophy className="h-5 w-5 text-emerald-500" />{" "}
+            {locale === "pt" ? "Pontos fortes" : "Strengths"}
           </h3>
           <ul className="mt-3 space-y-2 text-sm">
             {report.strengths.length === 0 && (
@@ -1058,7 +1196,8 @@ function ReportView({
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 p-6 premium-shadow">
           <h3 className="flex items-center gap-2 font-display text-lg font-bold text-[var(--ink)]">
-            <Target className="h-5 w-5 text-amber" /> {locale === "pt" ? "Pontos a melhorar" : "Areas to improve"}
+            <Target className="h-5 w-5 text-amber" />{" "}
+            {locale === "pt" ? "Pontos a melhorar" : "Areas to improve"}
           </h3>
           <ul className="mt-3 space-y-2 text-sm">
             {report.weaknesses.length === 0 && (
@@ -1106,8 +1245,13 @@ function ReportView({
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-3">
-        <Button size="lg" onClick={onContinue} className="bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] text-white shadow-md hover:opacity-90">
-          {locale === "pt" ? "Ir para o painel" : "Go to dashboard"} <ArrowRight className="ml-1.5 h-4 w-4" />
+        <Button
+          size="lg"
+          onClick={onContinue}
+          className="bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] text-white shadow-md hover:opacity-90"
+        >
+          {locale === "pt" ? "Ir para o painel" : "Go to dashboard"}{" "}
+          <ArrowRight className="ml-1.5 h-4 w-4" />
         </Button>
         <Button variant="outline" size="lg" onClick={onRetake}>
           {locale === "pt" ? "Refazer o teste" : "Retake test"}

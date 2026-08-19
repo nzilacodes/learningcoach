@@ -23,8 +23,8 @@ function MaintenancePage() {
           Estamos a fazer melhorias
         </h1>
         <p className="mt-3 text-slate-600">
-          A plataforma <strong>Learning English with Coach</strong> está temporariamente em manutenção.
-          Voltamos em alguns minutos.
+          A plataforma <strong>Learning English with Coach</strong> está temporariamente em
+          manutenção. Voltamos em alguns minutos.
         </p>
         <Link
           to="/"

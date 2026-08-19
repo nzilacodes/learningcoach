@@ -18,7 +18,6 @@ import {
   useRestoreMedia,
   usePurgeMedia,
   mediaStreamUrl,
-  mediaThumbnailUrl,
   formatBytes,
   formatDuration,
   type MediaVisibility,

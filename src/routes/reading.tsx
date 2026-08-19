@@ -11,7 +11,6 @@ import {
   XCircle,
 } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
-import { useAuth } from "@/lib/auth";
 import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
 import { uploadMedia } from "@/lib/media";
@@ -165,10 +164,30 @@ type ReadingReport = {
   missing: string[];
 };
 
+/** Bolds each vocab word where it appears in the passage, so the reader can
+ * spot the words they're about to look up in the Vocabulário section below. */
+function highlightVocab(text: string, vocabWords: string[]) {
+  if (vocabWords.length === 0) return text;
+  const escaped = vocabWords.filter(Boolean).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (escaped.length === 0) return text;
+  const re = new RegExp(`\\b(${escaped.join("|")})\\b`, "gi");
+  return text.split(re).map((part, i) =>
+    i % 2 === 1 ? (
+      <mark
+        key={i}
+        className="rounded bg-[var(--primary)]/15 px-0.5 font-semibold text-[var(--primary)]"
+      >
+        {part}
+      </mark>
+    ) : (
+      part
+    ),
+  );
+}
+
 function ReadingPage() {
   const { locale } = useLocale();
   const notify = useNotification();
-  const { user } = useAuth();
   const [idx, setIdx] = useState(0);
   const passage = PASSAGES[idx];
   const [playing, setPlaying] = useState(false);
@@ -206,9 +225,10 @@ function ReadingPage() {
         setHistory([]);
         notify.fromError(e, { dedupeKey: "reading:history" });
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- notify's identity
-    // isn't stable across renders (NotificationProvider doesn't memoize its
-    // context value); including it would refetch history far more than intended.
+    // notify's identity isn't stable across renders (NotificationProvider
+    // doesn't memoize its context value); including it here would refetch
+    // history far more often than intended.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [passage.key, attempts]);
 
   const vocabWords = useMemo(() => passage.vocab.map((v) => v.word.split(" ")[0]), [passage]);
@@ -376,6 +396,12 @@ function ReadingPage() {
                   ))}
                 </div>
               )}
+              {report && transcript && (
+                <div className="mt-4 rounded-xl border border-gray-100 bg-gray-50 p-3 text-sm text-gray-600">
+                  <span className="font-semibold text-gray-400">Ouvimos: </span>
+                  {transcript}
+                </div>
+              )}
             </section>
 
             {/* Desktop: two columns | Mobile: stacked */}
@@ -408,7 +434,7 @@ function ReadingPage() {
                       {passage.title.pt}
                     </h3>
                     <div className="space-y-4 text-gray-600 text-sm md:text-base leading-relaxed">
-                      <p>{passage.text}</p>
+                      <p>{highlightVocab(passage.text, vocabWords)}</p>
                     </div>
                     <button
                       onClick={handlePlay}

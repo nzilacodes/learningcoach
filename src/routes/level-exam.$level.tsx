@@ -23,7 +23,10 @@ export const Route = createFileRoute("/level-exam/$level")({
   head: ({ params }) => ({
     meta: [
       { title: `Exame final ${params.level} — Learning English with Coach` },
-      { name: "description", content: `Exame final do nível ${params.level}. Passe para desbloquear o próximo nível CEFR.` },
+      {
+        name: "description",
+        content: `Exame final do nível ${params.level}. Passe para desbloquear o próximo nível CEFR.`,
+      },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -64,7 +67,9 @@ function LevelExamPage() {
     return (
       <FullBleed>
         <p className="mb-4">Precisa de sessão iniciada para fazer o exame.</p>
-        <Button asChild><Link to="/auth">Entrar</Link></Button>
+        <Button asChild>
+          <Link to="/auth">Entrar</Link>
+        </Button>
       </FullBleed>
     );
   }
@@ -77,10 +82,15 @@ function LevelExamPage() {
         <Lock className="w-10 h-10 text-muted-foreground mb-4" />
         <h2 className="text-2xl font-bold mb-2">Exame bloqueado</h2>
         <p className="text-muted-foreground mb-6 max-w-md">
-          Só pode fazer o exame do seu nível atual{unlocked ? ` (${unlocked})` : ""}. Termine o nível atual
-          antes de tentar {level}.
+          Só pode fazer o exame do seu nível atual{unlocked ? ` (${unlocked})` : ""}. Termine o
+          nível atual antes de tentar {level}.
         </p>
-        <Button asChild variant="outline"><Link to="/cefr-levels"><ArrowLeft className="w-4 h-4 mr-2" />Voltar aos níveis</Link></Button>
+        <Button asChild variant="outline">
+          <Link to="/cefr-levels">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar aos níveis
+          </Link>
+        </Button>
       </FullBleed>
     );
   }
@@ -90,9 +100,15 @@ function LevelExamPage() {
         <XCircle className="w-10 h-10 text-destructive mb-4" />
         <h2 className="text-2xl font-bold mb-2">Não foi possível carregar o exame</h2>
         <p className="text-muted-foreground mb-6 max-w-md">
-          Não há perguntas disponíveis para este exame agora. Tente recarregar a página ou volte mais tarde.
+          Não há perguntas disponíveis para este exame agora. Tente recarregar a página ou volte
+          mais tarde.
         </p>
-        <Button asChild variant="outline"><Link to="/cefr-levels"><ArrowLeft className="w-4 h-4 mr-2" />Voltar aos níveis</Link></Button>
+        <Button asChild variant="outline">
+          <Link to="/cefr-levels">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar aos níveis
+          </Link>
+        </Button>
       </FullBleed>
     );
   }
@@ -134,7 +150,10 @@ function LevelExamPage() {
       <SiteHeader />
       <main className="flex-1 container mx-auto px-4 py-10 max-w-2xl">
         <div className="mb-6">
-          <Link to="/cefr-levels" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+          <Link
+            to="/cefr-levels"
+            className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+          >
             <ArrowLeft className="w-4 h-4" /> Níveis
           </Link>
         </div>
@@ -153,12 +172,22 @@ function LevelExamPage() {
             )}
             <div className="text-4xl font-bold mb-2">{result.score}%</div>
             <p className="text-lg mb-6">
-              {result.passed ? `Aprovado! Nível seguinte desbloqueado.` : `Não atingiu a nota mínima (${minScore}%).`}
+              {result.passed
+                ? `Aprovado! Nível seguinte desbloqueado.`
+                : `Não atingiu a nota mínima (${minScore}%).`}
             </p>
             <div className="flex gap-3 justify-center">
-              <Button asChild><Link to="/cefr-levels">Ver níveis</Link></Button>
+              <Button asChild>
+                <Link to="/cefr-levels">Ver níveis</Link>
+              </Button>
               {!result.passed && (
-                <Button variant="outline" onClick={() => { setResult(null); setAnswers({}); }}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setResult(null);
+                    setAnswers({});
+                  }}
+                >
                   Tentar novamente
                 </Button>
               )}
@@ -173,7 +202,9 @@ function LevelExamPage() {
           <div className="space-y-6">
             {questions.map((q, i) => (
               <div key={i} className="rounded-xl border p-5 bg-card">
-                <div className="font-medium mb-3">{i + 1}. {q.q}</div>
+                <div className="font-medium mb-3">
+                  {i + 1}. {q.q}
+                </div>
                 <div className="grid gap-2">
                   {q.opts.map((opt, j) => {
                     const active = answers[i] === j;

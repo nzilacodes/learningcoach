@@ -481,7 +481,10 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
       qc.invalidateQueries({ queryKey: ["curriculum"] });
     } catch (e) {
       // Consolidates the 402/"Ver planos" branch that used to be hand-checked here.
-      notify.fromError(e, { dedupeKey: "lesson:complete", onUpgrade: () => navigate({ to: "/pricing" }) });
+      notify.fromError(e, {
+        dedupeKey: "lesson:complete",
+        onUpgrade: () => navigate({ to: "/pricing" }),
+      });
     } finally {
       setCompleting(false);
     }

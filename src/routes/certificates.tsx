@@ -29,9 +29,15 @@ export const Route = createFileRoute("/certificates")({
   head: () => ({
     meta: [
       { title: "Certificados — Learning English with Coach" },
-      { name: "description", content: "Emite, descarrega e valida os teus certificados CEFR oficiais." },
+      {
+        name: "description",
+        content: "Emite, descarrega e valida os teus certificados CEFR oficiais.",
+      },
       { property: "og:title", content: "Certificados CEFR — Coach" },
-      { property: "og:description", content: "Certificados oficiais com QR Code e assinatura digital." },
+      {
+        property: "og:description",
+        content: "Certificados oficiais com QR Code e assinatura digital.",
+      },
     ],
   }),
 });
@@ -57,7 +63,6 @@ function CertificatesPage() {
 
   useEffect(() => {
     refresh();
-
   }, []);
 
   async function handleIssue(level: (typeof LEVELS)[number]) {
@@ -72,7 +77,10 @@ function CertificatesPage() {
     } catch (e) {
       // PAYMENT_REQUIRED gets the "Ver planos" CTA centrally now, instead of
       // this call site hand-checking e.status === 402.
-      notify.fromError(e, { dedupeKey: "certificates:issue", onUpgrade: () => navigate({ to: "/pricing" }) });
+      notify.fromError(e, {
+        dedupeKey: "certificates:issue",
+        onUpgrade: () => navigate({ to: "/pricing" }),
+      });
     } finally {
       setIssuing(null);
     }
@@ -108,9 +116,12 @@ function CertificatesPage() {
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-aurora shadow-glow">
               <Award className="h-7 w-7 text-white" />
             </div>
-            <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl">Certificados oficiais</h1>
+            <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl">
+              Certificados oficiais
+            </h1>
             <p className="mx-auto mt-2 max-w-xl text-muted-foreground">
-              Cada nível concluído gera automaticamente um certificado com QR Code, código único e assinatura digital.
+              Cada nível concluído gera automaticamente um certificado com QR Code, código único e
+              assinatura digital.
             </p>
           </div>
 
@@ -141,7 +152,8 @@ function CertificatesPage() {
                 })}
               </div>
               <p className="mt-3 text-xs text-muted-foreground">
-                Só emite o certificado depois de concluíres o nível. Cada certificado tem um código único e verificável.
+                Só emite o certificado depois de concluíres o nível. Cada certificado tem um código
+                único e verificável.
               </p>
             </CardContent>
           </Card>
@@ -165,12 +177,19 @@ function CertificatesPage() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {items.map((c) => (
-                  <Card key={c.id} className="overflow-hidden border-2 border-double border-magenta/30">
+                  <Card
+                    key={c.id}
+                    className="overflow-hidden border-2 border-double border-magenta/30"
+                  >
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between">
                         <div>
-                          <Badge variant="secondary" className="mb-2">CEFR {c.level}</Badge>
-                          <div className="font-display text-xl font-bold">{c.full_name || "Student"}</div>
+                          <Badge variant="secondary" className="mb-2">
+                            CEFR {c.level}
+                          </Badge>
+                          <div className="font-display text-xl font-bold">
+                            {c.full_name || "Student"}
+                          </div>
                           {c.course_title && (
                             <div className="text-sm text-muted-foreground">{c.course_title}</div>
                           )}
@@ -185,14 +204,18 @@ function CertificatesPage() {
                           </div>
                         </div>
                         <div>
-                          <div className="uppercase tracking-wider text-muted-foreground">Score</div>
+                          <div className="uppercase tracking-wider text-muted-foreground">
+                            Score
+                          </div>
                           <div className="font-semibold">
                             {c.score != null ? `${Math.round(Number(c.score))}%` : "—"}
                           </div>
                         </div>
                         <div>
                           <div className="uppercase tracking-wider text-muted-foreground">ID</div>
-                          <div className="font-mono text-[11px] font-semibold">{c.verification_code}</div>
+                          <div className="font-mono text-[11px] font-semibold">
+                            {c.verification_code}
+                          </div>
                         </div>
                       </div>
                       <div className="mt-4 flex flex-wrap gap-2">
@@ -236,10 +259,7 @@ function VerifyBox() {
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             className="font-mono"
           />
-          <Button
-            asChild
-            disabled={!code.trim()}
-          >
+          <Button asChild disabled={!code.trim()}>
             <Link to="/verify/$code" params={{ code: code.trim() }}>
               Verificar
             </Link>

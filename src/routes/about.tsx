@@ -118,7 +118,10 @@ function AboutPage() {
           </h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {values.map((v) => (
-              <div key={v.title} className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+              <div
+                key={v.title}
+                className="rounded-2xl border border-border bg-card p-6 shadow-soft"
+              >
                 <v.icon className="h-6 w-6 text-primary" />
                 <h3 className="mt-3 font-display text-lg font-bold">{v.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{v.desc}</p>
@@ -141,7 +144,12 @@ function AboutPage() {
             <Button asChild size="lg" variant="secondary" className="text-foreground">
               <Link to="/auth">{pt ? "Criar conta" : "Create account"}</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-white/40 bg-transparent text-white hover:bg-white/10">
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="border-white/40 bg-transparent text-white hover:bg-white/10"
+            >
               <Link to="/pricing">{pt ? "Ver planos" : "See pricing"}</Link>
             </Button>
           </div>

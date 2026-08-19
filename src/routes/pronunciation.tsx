@@ -78,18 +78,16 @@ function PronunciationPage() {
 
   const chartData = useMemo(
     () =>
-      [...history]
-        .reverse()
-        .map((r, i) => ({
-          i: i + 1,
-          date: new Date(r.created_at).toLocaleDateString(),
-          Pronúncia: Number(r.accuracy ?? 0),
-          Fluência: Number(r.fluency ?? 0),
-          Entoação: Number(r.intonation ?? 0),
-          Ritmo: Number(r.rhythm ?? 0),
-          Clareza: Number(r.clarity ?? 0),
-          Global: Number(r.overall ?? 0),
-        })),
+      [...history].reverse().map((r, i) => ({
+        i: i + 1,
+        date: new Date(r.created_at).toLocaleDateString(),
+        Pronúncia: Number(r.accuracy ?? 0),
+        Fluência: Number(r.fluency ?? 0),
+        Entoação: Number(r.intonation ?? 0),
+        Ritmo: Number(r.rhythm ?? 0),
+        Clareza: Number(r.clarity ?? 0),
+        Global: Number(r.overall ?? 0),
+      })),
     [history],
   );
 

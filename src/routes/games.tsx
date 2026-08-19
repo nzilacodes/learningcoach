@@ -10,7 +10,11 @@ import { AGE_TRACKS, AGE_GROUP_LABEL, type AgeTrack } from "@/lib/age-tracks";
 import { AgeThemeSwitcher } from "@/components/age-theme-switcher";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { GamePlayModal } from "@/components/games/game-play-modal";
-import { HeaderActionLinks, MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/games")({
