@@ -465,7 +465,7 @@ function RewardsPage() {
                       const progress = m.progress ?? 0;
                       const done = !!m.completed_at;
                       const claimed = !!m.claimed_at;
-                      const pct = Math.min(100, (progress / m.target) * 100);
+                      const pct = m.target > 0 ? Math.min(100, (progress / m.target) * 100) : 0;
                       return (
                         <div
                           key={m.id}
@@ -698,7 +698,9 @@ function RewardsPage() {
               </div>
               <div className="mt-3 flex flex-col sm:flex-row gap-2">
                 <input
+                  type="email"
                   placeholder="email@exemplo.com"
+                  aria-label={locale === "pt" ? "E-mail do amigo" : "Friend's email"}
                   value={friendEmail}
                   onChange={(e) => setFriendEmail(e.target.value)}
                   className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)]"

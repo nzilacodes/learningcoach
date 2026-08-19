@@ -23,7 +23,9 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/community", changefreq: "weekly", priority: "0.7" },
           { path: "/games", changefreq: "monthly", priority: "0.7" },
           { path: "/videos", changefreq: "weekly", priority: "0.7" },
-          { path: "/lesson", changefreq: "monthly", priority: "0.6" },
+          // No static "/lesson" page exists — the real route is the dynamic,
+          // auth-gated /lesson/$lessonId, which isn't something a sitemap
+          // entry (or a crawler) can usefully represent.
           { path: "/pronunciation", changefreq: "monthly", priority: "0.6" },
           { path: "/reading", changefreq: "monthly", priority: "0.6" },
         ];

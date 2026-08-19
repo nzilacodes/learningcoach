@@ -224,7 +224,7 @@ function PricingPage() {
                             <Icon className={`h-8 w-8 relative z-10 ${plan.tier === "essential" ? "text-[#0EA5A4]" : plan.tier === "premium" ? "text-pink-500" : "text-indigo-600"}`} />
                           </div>
 
-                          <h3 className="font-display text-3xl font-bold mb-2 text-[#0F172A]">{meta.label[locale]}</h3>
+                          <h2 className="font-display text-3xl font-bold mb-2 text-[#0F172A]">{meta.label[locale]}</h2>
                           <p className="text-sm text-slate-500 mb-10 leading-relaxed max-w-[280px]">{meta.desc[locale]}</p>
 
                           <div className="flex items-baseline gap-1 mb-1">

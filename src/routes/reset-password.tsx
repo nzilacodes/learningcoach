@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
@@ -70,7 +71,13 @@ function ResetPasswordPage() {
               <Input required type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
             </div>
             <Button type="submit" disabled={loading} className="bg-gradient-sunset w-full text-white">
-              {loading ? "..." : locale === "pt" ? "Guardar" : "Save"}
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : locale === "pt" ? (
+                "Guardar"
+              ) : (
+                "Save"
+              )}
             </Button>
           </form>
         </div>

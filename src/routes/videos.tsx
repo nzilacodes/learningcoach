@@ -128,6 +128,11 @@ function VideosPage() {
                     ? "Pesquisar aulas, tópicos ou gramática..."
                     : "Search lessons, topics or grammar..."
                 }
+                aria-label={
+                  locale === "pt"
+                    ? "Pesquisar aulas, tópicos ou gramática"
+                    : "Search lessons, topics or grammar"
+                }
                 className="w-full pl-14 pr-6 py-3.5 bg-gray-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-(--violet)/10 transition-all outline-none"
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2">

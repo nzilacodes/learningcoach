@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   CreditCard,
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/checkout/$planId")({
       apiFetch<{ sandboxPaymentsEnabled: boolean }>("/v1/config"),
     ]);
     const plan = plans.find((p) => p.id === params.planId);
-    if (!plan) throw new Error("Plano não encontrado");
+    if (!plan) throw notFound();
     return { plan, sandboxPaymentsEnabled: config.sandboxPaymentsEnabled };
   },
   errorComponent: ({ error }) => (

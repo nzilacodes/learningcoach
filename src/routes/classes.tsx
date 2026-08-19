@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -336,7 +337,11 @@ function ClassesPage() {
                     if (name.trim()) createClass.mutate();
                   }}
                 >
+                  <Label htmlFor="class-name" className="sr-only">
+                    {locale === "pt" ? "Nome da turma" : "Class name"}
+                  </Label>
                   <Input
+                    id="class-name"
                     value={name}
                     onChange={(e) => setName(e.target.value.slice(0, 200))}
                     placeholder={
@@ -390,7 +395,11 @@ function ClassesPage() {
                       if (code.trim()) joinClass.mutate();
                     }}
                   >
+                    <Label htmlFor="class-invite-code" className="sr-only">
+                      {locale === "pt" ? "Código de convite" : "Invite code"}
+                    </Label>
                     <Input
+                      id="class-invite-code"
                       value={code}
                       onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 20))}
                       placeholder={locale === "pt" ? "Código de convite" : "Invite code"}

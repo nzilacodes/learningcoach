@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Sparkles, Mail, Lock, User, ArrowRight, Check } from "lucide-react";
+import { Sparkles, Mail, Lock, User, ArrowRight, Check, Loader2 } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
@@ -185,8 +185,13 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
         size="lg"
         className="bg-gradient-sunset w-full text-white shadow-soft hover:opacity-90"
       >
-        {loading ? "..." : locale === "pt" ? "Entrar" : "Sign in"}{" "}
-        <ArrowRight className="ml-1.5 h-4 w-4" />
+        {loading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <>
+            {locale === "pt" ? "Entrar" : "Sign in"} <ArrowRight className="ml-1.5 h-4 w-4" />
+          </>
+        )}
       </Button>
     </form>
   );
@@ -307,8 +312,14 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
         size="lg"
         className="bg-gradient-sunset w-full text-white shadow-soft hover:opacity-90"
       >
-        {loading ? "..." : locale === "pt" ? "Criar conta" : "Create account"}{" "}
-        <ArrowRight className="ml-1.5 h-4 w-4" />
+        {loading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <>
+            {locale === "pt" ? "Criar conta" : "Create account"}{" "}
+            <ArrowRight className="ml-1.5 h-4 w-4" />
+          </>
+        )}
       </Button>
     </form>
   );

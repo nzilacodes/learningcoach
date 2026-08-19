@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { WordCard } from "@/components/word-card";
 import { apiFetch } from "@/lib/api/client";
@@ -119,7 +120,11 @@ function PronunciationPage() {
               setCurrent(word.trim().toLowerCase());
             }}
           >
+            <Label htmlFor="pronunciation-word" className="sr-only">
+              Palavra
+            </Label>
             <Input
+              id="pronunciation-word"
               value={word}
               onChange={(e) => setWord(e.target.value)}
               placeholder="ex: pronunciation"

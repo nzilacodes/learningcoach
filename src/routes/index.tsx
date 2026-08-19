@@ -292,7 +292,7 @@ function LandingPage() {
         <section data-anim="age-panels-section" className="h-full flex items-center bg-[#F8FAFC]">
           <div className="mx-auto max-w-7xl px-6 w-full py-10">
             <div className="headline-container text-center mb-10">
-              <h1>Choose Your Path</h1>
+              <h2>Choose Your Path</h2>
               <div className="mx-auto mt-3 h-1 w-16 rounded-full bg-[#84CC16]" />
               <p className="mx-auto mt-3 max-w-xl text-sm text-slate-500">
                 Programas especializados para cada fase da vida — todos na plataforma LEARNING
