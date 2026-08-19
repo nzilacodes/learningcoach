@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Flame, Star, Lock, Check, Play, LogOut, PartyPopper } from "lucide-react";
-import { VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { AGE_TRACKS } from "@/lib/age-tracks";
@@ -19,6 +19,7 @@ export function KidsDashboard(data: DashboardData) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+      <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-[#fdf7ec]">
         {/* ====== TopBar ====== */}
         <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white/90 backdrop-blur-xl border-b border-amber-100 shrink-0 z-10">

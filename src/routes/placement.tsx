@@ -169,6 +169,10 @@ function DiagnosticPage() {
       setSection("report");
       notify.success(locale === "pt" ? `Nível ${data.cefr_level} identificado!` : `Level ${data.cefr_level} identified!`);
     } catch (e) {
+      // Clear any report left over from a previous attempt/session — otherwise
+      // this failed retake would render the old ReportView dressed with the
+      // new error instead of the dedicated SubmitFailedView.
+      setReport(null);
       setSaveError(normalizeApiError(e, locale));
       setSection("report");
       notify.fromError(e, { dedupeKey: "placement:evaluate", onRetry: submit });

@@ -630,7 +630,7 @@ function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
               <>
                 {selected === "free"
                   ? (locale === "pt" ? "Ativar plano grátis" : "Activate free plan")
-                  : (locale === "pt" ? "Confirmar e pagar" : "Confirm & pay")}
+                  : (locale === "pt" ? "Ativar plano" : "Activate plan")}
                 <ArrowRight className="ml-1.5 h-4 w-4" />
               </>
             )}

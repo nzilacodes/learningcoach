@@ -109,6 +109,18 @@ export function MediaStudio({
   const [unitId, setUnitId] = useState(NONE);
   const [lessonId, setLessonId] = useState(defaultLessonId ?? NONE);
 
+  // Switching tabs or closing the dialog tears down the active MediaStream
+  // (see the cleanup in the effect below), which silently discards an
+  // in-progress recording — recordingRef.current.stop() is never called, so
+  // the blob never reaches handleStop()/setResult(). Gate both exits on an
+  // explicit choice whenever a recording is live.
+  const confirmDiscardRecording = () => {
+    if (recordPhase === "idle") return true;
+    return window.confirm(
+      "Há uma gravação em curso. Se continuar, ela será perdida. Deseja continuar?",
+    );
+  };
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recordingRef = useRef<ActiveRecording | null>(null);
@@ -310,7 +322,13 @@ export function MediaStudio({
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next && !confirmDiscardRecording()) return;
+        onOpenChange(next);
+      }}
+    >
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">Media Studio</DialogTitle>
@@ -365,7 +383,13 @@ export function MediaStudio({
           />
         ) : (
           <>
-            <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
+            <Tabs
+              value={mode}
+              onValueChange={(v) => {
+                if (!confirmDiscardRecording()) return;
+                setMode(v as Mode);
+              }}
+            >
               <TabsList className="grid grid-cols-4 w-full">
                 <TabsTrigger value="video">
                   <Video className="w-4 h-4 mr-1" /> Vídeo

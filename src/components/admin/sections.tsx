@@ -61,6 +61,7 @@ export function SubscriptionsSection() {
   const [cancelingId, setCancelingId] = useState<string | null>(null);
 
   const cancelSub = async (id: string) => {
+    if (!window.confirm("Cancelar esta assinatura? O aluno perde o acesso ao plano pago.")) return;
     setCancelingId(id);
     try {
       await apiFetch(`/v1/admin/subscriptions/${id}/cancel`, { method: "POST" });
@@ -604,7 +605,10 @@ function ExerciseEditor({
         <ExerciseRow
           key={ex.id}
           exercise={ex}
-          onDeleted={() => deleteExercise.mutate(ex.id)}
+          onDeleted={() => {
+            if (!window.confirm("Apagar este exercício definitivamente? Esta ação não pode ser revertida.")) return;
+            deleteExercise.mutate(ex.id);
+          }}
           onSaved={onChanged}
         />
       ))}

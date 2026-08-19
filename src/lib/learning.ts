@@ -217,14 +217,37 @@ export function useDashboardData() {
   const { user } = useAuth();
   useStudyHeartbeat();
 
-  const { data: userStats } = useUserStats();
-  const { data: progress = [], isLoading: progressLoading } = useLessonProgress();
-  const { data: week } = useWeeklyStudy();
+  const {
+    data: userStats,
+    isError: userStatsError,
+    refetch: refetchUserStats,
+  } = useUserStats();
+  const {
+    data: progress = [],
+    isLoading: progressLoading,
+    isError: progressError,
+    refetch: refetchProgress,
+  } = useLessonProgress();
+  const { data: week, isError: weekError, refetch: refetchWeek } = useWeeklyStudy();
   const reminder = useStudyReminder();
-  const { data: unlockedLevel } = useMaxUnlockedLevel();
-  const { data: curriculum, isLoading: curriculumLoading } = useCurriculum();
+  const {
+    data: unlockedLevel,
+    isError: unlockedLevelError,
+    refetch: refetchUnlockedLevel,
+  } = useMaxUnlockedLevel();
+  const {
+    data: curriculum,
+    isLoading: curriculumLoading,
+    isError: curriculumError,
+    refetch: refetchCurriculum,
+  } = useCurriculum();
 
-  const { data: sub, isLoading: subLoading } = useQuery({
+  const {
+    data: sub,
+    isLoading: subLoading,
+    isError: subError,
+    refetch: refetchSub,
+  } = useQuery({
     queryKey: ["my_subscription", user?.id],
     enabled: !!user,
     queryFn: async () => {
@@ -331,10 +354,22 @@ export function useDashboardData() {
   // so they never render already-unlocked units as locked or flash a
   // no-subscription state for an active subscriber.
   const isLoading = curriculumLoading || progressLoading || subLoading;
+  const isError =
+    curriculumError || progressError || subError || userStatsError || unlockedLevelError || weekError;
+  const refetch = () => {
+    refetchCurriculum();
+    refetchProgress();
+    refetchSub();
+    refetchUserStats();
+    refetchUnlockedLevel();
+    refetchWeek();
+  };
 
   return {
     user,
     isLoading,
+    isError,
+    refetch,
     userStats,
     progress,
     week: { seconds: weekSeconds, label: weekLabel, days: weekDays, goalDays, pct: weekPct },

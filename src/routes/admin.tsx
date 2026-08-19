@@ -372,7 +372,21 @@ function AdminPage() {
                             <CheckCircle2 className="mr-1 h-3.5 w-3.5" />{" "}
                             {locale === "pt" ? "Ativar" : "Activate"}
                           </Button>
-                          <Button size="sm" variant="outline" onClick={() => cancel.mutate(p)}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              if (
+                                !window.confirm(
+                                  locale === "pt"
+                                    ? "Cancelar este pagamento pendente?"
+                                    : "Cancel this pending payment?",
+                                )
+                              )
+                                return;
+                              cancel.mutate(p);
+                            }}
+                          >
                             <XCircle className="h-3.5 w-3.5" />
                           </Button>
                         </div>

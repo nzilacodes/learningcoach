@@ -44,6 +44,22 @@ function DashboardPage() {
     );
   }
 
+  if (data.isError) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
+        <p className="text-sm text-muted-foreground">
+          Não foi possível carregar o seu painel. Tente novamente.
+        </p>
+        <button
+          onClick={() => data.refetch()}
+          className="inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    );
+  }
+
   if (group === "kids") return <KidsDashboard {...data} />;
   if (group === "teens") return <TeensDashboard {...data} />;
   return <AdultsDashboard {...data} />;
