@@ -1,13 +1,23 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Users, Plus, Copy, Trash2, LogIn, LogOut, ArrowLeft, GraduationCap } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -75,9 +85,31 @@ function ClassesPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [name, setName] = useState("");
-  const [code, setCode] = useState("");
   const [selectedClass, setSelectedClass] = useState<OwnedClass | null>(null);
+  const createForm = useForm<{ name: string }>({
+    resolver: zodResolver(
+      z.object({
+        name: z
+          .string()
+          .trim()
+          .min(1, locale === "pt" ? "Nome obrigatório" : "Name is required")
+          .max(200),
+      }),
+    ),
+    defaultValues: { name: "" },
+  });
+  const joinForm = useForm<{ code: string }>({
+    resolver: zodResolver(
+      z.object({
+        code: z
+          .string()
+          .trim()
+          .min(1, locale === "pt" ? "Código obrigatório" : "Code is required")
+          .max(20),
+      }),
+    ),
+    defaultValues: { code: "" },
+  });
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -96,10 +128,10 @@ function ClassesPage() {
   });
 
   const createClass = useMutation({
-    mutationFn: () =>
+    mutationFn: (name: string) =>
       apiFetch<OwnedClass>("/v1/classes", { method: "POST", body: JSON.stringify({ name }) }),
     onSuccess: () => {
-      setName("");
+      createForm.reset();
       qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
       notify.success(locale === "pt" ? "Turma criada!" : "Class created!");
     },
@@ -107,10 +139,10 @@ function ClassesPage() {
   });
 
   const joinClass = useMutation({
-    mutationFn: () =>
-      apiFetch("/v1/classes/join", { method: "POST", body: JSON.stringify({ inviteCode: code }) }),
+    mutationFn: (inviteCode: string) =>
+      apiFetch("/v1/classes/join", { method: "POST", body: JSON.stringify({ inviteCode }) }),
     onSuccess: () => {
-      setCode("");
+      joinForm.reset();
       qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
       notify.success(locale === "pt" ? "Você entrou na turma!" : "You joined the class!");
     },
@@ -333,30 +365,38 @@ function ClassesPage() {
                 <h2 className="font-display text-lg font-bold">
                   {locale === "pt" ? "Minhas turmas" : "My classes"}
                 </h2>
-                <form
-                  className="mt-4 flex gap-2"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (name.trim()) createClass.mutate();
-                  }}
-                >
-                  <Label htmlFor="class-name" className="sr-only">
-                    {locale === "pt" ? "Nome da turma" : "Class name"}
-                  </Label>
-                  <Input
-                    id="class-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value.slice(0, 200))}
-                    placeholder={
-                      locale === "pt"
-                        ? "Nome da turma (ex: Turma A1)"
-                        : "Class name (e.g. A1 Class)"
-                    }
-                  />
-                  <Button type="submit" disabled={!name.trim() || createClass.isPending}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </form>
+                <Form {...createForm}>
+                  <form
+                    className="mt-4 flex gap-2"
+                    onSubmit={createForm.handleSubmit((v) => createClass.mutate(v.name))}
+                  >
+                    <FormField
+                      control={createForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel className="sr-only">
+                            {locale === "pt" ? "Nome da turma" : "Class name"}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={
+                                locale === "pt"
+                                  ? "Nome da turma (ex: Turma A1)"
+                                  : "Class name (e.g. A1 Class)"
+                              }
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" disabled={createClass.isPending} className="self-start">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </form>
+                </Form>
 
                 <div className="mt-5 space-y-3">
                   {isLoading && <p className="text-xs text-muted-foreground">Loading…</p>}
@@ -391,27 +431,36 @@ function ClassesPage() {
                   <h2 className="font-display text-lg font-bold">
                     {locale === "pt" ? "Entrar numa turma" : "Join a class"}
                   </h2>
-                  <form
-                    className="mt-4 flex gap-2"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (code.trim()) joinClass.mutate();
-                    }}
-                  >
-                    <Label htmlFor="class-invite-code" className="sr-only">
-                      {locale === "pt" ? "Código de convite" : "Invite code"}
-                    </Label>
-                    <Input
-                      id="class-invite-code"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 20))}
-                      placeholder={locale === "pt" ? "Código de convite" : "Invite code"}
-                      className="font-mono uppercase"
-                    />
-                    <Button type="submit" disabled={!code.trim() || joinClass.isPending}>
-                      <LogIn className="h-4 w-4" />
-                    </Button>
-                  </form>
+                  <Form {...joinForm}>
+                    <form
+                      className="mt-4 flex gap-2"
+                      onSubmit={joinForm.handleSubmit((v) => joinClass.mutate(v.code))}
+                    >
+                      <FormField
+                        control={joinForm.control}
+                        name="code"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel className="sr-only">
+                              {locale === "pt" ? "Código de convite" : "Invite code"}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder={locale === "pt" ? "Código de convite" : "Invite code"}
+                                className="font-mono uppercase"
+                                {...field}
+                                onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit" disabled={joinClass.isPending} className="self-start">
+                        <LogIn className="h-4 w-4" />
+                      </Button>
+                    </form>
+                  </Form>
                 </div>
 
                 <div className="rounded-3xl border border-border bg-card p-6 shadow-card">

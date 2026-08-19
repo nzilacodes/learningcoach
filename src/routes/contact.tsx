@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Mail, MessageSquare, Phone, MapPin, Send, Loader2 } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
@@ -7,10 +10,30 @@ import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { useLocale } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/site-url";
 import { apiFetch } from "@/lib/api/client";
+
+function contactSchema(pt: boolean) {
+  return z.object({
+    name: z.string().min(1, pt ? "Nome obrigatório" : "Name is required"),
+    email: z
+      .string()
+      .min(1, pt ? "Email obrigatório" : "Email is required")
+      .email(pt ? "Email inválido" : "Invalid email"),
+    subject: z.string(),
+    message: z.string().min(1, pt ? "Mensagem obrigatória" : "Message is required"),
+  });
+}
+type ContactValues = z.infer<ReturnType<typeof contactSchema>>;
 
 export const Route = createFileRoute("/contact")({
   component: ContactPage,
@@ -38,39 +61,40 @@ function ContactPage() {
   const notify = useNotification();
   const pt = locale === "pt";
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const form = useForm<ContactValues>({
+    resolver: zodResolver(contactSchema(pt)),
+    defaultValues: { name: "", email: "", subject: "", message: "" },
+  });
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name || !form.email || !form.message) {
-      notify.warning(
-        pt ? "Preencha todos os campos obrigatórios." : "Please fill all required fields.",
-      );
-      return;
-    }
+  const onSubmit = form.handleSubmit(async (values) => {
     setSubmitting(true);
     try {
       await apiFetch("/v1/contact", {
         method: "POST",
         body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          subject: form.subject || undefined,
-          message: form.message,
+          name: values.name,
+          email: values.email,
+          subject: values.subject || undefined,
+          message: values.message,
         }),
       });
-      setForm({ name: "", email: "", subject: "", message: "" });
+      form.reset();
       notify.success(
         pt ? "Mensagem enviada! Respondemos em breve." : "Message sent! We'll reply soon.",
       );
     } catch (err) {
       // RATE_LIMITED (429) and the generic fallback are already well-covered
       // by ErrorCodeMap — no need to hand-check the status here anymore.
-      notify.fromError(err, { dedupeKey: "contact:submit" });
+      const normalized = notify.fromError(err, { dedupeKey: "contact:submit" });
+      normalized.fieldPaths?.forEach((path) => {
+        if (path === "name" || path === "email" || path === "subject" || path === "message") {
+          form.setError(path, { type: "server", message: normalized.description });
+        }
+      });
     } finally {
       setSubmitting(false);
     }
-  };
+  });
 
   const channels = [
     {
@@ -135,63 +159,80 @@ function ContactPage() {
             ))}
           </div>
 
-          <form
-            onSubmit={onSubmit}
-            className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8"
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="name">{pt ? "Nome" : "Name"} *</Label>
-                <Input
-                  id="name"
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">E-mail *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                  required
-                />
-              </div>
-            </div>
-            <div className="mt-4">
-              <Label htmlFor="subject">{pt ? "Assunto" : "Subject"}</Label>
-              <Input
-                id="subject"
-                value={form.subject}
-                onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
-              />
-            </div>
-            <div className="mt-4">
-              <Label htmlFor="message">{pt ? "Mensagem" : "Message"} *</Label>
-              <Textarea
-                id="message"
-                rows={6}
-                value={form.message}
-                onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-                required
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={submitting}
-              className="bg-gradient-sunset mt-6 w-full text-white shadow-soft hover:opacity-90"
-              size="lg"
+          <Form {...form}>
+            <form
+              onSubmit={onSubmit}
+              className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8"
             >
-              {submitting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="mr-2 h-4 w-4" />
-              )}
-              {pt ? "Enviar mensagem" : "Send message"}
-            </Button>
-          </form>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{pt ? "Nome" : "Name"} *</FormLabel>
+                      <FormControl>
+                        <Input autoComplete="name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>E-mail *</FormLabel>
+                      <FormControl>
+                        <Input type="email" autoComplete="email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="subject"
+                render={({ field }) => (
+                  <FormItem className="mt-4">
+                    <FormLabel>{pt ? "Assunto" : "Subject"}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem className="mt-4">
+                    <FormLabel>{pt ? "Mensagem" : "Message"} *</FormLabel>
+                    <FormControl>
+                      <Textarea rows={6} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="bg-gradient-sunset mt-6 w-full text-white shadow-soft hover:opacity-90"
+                size="lg"
+              >
+                {submitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="mr-2 h-4 w-4" />
+                )}
+                {pt ? "Enviar mensagem" : "Send message"}
+              </Button>
+            </form>
+          </Form>
         </section>
       </main>
       <SiteFooter />
