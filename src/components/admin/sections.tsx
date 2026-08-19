@@ -432,7 +432,7 @@ export function CurriculumSection() {
               }`}
             >
               <div className="truncate">{l.title}</div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              <div className="text-2xs uppercase tracking-wide text-muted-foreground">
                 {l.lesson_type}
               </div>
             </button>

@@ -233,7 +233,7 @@ function StatusBadge({ status }: { status: string }) {
   const Icon = cfg.icon;
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${cfg.cls}`}
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-semibold ${cfg.cls}`}
     >
       <Icon className="h-3 w-3" />
       {cfg.label}

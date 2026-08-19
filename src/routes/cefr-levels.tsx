@@ -163,7 +163,7 @@ function CefrLevelsPage() {
                         {level.code}
                         {locked && <Lock className="w-4 h-4 text-muted-foreground" />}
                         {isCurrent && (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
+                          <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
                             ATUAL
                           </span>
                         )}

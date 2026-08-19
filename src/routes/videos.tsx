@@ -155,7 +155,7 @@ function VideosPage() {
                 className="w-full pl-14 pr-6 py-3.5 bg-gray-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-(--violet)/10 transition-all outline-none"
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                <span className="px-2 py-1 bg-white border border-gray-100 rounded-md text-[10px] text-gray-400 font-bold">
+                <span className="px-2 py-1 bg-white border border-gray-100 rounded-md text-2xs text-gray-400 font-bold">
                   ⌘ K
                 </span>
               </div>
@@ -227,13 +227,13 @@ function VideosPage() {
           {/* Mobile Stats */}
           <div className="md:hidden grid grid-cols-3 gap-3">
             <div className="glass-card rounded-2xl p-4 text-center premium-shadow">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              <div className="text-2xs font-bold uppercase tracking-wider text-gray-400">
                 Study Hours
               </div>
               <div className="text-xl font-bold text-(--ink)">{weekHours}</div>
             </div>
             <div className="glass-card rounded-2xl p-4 text-center premium-shadow">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              <div className="text-2xs font-bold uppercase tracking-wider text-gray-400">
                 Streak
               </div>
               <div className="text-xl font-bold text-(--ink)">
@@ -241,7 +241,7 @@ function VideosPage() {
               </div>
             </div>
             <div className="glass-card rounded-2xl p-4 text-center premium-shadow">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              <div className="text-2xs font-bold uppercase tracking-wider text-gray-400">
                 Watched
               </div>
               <div className="text-xl font-bold text-(--ink)">{watchedCount}</div>
@@ -307,10 +307,10 @@ function VideosPage() {
               <div className="absolute bottom-12 left-12 right-12">
                 <div className="space-y-4 max-w-2xl">
                   <div className="flex gap-2">
-                    <span className="px-3 py-1 bg-(--violet) text-white text-[10px] font-bold rounded-lg uppercase tracking-widest">
+                    <span className="px-3 py-1 bg-(--violet) text-white text-2xs font-bold rounded-lg uppercase tracking-widest">
                       New
                     </span>
-                    <span className="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold rounded-lg uppercase tracking-widest">
+                    <span className="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white text-2xs font-bold rounded-lg uppercase tracking-widest">
                       Premium
                     </span>
                   </div>
@@ -370,7 +370,7 @@ function VideosPage() {
                         <h4 className="font-display font-bold text-sm leading-tight group-hover:text-(--violet) transition-colors line-clamp-2">
                           {r.title ?? r.video_id}
                         </h4>
-                        <span className="text-[10px] text-gray-400 font-bold">{r.channel}</span>
+                        <span className="text-2xs text-gray-400 font-bold">{r.channel}</span>
                       </div>
                     </Link>
                   );
@@ -425,7 +425,7 @@ function VideosPage() {
                       <h4 className="font-display font-bold text-sm leading-tight group-hover:text-(--violet) transition-colors line-clamp-2">
                         {video.title}
                       </h4>
-                      <span className="text-[10px] text-gray-400 font-bold">{video.level}</span>
+                      <span className="text-2xs text-gray-400 font-bold">{video.level}</span>
                     </Link>
 
                     {/* 3-dot menu */}

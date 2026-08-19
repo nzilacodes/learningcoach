@@ -123,12 +123,12 @@ function VerifyPage() {
             <CardContent className="p-8">
               <div className="flex items-center gap-2">
                 <Award className="h-5 w-5 text-primary" />
-                <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                <div className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">
                   Official CEFR Certificate
                 </div>
               </div>
 
-              <div className="mt-6 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">
+              <div className="mt-6 text-2xs font-bold uppercase tracking-[0.3em] text-muted-foreground">
                 Emitido a
               </div>
               <div className="mt-1 font-display text-4xl font-bold">
@@ -154,10 +154,10 @@ function VerifyPage() {
               </div>
 
               <div className="mt-8 rounded-lg border bg-muted/30 p-4">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                <div className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">
                   Assinatura digital (SHA-256)
                 </div>
-                <div className="mt-1 break-all font-mono text-[11px] text-foreground/80">
+                <div className="mt-1 break-all font-mono text-2xs text-foreground/80">
                   {cert.signature}
                 </div>
               </div>
@@ -179,7 +179,7 @@ function VerifyPage() {
 function Meta({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+      <div className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">
         {label}
       </div>
       <div className={`mt-1 font-semibold ${mono ? "font-mono text-sm" : "text-base"}`}>

@@ -75,7 +75,7 @@ export function NotificationBell() {
         >
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white">
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-2xs font-semibold text-white">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -100,7 +100,7 @@ export function NotificationBell() {
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)}>
           <TabsList className="mx-3 mt-2 grid grid-cols-3 gap-1 bg-transparent p-0 h-auto">
             {(Object.keys(TAB_LABEL) as TabValue[]).map((t) => (
-              <TabsTrigger key={t} value={t} className="text-[11px] px-1.5 py-1">
+              <TabsTrigger key={t} value={t} className="text-2xs px-1.5 py-1">
                 {TAB_LABEL[t][locale]}
               </TabsTrigger>
             ))}
@@ -137,7 +137,7 @@ export function NotificationBell() {
                       {n.description && (
                         <p className="mt-0.5 text-xs text-muted-foreground">{n.description}</p>
                       )}
-                      <p className="mt-1 text-[10px] text-muted-foreground">
+                      <p className="mt-1 text-2xs text-muted-foreground">
                         {new Date(n.created_at).toLocaleString(
                           locale === "pt" ? "pt-PT" : "en-US",
                           {

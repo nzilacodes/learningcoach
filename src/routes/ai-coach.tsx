@@ -405,7 +405,7 @@ function AICoachPage() {
                       ) : (
                         <Mic className="w-4 h-4" />
                       )}
-                      <span className="text-[11px] font-medium">
+                      <span className="text-2xs font-medium">
                         {recorder
                           ? locale === "pt"
                             ? "Parar"
@@ -416,12 +416,12 @@ function AICoachPage() {
                       </span>
                     </button>
                   </div>
-                  <div className="text-[11px] font-medium text-gray-400">
+                  <div className="text-2xs font-medium text-gray-400">
                     {input.length} / {MAX_MESSAGE_LENGTH.toLocaleString()}
                   </div>
                 </div>
               </div>
-              <p className="text-[10px] text-center mt-3 text-gray-400">
+              <p className="text-2xs text-center mt-3 text-gray-400">
                 {locale === "pt"
                   ? "O Coach pode gerar informações imprecisas."
                   : "Coach may generate inaccurate information."}

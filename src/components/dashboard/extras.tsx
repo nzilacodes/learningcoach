@@ -121,7 +121,7 @@ export function LeaderboardCard() {
                 <span className="w-8 text-center font-bold">{medal}</span>
                 <span className="font-medium">{row.display_name}</span>
                 {row.cefr_level && (
-                  <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold">
+                  <span className="rounded-full bg-muted px-1.5 py-0.5 text-2xs font-bold">
                     {row.cefr_level}
                   </span>
                 )}
@@ -160,7 +160,7 @@ export function CertificatesCard() {
           {data.length > 0 && (
             <Link
               to="/certificates"
-              className="text-[11px] font-semibold text-magenta hover:underline"
+              className="text-2xs font-semibold text-magenta hover:underline"
             >
               Ver todos
             </Link>
@@ -183,7 +183,7 @@ export function CertificatesCard() {
             >
               <div>
                 <div className="text-sm font-bold">Nível {c.level}</div>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-2xs text-muted-foreground">
                   {new Date(c.issued_at).toLocaleDateString()} · {c.verification_code}
                 </div>
               </div>
@@ -238,7 +238,7 @@ export function AchievementsCard() {
               </div>
               <div className="flex-1">
                 <div className="text-sm font-semibold">{a.achievements?.title ?? "Conquista"}</div>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-2xs text-muted-foreground">
                   {new Date(a.earned_at).toLocaleDateString()}
                   {a.achievements?.xp_reward ? ` · +${a.achievements.xp_reward} XP` : ""}
                 </div>
@@ -338,7 +338,7 @@ export function GoalsCard() {
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {user.interests.map((i: string) => (
-              <span key={i} className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">
+              <span key={i} className="rounded-full bg-muted px-2 py-0.5 text-2xs font-medium">
                 {i}
               </span>
             ))}

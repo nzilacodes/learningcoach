@@ -213,7 +213,7 @@ function CheckoutPage() {
                                               <Badge
                                                 key={p}
                                                 variant="secondary"
-                                                className="text-[10px]"
+                                                className="text-2xs"
                                               >
                                                 {p}
                                               </Badge>
@@ -384,7 +384,7 @@ function Field({ label, value, mono }: { label: string; value: string; mono?: bo
   const [copied, setCopied] = useState(false);
   return (
     <div className="rounded-lg border bg-background p-3">
-      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+      <div className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">
         {label}
       </div>
       <div className="mt-1 flex items-center justify-between gap-2">

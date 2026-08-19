@@ -255,7 +255,7 @@ function LandingPage() {
                 >
                   {"target" in s && s.target !== undefined ? "0" : s.value}
                 </div>
-                <div className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:text-xs">
+                <div className="mt-2 text-2xs font-semibold uppercase tracking-wider text-slate-400 sm:text-xs">
                   {s.label}
                 </div>
               </div>
@@ -275,7 +275,7 @@ function LandingPage() {
               <div className="font-['Poppins',_sans-serif] text-2xl font-extrabold text-marketing-teal">
                 {s.value}
               </div>
-              <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              <div className="mt-1 text-2xs font-semibold uppercase tracking-wider text-slate-400">
                 {s.label}
               </div>
             </div>
@@ -350,7 +350,7 @@ function LandingPage() {
           <div className="mx-auto max-w-7xl px-6 py-12 h-full flex flex-col justify-center">
             {/* Bento Header */}
             <div data-anim="bento-header" className="mb-8">
-              <div className="mb-3 inline-block rounded-full bg-teal-900/50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-teal-300">
+              <div className="mb-3 inline-block rounded-full bg-teal-900/50 px-3 py-1 text-2xs font-bold uppercase tracking-widest text-teal-300">
                 Everything you need
               </div>
               <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -388,7 +388,7 @@ function LandingPage() {
           <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 shadow-sm md:p-14">
             <div className="grid items-end gap-10 lg:grid-cols-4">
               <div data-anim="section-heading" className="lg:col-span-1">
-                <div className="mb-3 inline-block rounded-full bg-lime-100 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-marketing-lime-dark">
+                <div className="mb-3 inline-block rounded-full bg-lime-100 px-3 py-1 text-2xs font-black uppercase tracking-widest text-marketing-lime-dark">
                   CEFR Aligned
                 </div>
                 <h2 className="text-3xl font-extrabold tracking-tight">
@@ -410,7 +410,7 @@ function LandingPage() {
                       </div>
                       <div
                         data-anim="cefr-label"
-                        className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-slate-400"
+                        className="mt-2 text-2xs font-semibold uppercase tracking-widest text-slate-400"
                       >
                         {lvl.label}
                       </div>
@@ -569,15 +569,15 @@ function AgePanel({
             className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-          <div className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-marketing-ink backdrop-blur">
+          <div className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-0.5 text-2xs font-black uppercase tracking-widest text-marketing-ink backdrop-blur">
             {tag}
           </div>
           {highlighted && (
-            <div className="absolute right-3 top-3 rounded-full bg-marketing-teal px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-white">
+            <div className="absolute right-3 top-3 rounded-full bg-marketing-teal px-2.5 py-0.5 text-2xs font-black uppercase tracking-widest text-white">
               Popular
             </div>
           )}
-          <div className="absolute bottom-3 left-3 text-[9px] font-black uppercase tracking-widest text-white/95">
+          <div className="absolute bottom-3 left-3 text-2xs font-black uppercase tracking-widest text-white/95">
             Learning English with Coach
           </div>
         </div>

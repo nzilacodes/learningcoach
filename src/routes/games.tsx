@@ -153,7 +153,7 @@ function GamesPage() {
             {/* Hero: title/tagline + stats */}
             <div className="grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-6 md:gap-0 border border-gray-100 rounded-2xl overflow-hidden mb-8 md:mb-12">
               <div className="p-6 md:p-10 md:border-r border-gray-100 flex flex-col justify-center gap-3">
-                <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-orange-600">
+                <span className="text-2xs md:text-xs font-bold uppercase tracking-widest text-orange-600">
                   {locale === "pt" ? "Para você" : "For you"} · {ageLabel.pt} ({ageLabel.range})
                 </span>
                 <h2 className="font-display text-2xl md:text-4xl font-bold text-(--ink)">
@@ -175,7 +175,7 @@ function GamesPage() {
                     <span className="font-display text-2xl md:text-3xl font-bold text-(--ink)">
                       {s.value}
                     </span>
-                    <span className="text-[10px] uppercase tracking-wider text-gray-400">
+                    <span className="text-2xs uppercase tracking-wider text-gray-400">
                       {s.label}
                     </span>
                   </div>
@@ -267,7 +267,7 @@ function GamesPage() {
                     <span className="flex-1 min-w-0 font-display font-bold text-sm md:text-base truncate text-(--ink)">
                       {locale === "pt" ? g.pt : g.en}
                     </span>
-                    <span className="hidden sm:inline-block text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-2 py-1 rounded-full shrink-0">
+                    <span className="hidden sm:inline-block text-2xs font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-2 py-1 rounded-full shrink-0">
                       {locale === "pt" ? CAT_LABELS[g.cat].pt : CAT_LABELS[g.cat].en}
                     </span>
                     <span className="text-xs md:text-sm text-gray-400 font-semibold w-16 md:w-20 text-right shrink-0">
@@ -342,7 +342,7 @@ function GameCard({
         </span>
       </div>
       <div className="p-5 flex flex-col flex-1 gap-2">
-        <span className="self-start text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
+        <span className="self-start text-2xs font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
           {locale === "pt" ? catLabel.pt : catLabel.en}
         </span>
         <h3 className="font-display text-lg font-bold text-[var(--ink)]">{title}</h3>

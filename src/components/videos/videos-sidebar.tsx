@@ -116,7 +116,7 @@ export function VideosSidebar() {
             />
             <div className="leading-tight">
               <div className="font-display font-bold text-lg text-[var(--ink)]">Learning</div>
-              <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+              <div className="text-2xs font-medium text-gray-400 uppercase tracking-wider">
                 Coach
               </div>
             </div>
@@ -157,7 +157,7 @@ export function VideosSidebar() {
         {NAV_SECTIONS.map((section) => (
           <div key={section.label.en} className="space-y-1">
             {!collapsed && (
-              <p className="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">
+              <p className="px-4 text-2xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">
                 {locale === "pt" ? section.label.pt : section.label.en}
               </p>
             )}
@@ -253,7 +253,7 @@ export function VideosSidebar() {
                 <p className="text-sm font-bold truncate text-[var(--ink)]">
                   {user?.email?.split("@")[0] || "Utilizador"}
                 </p>
-                <p className="text-[11px] text-gray-400 font-medium truncate">Premium Member</p>
+                <p className="text-2xs text-gray-400 font-medium truncate">Premium Member</p>
               </div>
               {profileOpen ? (
                 <ChevronUp className="w-4 h-4 text-gray-400" />
@@ -314,7 +314,7 @@ export function VideosMobileNav() {
           ref={moreRef}
           className="md:hidden fixed bottom-20 right-4 left-4 z-50 bg-white border border-gray-100 rounded-2xl shadow-2xl py-3 dropdown-enter max-h-[60vh] overflow-y-auto"
         >
-          <div className="px-4 pb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+          <div className="px-4 pb-2 text-2xs font-bold text-gray-400 uppercase tracking-[0.2em]">
             {locale === "pt" ? "Mais opções" : "More options"}
           </div>
           {MOBILE_MORE_ITEMS.map((item) => (
@@ -347,7 +347,7 @@ export function VideosMobileNav() {
               }`}
             >
               <item.Icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium">
+              <span className="text-2xs font-medium">
                 {locale === "pt" ? item.label.pt : item.label.en}
               </span>
             </Link>
@@ -360,7 +360,7 @@ export function VideosMobileNav() {
             }`}
           >
             <Grid3X3 className="w-5 h-5" />
-            <span className="text-[10px] font-medium">{locale === "pt" ? "Mais" : "More"}</span>
+            <span className="text-2xs font-medium">{locale === "pt" ? "Mais" : "More"}</span>
           </button>
         </div>
       </nav>

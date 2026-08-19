@@ -393,23 +393,23 @@ function RewardsPage() {
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-2xl font-bold text-white border-2 border-white/20 shadow-lg">
                 {displayName.slice(0, 1).toUpperCase()}
               </div>
-              <span className="absolute -bottom-1 -right-1 bg-amber-400 text-[var(--ink)] text-[10px] font-extrabold px-2 py-0.5 rounded-full border-2 border-[var(--ink)]">
+              <span className="absolute -bottom-1 -right-1 bg-amber-400 text-[var(--ink)] text-2xs font-extrabold px-2 py-0.5 rounded-full border-2 border-[var(--ink)]">
                 LVL {profile.level}
               </span>
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/60">
+              <span className="text-2xs md:text-xs font-bold uppercase tracking-widest text-white/60">
                 {locale === "pt" ? "Hub de recompensas" : "Rewards hub"}
               </span>
               <h2 className="mt-1 font-display text-xl md:text-2xl font-bold truncate">
                 {displayName}
               </h2>
               <div className="mt-2 flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-[11px] font-semibold">
+                <span className="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-2xs font-semibold">
                   <Flame className="w-3 h-3 text-orange-400" />
                   {profile.streak} {locale === "pt" ? "dias de streak" : "day streak"}
                 </span>
-                <span className="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-[11px] font-semibold">
+                <span className="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full text-2xs font-semibold">
                   <Coins className="w-3 h-3 text-yellow-400" />
                   {profile.coins} {locale === "pt" ? "moedas" : "coins"}
                 </span>
@@ -418,7 +418,7 @@ function RewardsPage() {
           </div>
 
           <div className="w-full lg:w-80 shrink-0">
-            <div className="flex justify-between text-[11px] font-medium text-white/60 mb-2">
+            <div className="flex justify-between text-2xs font-medium text-white/60 mb-2">
               <span>
                 {locale === "pt" ? "Nível" : "Level"} {profile.level}
               </span>
@@ -535,7 +535,7 @@ function RewardsPage() {
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="text-3xl leading-none">{m.icon}</div>
-                            <span className="inline-flex items-center rounded-full bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-0.5 text-[11px] font-bold">
+                            <span className="inline-flex items-center rounded-full bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-0.5 text-2xs font-bold">
                               +{m.xp_reward} XP · +{m.coin_reward}🪙
                             </span>
                           </div>
@@ -553,7 +553,7 @@ function RewardsPage() {
                               style={{ width: `${pct}%` }}
                             />
                           </div>
-                          <div className="mt-1.5 text-[11px] text-gray-400 font-medium">
+                          <div className="mt-1.5 text-2xs text-gray-400 font-medium">
                             {Math.min(progress, m.target)} / {m.target}
                           </div>
                           <button
@@ -674,7 +674,7 @@ function RewardsPage() {
                   <div className="h-24 rounded-xl bg-gradient-to-br from-gray-50 to-[var(--violet)]/5 flex items-center justify-center text-5xl group-hover:scale-105 transition-transform">
                     {it.icon}
                   </div>
-                  <span className="mt-3 inline-block rounded-full bg-gray-50 border border-gray-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  <span className="mt-3 inline-block rounded-full bg-gray-50 border border-gray-100 px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wider text-gray-400">
                     {it.category}
                   </span>
                   <div className="mt-2 font-display text-lg font-bold text-[var(--ink)]">
@@ -802,7 +802,7 @@ function StatCard({
     <div className="bg-white rounded-2xl border border-gray-100 p-4 md:p-5 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-400">
+          <p className="text-2xs md:text-xs font-bold uppercase tracking-wider text-gray-400">
             {label}
           </p>
           <p className="mt-1 font-display text-2xl md:text-3xl font-bold text-[var(--ink)] truncate">
@@ -854,7 +854,7 @@ function RankList({ rows, me, locale }: { rows: RankRow[]; me: string; locale: s
             <div className="font-semibold text-sm text-[var(--ink)] truncate">
               {r.name ?? "—"}
               {r.id === me && (
-                <span className="ml-1.5 inline-flex rounded-full bg-[var(--violet)]/10 text-[var(--violet)] px-1.5 py-0.5 text-[10px] font-bold">
+                <span className="ml-1.5 inline-flex rounded-full bg-[var(--violet)]/10 text-[var(--violet)] px-1.5 py-0.5 text-2xs font-bold">
                   {locale === "pt" ? "Tu" : "You"}
                 </span>
               )}
@@ -865,7 +865,7 @@ function RankList({ rows, me, locale }: { rows: RankRow[]; me: string; locale: s
             <div className="font-display text-base md:text-lg font-bold text-[var(--ink)]">
               {r.xp.toLocaleString()}
             </div>
-            <div className="text-[10px] uppercase tracking-wider text-gray-400">XP</div>
+            <div className="text-2xs uppercase tracking-wider text-gray-400">XP</div>
           </div>
         </div>
       ))}
@@ -918,7 +918,7 @@ function CalendarHeatmap({ events, locale }: { events: XpEvent[]; locale: string
           />
         ))}
       </div>
-      <div className="mt-4 flex items-center gap-2 text-[11px] text-gray-400">
+      <div className="mt-4 flex items-center gap-2 text-2xs text-gray-400">
         <span>{locale === "pt" ? "Menos" : "Less"}</span>
         <span className="w-3 h-3 rounded-sm bg-gray-100" />
         <span className="w-3 h-3 rounded-sm bg-[var(--violet)]/20" />

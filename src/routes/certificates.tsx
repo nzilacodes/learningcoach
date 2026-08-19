@@ -213,7 +213,7 @@ function CertificatesPage() {
                         </div>
                         <div>
                           <div className="uppercase tracking-wider text-muted-foreground">ID</div>
-                          <div className="font-mono text-[11px] font-semibold">
+                          <div className="font-mono text-2xs font-semibold">
                             {c.verification_code}
                           </div>
                         </div>

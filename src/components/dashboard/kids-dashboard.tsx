@@ -126,7 +126,7 @@ export function KidsDashboard(data: DashboardData) {
                         </Link>
                       );
                     })()}
-                    <span className="mt-1 text-[11px] font-bold text-gray-500">{u.title}</span>
+                    <span className="mt-1 text-2xs font-bold text-gray-500">{u.title}</span>
                     {i < units.length - 1 && (
                       <div className="h-4 w-1 bg-amber-200 rounded-full my-1" />
                     )}

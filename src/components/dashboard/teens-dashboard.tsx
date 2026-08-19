@@ -87,7 +87,7 @@ export function TeensDashboard(data: DashboardData) {
               >
                 <div className="absolute -top-8 -right-8 w-48 h-48 bg-white/10 blur-3xl rounded-full" />
                 <div className="relative z-10 flex-1">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70 mb-2">
+                  <p className="text-2xs font-bold uppercase tracking-[0.2em] text-white/70 mb-2">
                     {locale === "pt" ? "Continuar" : "Continue"}
                   </p>
                   <h3 className="font-display text-2xl md:text-3xl font-bold mb-3">
@@ -137,7 +137,7 @@ export function TeensDashboard(data: DashboardData) {
                       <span className="text-xs font-bold text-gray-700 text-center">
                         {locale === "pt" ? g.pt : g.en}
                       </span>
-                      <span className="text-[10px] font-semibold text-amber-500">+{g.xp} XP</span>
+                      <span className="text-2xs font-semibold text-amber-500">+{g.xp} XP</span>
                     </Link>
                   ))}
                 </div>
@@ -189,7 +189,7 @@ export function TeensDashboard(data: DashboardData) {
                           </>
                         )}
                       </div>
-                      <p className="text-[10px] font-bold text-gray-500 px-2 pt-1.5">
+                      <p className="text-2xs font-bold text-gray-500 px-2 pt-1.5">
                         {locale === "pt" ? "UNIDADE" : "UNIT"} {u.index}
                       </p>
                       <p className="text-xs font-bold text-[var(--ink)] px-2 pb-2 truncate">

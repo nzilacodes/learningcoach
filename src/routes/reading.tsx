@@ -372,7 +372,7 @@ function ReadingPage() {
                     <Mic className="w-7 h-7 md:w-8 md:h-8" />
                   )}
                 </button>
-                <span className="text-[11px] md:text-xs font-bold text-[var(--primary)] tracking-widest uppercase">
+                <span className="text-2xs md:text-xs font-bold text-[var(--primary)] tracking-widest uppercase">
                   {processing ? "Analisando..." : recording ? "Gravando..." : "Toque para falar"}
                 </span>
               </div>
@@ -388,7 +388,7 @@ function ReadingPage() {
                       key={m.label}
                       className="rounded-xl border border-gray-100 bg-gray-50 p-3 text-center"
                     >
-                      <div className="text-[10px] md:text-xs text-gray-400">{m.label}</div>
+                      <div className="text-2xs md:text-xs text-gray-400">{m.label}</div>
                       <div className="mt-1 font-display text-xl md:text-2xl font-bold text-[var(--ink)]">
                         {Math.round(m.v)}
                       </div>
@@ -461,7 +461,7 @@ function ReadingPage() {
                         key={v.word}
                         className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 hover:border-[var(--primary)]/30 transition-colors"
                       >
-                        <span className="text-[10px] md:text-xs font-bold text-[var(--primary)] mb-1 md:mb-2 block">
+                        <span className="text-2xs md:text-xs font-bold text-[var(--primary)] mb-1 md:mb-2 block">
                           Palavra
                         </span>
                         <h4 className="font-bold text-base md:text-lg mb-0.5 md:mb-1">{v.word}</h4>
@@ -476,7 +476,7 @@ function ReadingPage() {
                     ))}
                     {/* Idiom card */}
                     <div className="col-span-2 bg-[var(--primary)] p-4 md:p-5 rounded-xl text-white">
-                      <span className="text-[10px] md:text-xs font-bold text-white/80 mb-1 md:mb-2 block">
+                      <span className="text-2xs md:text-xs font-bold text-white/80 mb-1 md:mb-2 block">
                         Expressão Idiomática
                       </span>
                       <h4 className="font-bold text-lg md:text-xl mb-1">{passage.idiom.pt}</h4>

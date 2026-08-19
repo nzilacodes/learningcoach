@@ -230,7 +230,7 @@ function CommunityPage() {
                       {locked ? <Lock className="h-3 w-3" /> : <RIcon className="h-3 w-3" />}
                       {locale === "pt" ? m.pt : m.en}
                     </div>
-                    <div className="mt-1 text-[10px]">{m.range}</div>
+                    <div className="mt-1 text-2xs">{m.range}</div>
                   </div>
                 );
               })}
@@ -255,7 +255,7 @@ function CommunityPage() {
               <Play className="mr-1.5 h-4 w-4" />
               {locale === "pt" ? "Iniciar Conversa" : "Start Conversation"}
             </Button>
-            <p className="mt-4 text-[11px] text-muted-foreground">
+            <p className="mt-4 text-2xs text-muted-foreground">
               {locale === "pt"
                 ? "Moderação por IA ativa. As salas são isoladas por idade — crianças nunca conversam com adultos."
                 : "AI moderation active. Rooms are isolated by age — kids never chat with adults."}
@@ -362,7 +362,7 @@ function CommunityPage() {
                         {m.content}
                       </div>
                       <div
-                        className={`mt-1 text-[10px] text-muted-foreground ${me ? "text-right" : ""}`}
+                        className={`mt-1 text-2xs text-muted-foreground ${me ? "text-right" : ""}`}
                       >
                         {new Date(m.created_at).toLocaleTimeString([], {
                           hour: "2-digit",

@@ -213,7 +213,7 @@ function CurriculumPage() {
             <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
-                  <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/60">
+                  <span className="text-2xs md:text-xs font-bold uppercase tracking-widest text-white/60">
                     {locale === "pt" ? "Percurso CEFR" : "CEFR path"} · A1–C2
                   </span>
                   <h2 className="mt-2 font-display text-2xl md:text-3xl font-bold">
@@ -227,7 +227,7 @@ function CurriculumPage() {
                 </div>
                 {user && (
                   <div className="rounded-2xl bg-white/10 border border-white/10 px-4 py-3 min-w-[180px]">
-                    <div className="text-[10px] uppercase tracking-wider text-white/60 font-bold">
+                    <div className="text-2xs uppercase tracking-wider text-white/60 font-bold">
                       {locale === "pt" ? "Nível atual" : "Current level"}
                     </div>
                     <div className="mt-1 font-display text-2xl font-bold">{unlocked ?? "A1"}</div>
@@ -258,7 +258,7 @@ function CurriculumPage() {
                         }`}
                       >
                         <span className="font-display text-base sm:text-lg font-bold">{lvl}</span>
-                        <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide opacity-70">
+                        <span className="text-2xs sm:text-2xs font-semibold uppercase tracking-wide opacity-70">
                           {locale === "pt" ? LEVEL_META[lvl].label.pt : LEVEL_META[lvl].label.en}
                         </span>
                         {locked && (
@@ -317,7 +317,7 @@ function CurriculumPage() {
                 </div>
                 {user && !activeLevelLocked && totalLessonsInLevel > 0 && (
                   <div className="sm:w-48 shrink-0">
-                    <div className="flex justify-between text-[11px] font-semibold text-gray-500 mb-1.5">
+                    <div className="flex justify-between text-2xs font-semibold text-gray-500 mb-1.5">
                       <span>{locale === "pt" ? "Progresso" : "Progress"}</span>
                       <span>{levelPct}%</span>
                     </div>
@@ -340,7 +340,7 @@ function CurriculumPage() {
                     <Trophy className="w-5 h-5 text-amber-600" />
                   </div>
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest font-bold text-amber-700/70">
+                    <div className="text-2xs uppercase tracking-widest font-bold text-amber-700/70">
                       {locale === "pt" ? "Exame final" : "Final exam"} · {activeLevel}
                     </div>
                     <div className="font-display font-bold text-[var(--ink)] mt-0.5">
@@ -374,7 +374,7 @@ function CurriculumPage() {
                     <Sparkles className="w-5 h-5 text-[var(--violet)]" />
                   </div>
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest font-bold text-[var(--violet)]/70">
+                    <div className="text-2xs uppercase tracking-widest font-bold text-[var(--violet)]/70">
                       {locale === "pt" ? "Próxima lição" : "Next lesson"} · {activeLevel}
                     </div>
                     <div className="font-display font-bold text-[var(--ink)] mt-0.5">
@@ -604,7 +604,7 @@ function CurriculumPage() {
                                       <div className="text-sm font-semibold text-[var(--ink)] truncate">
                                         {l.title}
                                         {isNext && (
-                                          <span className="ml-2 inline-flex rounded-full bg-[var(--violet)]/10 text-[var(--violet)] px-1.5 py-0.5 text-[10px] font-bold">
+                                          <span className="ml-2 inline-flex rounded-full bg-[var(--violet)]/10 text-[var(--violet)] px-1.5 py-0.5 text-2xs font-bold">
                                             {locale === "pt" ? "Seguinte" : "Next"}
                                           </span>
                                         )}

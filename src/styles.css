@@ -25,6 +25,12 @@
   --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 
+  /* Below text-xs (12px), for eyebrows/badges/timestamps — was previously
+     text-[9px]/[10px]/[11px] arbitrary values scattered across 23 files
+     with no token backing them; consolidated to one size. */
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 0.875rem;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

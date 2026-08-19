@@ -188,7 +188,7 @@ export function AdultsDashboard(data: DashboardData) {
                           >
                             <s.icon className="w-4 h-4" />
                           </div>
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                          <span className="text-2xs font-bold uppercase tracking-wider text-gray-500">
                             {s.label}
                           </span>
                         </div>
@@ -208,7 +208,7 @@ export function AdultsDashboard(data: DashboardData) {
                     <div className="absolute -top-10 -right-10 w-64 h-64 bg-white/10 blur-3xl rounded-full" />
                     <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-black/10 blur-2xl rounded-full" />
                     <div className="relative z-10 flex-1">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70 mb-2">
+                      <p className="text-2xs font-bold uppercase tracking-[0.2em] text-white/70 mb-2">
                         {locale === "pt" ? "Continuar aprendendo" : "Continue learning"}
                       </p>
                       <h3 className="font-display text-3xl md:text-4xl font-bold mb-4">
@@ -326,7 +326,7 @@ export function AdultsDashboard(data: DashboardData) {
                             )}
                           </div>
                           <p
-                            className={`text-[10px] font-bold uppercase tracking-wider ${
+                            className={`text-2xs font-bold uppercase tracking-wider ${
                               u.current
                                 ? "text-[var(--violet)]"
                                 : u.locked
@@ -395,7 +395,7 @@ export function AdultsDashboard(data: DashboardData) {
                     <span className="font-display text-2xl font-bold text-[var(--ink)]">
                       {week.days}/{goalDays}
                     </span>
-                    <span className="text-[10px] uppercase font-bold text-gray-400">
+                    <span className="text-2xs uppercase font-bold text-gray-400">
                       {locale === "pt" ? "Dias" : "Days"}
                     </span>
                   </div>
@@ -451,7 +451,7 @@ export function AdultsDashboard(data: DashboardData) {
                     👋
                   </h1>
                 </div>
-                <span className="bg-[var(--violet)]/10 text-[var(--violet)] px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1">
+                <span className="bg-[var(--violet)]/10 text-[var(--violet)] px-2.5 py-0.5 rounded-full text-2xs font-bold flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
                   {user?.cefrLevel ?? "A1"}
                 </span>
@@ -470,7 +470,7 @@ export function AdultsDashboard(data: DashboardData) {
                       <s.icon className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                      <p className="text-2xs font-bold uppercase tracking-wider text-gray-400">
                         {s.label}
                       </p>
                       <p className="font-display text-base font-bold text-[var(--ink)]">
@@ -493,7 +493,7 @@ export function AdultsDashboard(data: DashboardData) {
                 <div className="absolute bottom-0 w-full p-5 space-y-2">
                   <div className="flex items-end justify-between">
                     <div>
-                      <span className="text-white/70 text-[10px] font-bold uppercase tracking-widest">
+                      <span className="text-white/70 text-2xs font-bold uppercase tracking-widest">
                         {locale === "pt" ? "UNIDADE" : "UNIT"} {currentUnit.index}
                       </span>
                       <h2 className="text-white font-display text-lg font-bold">
@@ -514,7 +514,7 @@ export function AdultsDashboard(data: DashboardData) {
                       style={{ width: `${Math.max(5, currentPct)}%` }}
                     />
                   </div>
-                  <p className="text-white/70 text-[10px] text-right">{currentPct}% concluído</p>
+                  <p className="text-white/70 text-2xs text-right">{currentPct}% concluído</p>
                 </div>
               </div>
 
@@ -533,7 +533,7 @@ export function AdultsDashboard(data: DashboardData) {
                       <div className="w-14 h-14 rounded-2xl bg-[var(--violet)]/10 flex items-center justify-center text-[var(--violet)] shadow-sm">
                         <a.icon className="w-6 h-6" />
                       </div>
-                      <span className="text-[11px] font-semibold text-gray-600">{a.label}</span>
+                      <span className="text-2xs font-semibold text-gray-600">{a.label}</span>
                     </Link>
                   ))}
                 </div>
@@ -562,7 +562,7 @@ export function AdultsDashboard(data: DashboardData) {
                     <span className="font-display text-sm font-bold text-[var(--violet)]">
                       {week.days}/{goalDays}
                     </span>
-                    <span className="text-[9px] font-bold text-gray-400 uppercase">
+                    <span className="text-2xs font-bold text-gray-400 uppercase">
                       {locale === "pt" ? "Dias" : "Days"}
                     </span>
                   </div>
@@ -621,7 +621,7 @@ export function AdultsDashboard(data: DashboardData) {
                         className={`flex-1 pb-4 border-b border-gray-100 ${u.locked ? "opacity-40" : ""}`}
                       >
                         <p
-                          className={`text-[10px] font-bold uppercase tracking-wider ${
+                          className={`text-2xs font-bold uppercase tracking-wider ${
                             u.current ? "text-[var(--violet)]" : "text-gray-400"
                           }`}
                         >
@@ -711,7 +711,7 @@ function SubscriptionCard({
             <p className="text-xs font-bold">
               {locale === "pt" ? "Plano" : "Plan"} • {planLabel}
             </p>
-            <p className="text-[10px] text-white/70">
+            <p className="text-2xs text-white/70">
               {daysLeft != null
                 ? `${daysLeft} ${locale === "pt" ? "dias restantes" : "days left"}`
                 : locale === "pt"
@@ -730,7 +730,7 @@ function SubscriptionCard({
                 notify.error(locale === "pt" ? "Falha ao copiar o código" : "Failed to copy code");
               }
             }}
-            className="text-[10px] font-mono bg-white/10 rounded-full px-2 py-0.5 mb-3 block"
+            className="text-2xs font-mono bg-white/10 rounded-full px-2 py-0.5 mb-3 block"
           >
             {activationCode}
           </button>
@@ -751,7 +751,7 @@ function SubscriptionCard({
   if (sub?.status === "pending") {
     return (
       <div className="rounded-3xl border border-amber/40 bg-amber/10 p-6">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-amber mb-1">
+        <div className="text-2xs font-bold uppercase tracking-widest text-amber mb-1">
           {locale === "pt" ? "Aguardando ativação" : "Awaiting activation"}
         </div>
         <p className="font-display text-base font-bold text-[var(--ink)]">
@@ -776,7 +776,7 @@ function SubscriptionCard({
           <p className="text-xs font-bold text-[var(--ink)]">
             {locale === "pt" ? "Sem assinatura" : "No subscription"}
           </p>
-          <p className="text-[10px] text-gray-400">
+          <p className="text-2xs text-gray-400">
             {locale === "pt" ? "Escolha um plano" : "Choose a plan"}
           </p>
         </div>

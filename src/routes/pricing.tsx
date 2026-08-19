@@ -170,7 +170,7 @@ function PricingPage() {
                 <button
                   key={c}
                   onClick={() => setCycle(c)}
-                  className={`rounded-full px-4 sm:px-7 py-2.5 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
+                  className={`rounded-full px-4 sm:px-7 py-2.5 text-2xs sm:text-2xs font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
                     cycle === c
                       ? "bg-white text-marketing-ink shadow-[0_2px_8px_rgba(15,23,42,0.08)] ring-1 ring-slate-100"
                       : "text-slate-400 hover:text-slate-600"
@@ -222,7 +222,7 @@ function PricingPage() {
                         {featured && (
                           <div className="absolute top-8 right-8 inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-slate-100 shadow-sm z-20">
                             <Star className="h-3 w-3 fill-pink-500 text-pink-500" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">
+                            <span className="text-2xs font-black uppercase tracking-widest text-slate-600">
                               {locale === "pt" ? "MAIS POPULAR" : "MOST POPULAR"}
                             </span>
                           </div>
@@ -252,14 +252,14 @@ function PricingPage() {
                             Kz
                           </span>
                         </div>
-                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-10">
+                        <div className="text-2xs font-black uppercase tracking-[0.2em] text-slate-400 mb-10">
                           {plan.duration_days} {locale === "pt" ? "DIAS" : "DAYS"}
                         </div>
 
                         <div className="w-full h-px bg-slate-200/80 mb-10" />
 
                         <div className="flex-grow">
-                          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6">
+                          <p className="text-2xs font-black uppercase tracking-[0.2em] text-slate-400 mb-6">
                             {locale === "pt" ? "O que está incluído:" : "What's included:"}
                           </p>
                           <ul className="space-y-4">
@@ -300,7 +300,7 @@ function PricingPage() {
             </div>
           </div>
 
-          <p className="text-center mt-12 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+          <p className="text-center mt-12 text-2xs font-bold uppercase tracking-[0.2em] text-slate-400">
             {locale === "pt"
               ? "Pagamento Seguro via Multicaixa Express"
               : "Secure Payment via Multicaixa Express"}

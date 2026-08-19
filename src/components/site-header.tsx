@@ -99,7 +99,7 @@ export function SiteHeader() {
               </div>
               <div className="hidden leading-tight sm:block">
                 <div className="text-sm font-bold text-slate-800">Learning English</div>
-                <div className="text-[10px] font-medium tracking-wider text-slate-400 uppercase">
+                <div className="text-2xs font-medium tracking-wider text-slate-400 uppercase">
                   with Coach
                 </div>
               </div>
@@ -244,9 +244,7 @@ export function SiteHeader() {
                 <img src={coachLogo} alt="LEWC" className="h-9 w-9 rounded-xl object-contain" />
                 <div>
                   <div className="text-sm font-bold text-slate-800">Learning English</div>
-                  <div className="text-[10px] text-slate-400 uppercase tracking-wider">
-                    with Coach
-                  </div>
+                  <div className="text-2xs text-slate-400 uppercase tracking-wider">with Coach</div>
                 </div>
               </div>
               <button
@@ -283,7 +281,7 @@ export function SiteHeader() {
 
             {/* More links */}
             <div className="space-y-1">
-              <div className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-300">
+              <div className="px-4 pb-2 text-2xs font-bold uppercase tracking-widest text-slate-300">
                 {locale === "pt" ? "Mais" : "More"}
               </div>
               {moreLinks.map((link, i) => (
