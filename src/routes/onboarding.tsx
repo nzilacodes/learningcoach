@@ -1,5 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Sparkles,
   User,
@@ -23,7 +26,14 @@ import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { useLocale } from "@/lib/i18n";
 import { useAuth, type AuthUser } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
@@ -181,51 +191,56 @@ function UnknownStatusStep({ onDone }: { onDone: () => Promise<void> }) {
 
 /* ---------------- STEP 1: PROFILE ---------------- */
 
+function onboardingProfileSchema(locale: "pt" | "en") {
+  return z.object({
+    fullName: z.string().min(1, locale === "pt" ? "Nome obrigatório" : "Name required"),
+    age: z.coerce
+      .number({ invalid_type_error: locale === "pt" ? "Idade inválida" : "Invalid age" })
+      .int()
+      .min(4, locale === "pt" ? "Idade inválida (4–120)" : "Invalid age (4–120)")
+      .max(120, locale === "pt" ? "Idade inválida (4–120)" : "Invalid age (4–120)"),
+    country: z.string().min(1, locale === "pt" ? "País obrigatório" : "Country required"),
+    nativeLang: z
+      .string()
+      .min(1, locale === "pt" ? "Língua materna obrigatória" : "Native language required"),
+    goal: z.string().min(1, locale === "pt" ? "Escolha um objetivo" : "Choose a goal"),
+    interests: z
+      .array(z.string())
+      .min(1, locale === "pt" ? "Escolha pelo menos 1 interesse" : "Pick at least 1 interest"),
+  });
+}
+type OnboardingProfileValues = z.infer<ReturnType<typeof onboardingProfileSchema>>;
+
 function ProfileStep({ user, onDone }: { user: AuthUser; onDone: () => Promise<void> }) {
   const { locale } = useLocale();
   const notify = useNotification();
   const { setTheme } = useAgeTheme();
-  const [fullName, setFullName] = useState(user.fullName ?? "");
-  const [age, setAge] = useState<string>(user.age?.toString() ?? "");
-  const [country, setCountry] = useState(user.country ?? "");
-  const [nativeLang, setNativeLang] = useState(user.nativeLanguage ?? "");
-  const [goal, setGoal] = useState<string>(user.learningGoal ?? "");
-  const [interests, setInterests] = useState<string[]>(user.interests ?? []);
   const [saving, setSaving] = useState(false);
 
-  const toggleInterest = (id: string) =>
-    setInterests((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  const form = useForm<OnboardingProfileValues>({
+    resolver: zodResolver(onboardingProfileSchema(locale)),
+    defaultValues: {
+      fullName: user.fullName ?? "",
+      age: user.age ?? (undefined as unknown as number),
+      country: user.country ?? "",
+      nativeLang: user.nativeLanguage ?? "",
+      goal: user.learningGoal ?? "",
+      interests: user.interests ?? [],
+    },
+  });
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const ageNum = parseInt(age, 10);
-    if (!fullName.trim())
-      return notify.warning(locale === "pt" ? "Nome obrigatório" : "Name required");
-    if (!Number.isFinite(ageNum) || ageNum < 4 || ageNum > 120)
-      return notify.warning(locale === "pt" ? "Idade inválida (4–120)" : "Invalid age (4–120)");
-    if (!country.trim())
-      return notify.warning(locale === "pt" ? "País obrigatório" : "Country required");
-    if (!nativeLang.trim())
-      return notify.warning(
-        locale === "pt" ? "Língua materna obrigatória" : "Native language required",
-      );
-    if (!goal) return notify.warning(locale === "pt" ? "Escolha um objetivo" : "Choose a goal");
-    if (interests.length === 0)
-      return notify.warning(
-        locale === "pt" ? "Escolha pelo menos 1 interesse" : "Pick at least 1 interest",
-      );
-
+  const submit = form.handleSubmit(async (values) => {
     setSaving(true);
     try {
       await apiFetch("/v1/me", {
         method: "PATCH",
         body: JSON.stringify({
-          fullName: fullName.trim(),
-          age: ageNum,
-          country: country.trim(),
-          nativeLanguage: nativeLang.trim(),
-          learningGoal: goal,
-          interests,
+          fullName: values.fullName.trim(),
+          age: values.age,
+          country: values.country.trim(),
+          nativeLanguage: values.nativeLang.trim(),
+          learningGoal: values.goal,
+          interests: values.interests,
           onboardingStatus: "placement",
         }),
       });
@@ -234,9 +249,9 @@ function ProfileStep({ user, onDone }: { user: AuthUser; onDone: () => Promise<v
       return notify.fromError(e, { dedupeKey: "onboarding:profile" });
     }
     setSaving(false);
-    setTheme(ageToRoom(ageNum));
+    setTheme(ageToRoom(values.age));
     await onDone();
-  };
+  });
 
   return (
     <div className="glass rounded-3xl p-8 shadow-glow">
@@ -250,116 +265,184 @@ function ProfileStep({ user, onDone }: { user: AuthUser; onDone: () => Promise<v
           : "This information personalizes your learning plan."}
       </p>
 
-      <form onSubmit={submit} className="mt-6 space-y-5">
-        <Field icon={User} label={locale === "pt" ? "Nome completo" : "Full name"}>
-          <Input
-            required
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="Maria Silva"
-            className="pl-9"
+      <Form {...form}>
+        <form onSubmit={submit} className="mt-6 space-y-5">
+          <FormField
+            control={form.control}
+            name="fullName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{locale === "pt" ? "Nome completo" : "Full name"}</FormLabel>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <FormControl>
+                    <Input
+                      autoComplete="name"
+                      placeholder="Maria Silva"
+                      className="pl-9"
+                      {...field}
+                    />
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </Field>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field icon={Cake} label={locale === "pt" ? "Idade" : "Age"}>
-            <Input
-              required
-              type="number"
-              min={4}
-              max={120}
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              placeholder="18"
-              className="pl-9"
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="age"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{locale === "pt" ? "Idade" : "Age"}</FormLabel>
+                  <div className="relative">
+                    <Cake className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={4}
+                        max={120}
+                        placeholder="18"
+                        className="pl-9"
+                        {...field}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </Field>
-          <Field icon={Globe} label={locale === "pt" ? "País" : "Country"}>
-            <Input
-              required
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              placeholder="Angola"
-              className="pl-9"
+            <FormField
+              control={form.control}
+              name="country"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{locale === "pt" ? "País" : "Country"}</FormLabel>
+                  <div className="relative">
+                    <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormControl>
+                      <Input
+                        autoComplete="country-name"
+                        placeholder="Angola"
+                        className="pl-9"
+                        {...field}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </Field>
-        </div>
+          </div>
 
-        <Field icon={Languages} label={locale === "pt" ? "Língua materna" : "Native language"}>
-          <Input
-            required
-            value={nativeLang}
-            onChange={(e) => setNativeLang(e.target.value)}
-            placeholder={locale === "pt" ? "Português" : "Portuguese"}
-            className="pl-9"
+          <FormField
+            control={form.control}
+            name="nativeLang"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{locale === "pt" ? "Língua materna" : "Native language"}</FormLabel>
+                <div className="relative">
+                  <Languages className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <FormControl>
+                    <Input
+                      placeholder={locale === "pt" ? "Português" : "Portuguese"}
+                      className="pl-9"
+                      {...field}
+                    />
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </Field>
 
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2">
-            <Target className="h-4 w-4" /> {locale === "pt" ? "Objetivo principal" : "Main goal"}
-          </Label>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {GOAL_OPTIONS.map((g) => {
-              const active = goal === g.id;
-              return (
-                <button
-                  key={g.id}
-                  type="button"
-                  onClick={() => setGoal(g.id)}
-                  className={`rounded-xl border-2 p-3 text-left text-sm font-medium transition ${
-                    active
-                      ? "border-sunset bg-sunset/10 shadow-soft"
-                      : "border-border bg-background/60 hover:border-magenta/50"
-                  }`}
-                >
-                  {locale === "pt" ? g.pt : g.en}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+          <FormField
+            control={form.control}
+            name="goal"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2">
+                  <Target className="h-4 w-4" />{" "}
+                  {locale === "pt" ? "Objetivo principal" : "Main goal"}
+                </FormLabel>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {GOAL_OPTIONS.map((g) => {
+                    const active = field.value === g.id;
+                    return (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => field.onChange(g.id)}
+                        className={`rounded-xl border-2 p-3 text-left text-sm font-medium transition ${
+                          active
+                            ? "border-sunset bg-sunset/10 shadow-soft"
+                            : "border-border bg-background/60 hover:border-magenta/50"
+                        }`}
+                      >
+                        {locale === "pt" ? g.pt : g.en}
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormItem>
+            )}
+          />
 
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2">
-            <Heart className="h-4 w-4" /> {locale === "pt" ? "Interesses" : "Interests"}
-          </Label>
-          <div className="flex flex-wrap gap-2">
-            {INTEREST_OPTIONS.map((i) => {
-              const active = interests.includes(i.id);
-              return (
-                <button
-                  key={i.id}
-                  type="button"
-                  onClick={() => toggleInterest(i.id)}
-                  className={`rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition ${
-                    active
-                      ? "border-magenta bg-magenta text-white"
-                      : "border-border bg-background/60 hover:border-magenta/50"
-                  }`}
-                >
-                  {locale === "pt" ? i.pt : i.en}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+          <FormField
+            control={form.control}
+            name="interests"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2">
+                  <Heart className="h-4 w-4" /> {locale === "pt" ? "Interesses" : "Interests"}
+                </FormLabel>
+                <div className="flex flex-wrap gap-2">
+                  {INTEREST_OPTIONS.map((i) => {
+                    const active = (field.value as string[]).includes(i.id);
+                    const toggle = () =>
+                      field.onChange(
+                        active
+                          ? (field.value as string[]).filter((x) => x !== i.id)
+                          : [...(field.value as string[]), i.id],
+                      );
+                    return (
+                      <button
+                        key={i.id}
+                        type="button"
+                        onClick={toggle}
+                        className={`rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition ${
+                          active
+                            ? "border-magenta bg-magenta text-white"
+                            : "border-border bg-background/60 hover:border-magenta/50"
+                        }`}
+                      >
+                        {locale === "pt" ? i.pt : i.en}
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormItem>
+            )}
+          />
 
-        <Button
-          type="submit"
-          size="lg"
-          disabled={saving}
-          className="bg-gradient-sunset w-full text-white shadow-soft hover:opacity-90"
-        >
-          {saving ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              {locale === "pt" ? "Continuar" : "Continue"} <ArrowRight className="ml-1.5 h-4 w-4" />
-            </>
-          )}
-        </Button>
-      </form>
+          <Button
+            type="submit"
+            size="lg"
+            disabled={saving}
+            className="bg-gradient-sunset w-full text-white shadow-soft hover:opacity-90"
+          >
+            {saving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                {locale === "pt" ? "Continuar" : "Continue"}{" "}
+                <ArrowRight className="ml-1.5 h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 }
@@ -912,26 +995,6 @@ function Badge({ icon: Icon, label }: { icon: typeof Sparkles; label: string }) 
     <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-semibold">
       <Icon className="h-3.5 w-3.5 text-magenta" />
       {label}
-    </div>
-  );
-}
-
-function Field({
-  icon: Icon,
-  label,
-  children,
-}: {
-  icon: typeof User;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      <div className="relative">
-        <Icon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        {children}
-      </div>
     </div>
   );
 }
