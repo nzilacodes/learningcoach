@@ -154,7 +154,17 @@ export function CertificatesCard() {
     <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display font-bold">Certificados</h3>
-        <Medal className="h-4 w-4 text-magenta" />
+        <div className="flex items-center gap-2">
+          {data.length > 0 && (
+            <Link
+              to="/certificates"
+              className="text-[11px] font-semibold text-magenta hover:underline"
+            >
+              Ver todos
+            </Link>
+          )}
+          <Medal className="h-4 w-4 text-magenta" />
+        </div>
       </div>
       {isLoading ? (
         <p className="text-xs text-muted-foreground">A carregar…</p>

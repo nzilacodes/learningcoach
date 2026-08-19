@@ -215,9 +215,26 @@ function AdminPage() {
               {locale === "pt" ? "Painel do Administrador" : "Administrator Dashboard"}
             </h1>
           </div>
-          <Badge variant="outline" className="gap-1">
-            <TrendingUp className="h-3 w-3" /> Live
-          </Badge>
+          <div className="flex gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link to="/analytics">
+                <TrendingUp className="mr-1.5 h-3.5 w-3.5" />
+                {locale === "pt" ? "Analytics" : "Analytics"}
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/audit">
+                <ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
+                {locale === "pt" ? "Auditoria" : "Audit log"}
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/track">
+                <Clock className="mr-1.5 h-3.5 w-3.5" />
+                {locale === "pt" ? "Atividade" : "Activity"}
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

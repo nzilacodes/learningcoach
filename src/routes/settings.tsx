@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Languages, KeyRound, LogOut, Loader2 } from "lucide-react";
+import { Languages, KeyRound, LogOut, Loader2, CreditCard, ChevronRight } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { Button } from "@/components/ui/button";
@@ -108,6 +108,21 @@ function SettingsPage() {
                   </button>
                 ))}
               </div>
+            </section>
+
+            {/* Subscription */}
+            <section className="rounded-2xl border border-gray-100 bg-white p-6 premium-shadow">
+              <h2 className="flex items-center gap-2 font-display text-lg font-bold text-[var(--ink)]">
+                <CreditCard className="h-5 w-5 text-[var(--violet)]" />
+                {locale === "pt" ? "Assinatura" : "Subscription"}
+              </h2>
+              <Link
+                to="/subscription"
+                className="mt-4 flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--violet)]/50"
+              >
+                {locale === "pt" ? "Gerir plano e faturação" : "Manage plan & billing"}
+                <ChevronRight className="h-4 w-4 text-gray-400" />
+              </Link>
             </section>
 
             {/* Change password */}
