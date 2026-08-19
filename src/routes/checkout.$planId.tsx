@@ -1,5 +1,8 @@
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   CreditCard,
   Landmark,
@@ -20,9 +23,16 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Form, FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { apiFetch } from "@/lib/api/client";
 import type { PlanRow, PaymentMethod, OrderInfo } from "@/lib/api/billing-types";
+
+const checkoutSchema = z.object({
+  method: z.enum(["card", "reference", "transfer", "mobile_money"]),
+  phone: z.string(),
+});
+type CheckoutValues = z.infer<typeof checkoutSchema>;
 
 export const Route = createFileRoute("/checkout/$planId")({
   loader: async ({ params }) => {
@@ -102,18 +112,26 @@ function CheckoutPage() {
   const navigate = useNavigate();
   const notify = useNotification();
 
-  const [method, setMethod] = useState<PaymentMethod>("reference");
-  const [phone, setPhone] = useState("");
   const [order, setOrder] = useState<OrderInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
-  async function submit() {
+  const form = useForm<CheckoutValues>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: { method: "reference", phone: "" },
+  });
+  const method = form.watch("method");
+
+  const submit = form.handleSubmit(async (values) => {
     setLoading(true);
     try {
       const o = await apiFetch<OrderInfo>("/v1/checkout-sessions", {
         method: "POST",
-        body: JSON.stringify({ planId: plan.id, method, phone: phone || undefined }),
+        body: JSON.stringify({
+          planId: plan.id,
+          method: values.method,
+          phone: values.phone || undefined,
+        }),
       });
       setOrder(o);
       notify.success("Pedido criado. Complete o pagamento.");
@@ -122,7 +140,7 @@ function CheckoutPage() {
     } finally {
       setLoading(false);
     }
-  }
+  });
 
   async function confirm() {
     if (!order) return;
@@ -161,59 +179,88 @@ function CheckoutPage() {
               {!order ? (
                 <Card className="mt-6">
                   <CardContent className="p-6">
-                    <h2 className="font-display font-bold">Método de pagamento</h2>
-                    <RadioGroup
-                      value={method}
-                      onValueChange={(v) => setMethod(v as PaymentMethod)}
-                      className="mt-4 grid gap-3"
-                    >
-                      {METHODS.map((m) => {
-                        const Icon = m.icon;
-                        return (
-                          <Label
-                            key={m.id}
-                            htmlFor={m.id}
-                            className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${method === m.id ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}
-                          >
-                            <RadioGroupItem value={m.id} id={m.id} className="mt-1" />
-                            <Icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                            <div className="flex-1">
-                              <div className="font-semibold">{m.title}</div>
-                              <div className="text-xs text-muted-foreground">{m.desc}</div>
-                              <div className="mt-1.5 flex flex-wrap gap-1">
-                                {m.providers.map((p) => (
-                                  <Badge key={p} variant="secondary" className="text-[10px]">
-                                    {p}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          </Label>
-                        );
-                      })}
-                    </RadioGroup>
-
-                    {(method === "mobile_money" || method === "card") && (
-                      <div className="mt-4">
-                        <Label htmlFor="phone">Telefone (opcional)</Label>
-                        <Input
-                          id="phone"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="+244 9XX XXX XXX"
+                    <Form {...form}>
+                      <form onSubmit={submit}>
+                        <h2 className="font-display font-bold">Método de pagamento</h2>
+                        <FormField
+                          control={form.control}
+                          name="method"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <RadioGroup
+                                  value={field.value}
+                                  onValueChange={field.onChange}
+                                  className="mt-4 grid gap-3"
+                                >
+                                  {METHODS.map((m) => {
+                                    const Icon = m.icon;
+                                    return (
+                                      <Label
+                                        key={m.id}
+                                        htmlFor={m.id}
+                                        className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${method === m.id ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}
+                                      >
+                                        <RadioGroupItem value={m.id} id={m.id} className="mt-1" />
+                                        <Icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                                        <div className="flex-1">
+                                          <div className="font-semibold">{m.title}</div>
+                                          <div className="text-xs text-muted-foreground">
+                                            {m.desc}
+                                          </div>
+                                          <div className="mt-1.5 flex flex-wrap gap-1">
+                                            {m.providers.map((p) => (
+                                              <Badge
+                                                key={p}
+                                                variant="secondary"
+                                                className="text-[10px]"
+                                              >
+                                                {p}
+                                              </Badge>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </Label>
+                                    );
+                                  })}
+                                </RadioGroup>
+                              </FormControl>
+                            </FormItem>
+                          )}
                         />
-                      </div>
-                    )}
 
-                    <Button
-                      className="mt-6 w-full bg-gradient-sunset text-white"
-                      size="lg"
-                      onClick={submit}
-                      disabled={loading}
-                    >
-                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Gerar ordem de pagamento
-                    </Button>
+                        {(method === "mobile_money" || method === "card") && (
+                          <FormField
+                            control={form.control}
+                            name="phone"
+                            render={({ field }) => (
+                              <FormItem className="mt-4">
+                                <Label htmlFor="phone">Telefone (opcional)</Label>
+                                <FormControl>
+                                  <Input
+                                    id="phone"
+                                    autoComplete="tel"
+                                    placeholder="+244 9XX XXX XXX"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+
+                        <Button
+                          type="submit"
+                          className="mt-6 w-full bg-gradient-sunset text-white"
+                          size="lg"
+                          disabled={loading}
+                        >
+                          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          Gerar ordem de pagamento
+                        </Button>
+                      </form>
+                    </Form>
                   </CardContent>
                 </Card>
               ) : (

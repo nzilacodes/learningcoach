@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import type { CourseRow, UnitRow, LessonRow } from "@/lib/learning";
@@ -15,6 +18,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Download, BarChart3, CreditCard, BookOpen, Plus, Trash2 } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
 
@@ -442,6 +454,22 @@ export function CurriculumSection() {
   );
 }
 
+const lessonEditorSchema = z.object({
+  title: z.string().min(1, "Título obrigatório"),
+  summary: z.string(),
+  xpReward: z.coerce.number().min(0, "XP não pode ser negativo"),
+  published: z.boolean(),
+  contentText: z.string().refine((v) => {
+    try {
+      JSON.parse(v);
+      return true;
+    } catch {
+      return false;
+    }
+  }, "JSON de conteúdo inválido"),
+});
+type LessonEditorValues = z.infer<typeof lessonEditorSchema>;
+
 function LessonEditor({ lessonId }: { lessonId: string }) {
   const qc = useQueryClient();
   const notify = useNotification();
@@ -450,20 +478,21 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
     queryFn: () => apiFetch<AdminLessonDetail>(`/v1/lessons/${lessonId}`),
   });
 
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [xpReward, setXpReward] = useState(10);
-  const [published, setPublished] = useState(true);
-  const [contentText, setContentText] = useState("{}");
+  const form = useForm<LessonEditorValues>({
+    resolver: zodResolver(lessonEditorSchema),
+    defaultValues: { title: "", summary: "", xpReward: 10, published: true, contentText: "{}" },
+  });
 
   useEffect(() => {
     if (!lesson) return;
-    setTitle(lesson.title);
-    setSummary(lesson.summary ?? "");
-    setXpReward(lesson.xp_reward);
-    setPublished(lesson.is_published);
-    setContentText(JSON.stringify(lesson.content ?? {}, null, 2));
-  }, [lesson]);
+    form.reset({
+      title: lesson.title,
+      summary: lesson.summary ?? "",
+      xpReward: lesson.xp_reward,
+      published: lesson.is_published,
+      contentText: JSON.stringify(lesson.content ?? {}, null, 2),
+    });
+  }, [lesson, form]);
 
   const invalidateLesson = () => {
     qc.invalidateQueries({ queryKey: ["admin_lesson", lessonId] });
@@ -472,18 +501,17 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
   };
 
   const save = useMutation({
-    mutationFn: async () => {
-      let content: unknown;
-      try {
-        content = JSON.parse(contentText);
-      } catch {
-        throw new Error("JSON de conteúdo inválido");
-      }
-      return apiFetch(`/v1/admin/lessons/${lessonId}`, {
+    mutationFn: (values: LessonEditorValues) =>
+      apiFetch(`/v1/admin/lessons/${lessonId}`, {
         method: "PATCH",
-        body: JSON.stringify({ title, summary, xpReward, isPublished: published, content }),
-      });
-    },
+        body: JSON.stringify({
+          title: values.title,
+          summary: values.summary,
+          xpReward: values.xpReward,
+          isPublished: values.published,
+          content: JSON.parse(values.contentText),
+        }),
+      }),
     onSuccess: () => {
       notify.success("Lição atualizada");
       invalidateLesson();
@@ -491,66 +519,97 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
     onError: (e) => notify.fromError(e, { dedupeKey: "admin:save-lesson" }),
   });
 
+  const submit = form.handleSubmit((values) => save.mutate(values));
+
   if (isLoading || !lesson)
     return <div className="p-4 text-sm text-muted-foreground">Carregando…</div>;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Badge variant="outline" className="uppercase">
-          {lesson.lesson_type}
-        </Badge>
-        <label className="flex items-center gap-2 text-xs text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={published}
-            onChange={(e) => setPublished(e.target.checked)}
+    <Form {...form}>
+      <form onSubmit={submit} className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Badge variant="outline" className="uppercase">
+            {lesson.lesson_type}
+          </Badge>
+          <FormField
+            control={form.control}
+            name="published"
+            render={({ field }) => (
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                Publicada
+              </label>
+            )}
           />
-          Publicada
-        </label>
-      </div>
-      <div>
-        <label className="text-xs font-semibold text-muted-foreground">Título</label>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
-      </div>
-      <div>
-        <label className="text-xs font-semibold text-muted-foreground">Resumo</label>
-        <Textarea value={summary} onChange={(e) => setSummary(e.target.value)} rows={2} />
-      </div>
-      <div>
-        <label className="text-xs font-semibold text-muted-foreground">XP</label>
-        <Input
-          type="number"
-          min={0}
-          value={xpReward}
-          onChange={(e) => setXpReward(Number(e.target.value))}
-          className="w-28"
+        </div>
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs font-semibold text-muted-foreground">Título</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      <div>
-        <label className="text-xs font-semibold text-muted-foreground">
-          Conteúdo (JSON — campos variam por tipo de lição: objective, wordlist, rule, text, prompt,
-          etc.)
-        </label>
-        <Textarea
-          value={contentText}
-          onChange={(e) => setContentText(e.target.value)}
-          rows={12}
-          className="font-mono text-xs"
+        <FormField
+          control={form.control}
+          name="summary"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs font-semibold text-muted-foreground">Resumo</FormLabel>
+              <FormControl>
+                <Textarea rows={2} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      <Button onClick={() => save.mutate()} disabled={save.isPending} className="w-full">
-        {save.isPending ? "Salvando..." : "Salvar lição"}
-      </Button>
+        <FormField
+          control={form.control}
+          name="xpReward"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs font-semibold text-muted-foreground">XP</FormLabel>
+              <FormControl>
+                <Input type="number" min={0} className="w-28" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="contentText"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs font-semibold text-muted-foreground">
+                Conteúdo (JSON — campos variam por tipo de lição: objective, wordlist, rule, text,
+                prompt, etc.)
+              </FormLabel>
+              <FormControl>
+                <Textarea rows={12} className="font-mono text-xs" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" disabled={save.isPending} className="w-full">
+          {save.isPending ? "Salvando..." : "Salvar lição"}
+        </Button>
 
-      <div className="mt-6 border-t border-border pt-4">
-        <ExerciseEditor
-          lessonId={lessonId}
-          exercises={lesson.exercises}
-          onChanged={invalidateLesson}
-        />
-      </div>
-    </div>
+        <div className="mt-6 border-t border-border pt-4">
+          <ExerciseEditor
+            lessonId={lessonId}
+            exercises={lesson.exercises}
+            onChanged={invalidateLesson}
+          />
+        </div>
+      </form>
+    </Form>
   );
 }
 
@@ -623,6 +682,36 @@ function ExerciseEditor({
   );
 }
 
+function exerciseRowSchema() {
+  return z
+    .object({
+      prompt: z.string().min(1, "Pergunta obrigatória"),
+      options: z.string(),
+      correctIndex: z.coerce.number().int(),
+      xpReward: z.coerce.number().min(0, "XP não pode ser negativo"),
+    })
+    .refine(
+      (v) => {
+        const parsed = v.options
+          .split("|")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        return v.correctIndex >= 0 && v.correctIndex < parsed.length;
+      },
+      (v) => {
+        const parsed = v.options
+          .split("|")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        return {
+          message: `Índice da resposta correta (${v.correctIndex}) precisa estar entre 0 e ${parsed.length - 1}.`,
+          path: ["correctIndex"],
+        };
+      },
+    );
+}
+type ExerciseRowValues = z.infer<ReturnType<typeof exerciseRowSchema>>;
+
 function ExerciseRow({
   exercise,
   onDeleted,
@@ -633,35 +722,42 @@ function ExerciseRow({
   onSaved: () => void;
 }) {
   const notify = useNotification();
-  const [prompt, setPrompt] = useState(exercise.prompt);
-  const [options, setOptions] = useState((exercise.data?.options ?? []).join(" | "));
-  const [correctIndex, setCorrectIndex] = useState(exercise.correct_answer?.index ?? 0);
-  const [xpReward, setXpReward] = useState(exercise.xp_reward);
+  const form = useForm<ExerciseRowValues>({
+    resolver: zodResolver(exerciseRowSchema()),
+    defaultValues: {
+      prompt: exercise.prompt,
+      options: (exercise.data?.options ?? []).join(" | "),
+      correctIndex: exercise.correct_answer?.index ?? 0,
+      xpReward: exercise.xp_reward,
+    },
+  });
 
   // Resync local fields if the server row changes under us (e.g. another
   // admin edits it, or a refetch returns updated data) — useState's initial
   // value only applies on mount, so without this the form would keep
   // showing stale values after the first render.
   useEffect(() => {
-    setPrompt(exercise.prompt);
-    setOptions((exercise.data?.options ?? []).join(" | "));
-    setCorrectIndex(exercise.correct_answer?.index ?? 0);
-    setXpReward(exercise.xp_reward);
-  }, [exercise]);
+    form.reset({
+      prompt: exercise.prompt,
+      options: (exercise.data?.options ?? []).join(" | "),
+      correctIndex: exercise.correct_answer?.index ?? 0,
+      xpReward: exercise.xp_reward,
+    });
+  }, [exercise, form]);
 
   const save = useMutation({
-    mutationFn: () => {
-      const parsedOptions = options
+    mutationFn: (values: ExerciseRowValues) => {
+      const parsedOptions = values.options
         .split("|")
         .map((s) => s.trim())
         .filter(Boolean);
       return apiFetch(`/v1/admin/exercises/${exercise.id}`, {
         method: "PATCH",
         body: JSON.stringify({
-          prompt,
+          prompt: values.prompt,
           data: { options: parsedOptions },
-          correctAnswer: { index: correctIndex },
-          xpReward,
+          correctAnswer: { index: values.correctIndex },
+          xpReward: values.xpReward,
         }),
       });
     },
@@ -672,60 +768,76 @@ function ExerciseRow({
     onError: (e) => notify.fromError(e, { dedupeKey: "admin:save-exercise" }),
   });
 
-  const handleSave = () => {
-    const parsedOptions = options
-      .split("|")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    if (correctIndex < 0 || correctIndex >= parsedOptions.length) {
-      notify.warning(
-        `Índice da resposta correta (${correctIndex}) precisa estar entre 0 e ${parsedOptions.length - 1}.`,
-      );
-      return;
-    }
-    save.mutate();
-  };
+  const submit = form.handleSubmit((values) => save.mutate(values));
 
   return (
-    <div className="space-y-2 rounded-xl border border-border p-3">
-      <Input
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        placeholder="Pergunta"
-        className="text-sm"
-      />
-      <Input
-        value={options}
-        onChange={(e) => setOptions(e.target.value)}
-        placeholder="Opções separadas por |"
-        className="text-xs"
-      />
-      <div className="flex flex-wrap items-center gap-2">
-        <label className="text-xs text-muted-foreground">Correta (índice)</label>
-        <Input
-          type="number"
-          min={0}
-          value={correctIndex}
-          onChange={(e) => setCorrectIndex(Number(e.target.value))}
-          className="w-16 text-xs"
+    <Form {...form}>
+      <form onSubmit={submit} className="space-y-2 rounded-xl border border-border p-3">
+        <FormField
+          control={form.control}
+          name="prompt"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input placeholder="Pergunta" className="text-sm" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        <label className="text-xs text-muted-foreground">XP</label>
-        <Input
-          type="number"
-          min={0}
-          value={xpReward}
-          onChange={(e) => setXpReward(Number(e.target.value))}
-          className="w-16 text-xs"
+        <FormField
+          control={form.control}
+          name="options"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input placeholder="Opções separadas por |" className="text-xs" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      <div className="flex gap-2">
-        <Button size="sm" onClick={handleSave} disabled={save.isPending}>
-          Salvar
-        </Button>
-        <Button size="sm" variant="outline" onClick={onDeleted}>
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
-      </div>
-    </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <FormField
+            control={form.control}
+            name="correctIndex"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormLabel className="text-xs text-muted-foreground">Correta (índice)</FormLabel>
+                  <FormControl>
+                    <Input type="number" min={0} className="w-16 text-xs" {...field} />
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="xpReward"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormLabel className="text-xs text-muted-foreground">XP</FormLabel>
+                  <FormControl>
+                    <Input type="number" min={0} className="w-16 text-xs" {...field} />
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button type="submit" size="sm" disabled={save.isPending}>
+            Salvar
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={onDeleted}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
