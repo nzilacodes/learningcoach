@@ -12,6 +12,8 @@ import {
   Lock,
   Play,
   AlertTriangle,
+  Flag,
+  UserX,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -120,6 +122,12 @@ function CommunityPage() {
   });
   const messages = data?.messages ?? [];
 
+  const { data: blockedUsers = [], refetch: refetchBlocked } = useQuery({
+    queryKey: ["community_blocked"],
+    enabled: !!user && started,
+    queryFn: () => apiFetch<{ id: string; display_name: string }[]>("/v1/community/blocked"),
+  });
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
@@ -144,6 +152,52 @@ function CommunityPage() {
       await qc.invalidateQueries({ queryKey: ["community_messages", room] });
     } catch (e) {
       notify.fromError(e, { dedupeKey: "community:send" });
+    }
+  };
+
+  const reportMessage = async (messageId: string) => {
+    const reason = window.prompt(
+      locale === "pt" ? "Motivo da denúncia (opcional):" : "Reason for reporting (optional):",
+    );
+    if (reason === null) return;
+    try {
+      await apiFetch(`/v1/community/messages/${messageId}/report`, {
+        method: "POST",
+        body: JSON.stringify({ reason: reason.trim() || undefined }),
+      });
+      notify.success(locale === "pt" ? "Denúncia enviada. Obrigado." : "Report sent. Thank you.");
+    } catch (e) {
+      notify.fromError(e, { dedupeKey: "community:report" });
+    }
+  };
+
+  const blockUser = async (targetUserId: string, targetName: string) => {
+    const ok = window.confirm(
+      locale === "pt"
+        ? `Bloquear ${targetName}? Deixarás de ver mensagens desta pessoa nesta sala.`
+        : `Block ${targetName}? You'll stop seeing this person's messages in this room.`,
+    );
+    if (!ok) return;
+    try {
+      await apiFetch(`/v1/community/users/${targetUserId}/block`, { method: "POST" });
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["community_messages", room] }),
+        refetchBlocked(),
+      ]);
+    } catch (e) {
+      notify.fromError(e, { dedupeKey: "community:block" });
+    }
+  };
+
+  const unblockUser = async (targetUserId: string) => {
+    try {
+      await apiFetch(`/v1/community/users/${targetUserId}/block`, { method: "DELETE" });
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["community_messages", room] }),
+        refetchBlocked(),
+      ]);
+    } catch (e) {
+      notify.fromError(e, { dedupeKey: "community:unblock" });
     }
   };
 
@@ -362,12 +416,34 @@ function CommunityPage() {
                         {m.content}
                       </div>
                       <div
-                        className={`mt-1 text-2xs text-muted-foreground ${me ? "text-right" : ""}`}
+                        className={`mt-1 flex items-center gap-2 text-2xs text-muted-foreground ${me ? "justify-end" : ""}`}
                       >
-                        {new Date(m.created_at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        <span>
+                          {new Date(m.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                        {!me && (
+                          <>
+                            <button
+                              onClick={() => reportMessage(m.id)}
+                              className="hover:text-foreground"
+                              aria-label={locale === "pt" ? "Denunciar mensagem" : "Report message"}
+                              title={locale === "pt" ? "Denunciar" : "Report"}
+                            >
+                              <Flag className="h-3 w-3" />
+                            </button>
+                            <button
+                              onClick={() => blockUser(m.user_id, m.display_name)}
+                              className="hover:text-destructive"
+                              aria-label={locale === "pt" ? "Bloquear utilizador" : "Block user"}
+                              title={locale === "pt" ? "Bloquear" : "Block"}
+                            >
+                              <UserX className="h-3 w-3" />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -456,6 +532,27 @@ function CommunityPage() {
                   : "You only see and send messages within your age group."}
               </p>
             </div>
+            {blockedUsers.length > 0 && (
+              <div className="glass rounded-3xl p-6 shadow-card">
+                <h3 className="font-display font-bold flex items-center gap-2">
+                  <UserX className="h-4 w-4 text-muted-foreground" />
+                  {locale === "pt" ? "Bloqueados" : "Blocked"}
+                </h3>
+                <ul className="mt-3 space-y-2">
+                  {blockedUsers.map((b) => (
+                    <li key={b.id} className="flex items-center justify-between gap-2 text-xs">
+                      <span className="truncate text-muted-foreground">{b.display_name}</span>
+                      <button
+                        onClick={() => unblockUser(b.id)}
+                        className="shrink-0 font-semibold text-magenta hover:underline"
+                      >
+                        {locale === "pt" ? "Desbloquear" : "Unblock"}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <div className="text-center">
               <Link
                 to="/dashboard"

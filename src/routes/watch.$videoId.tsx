@@ -290,6 +290,9 @@ function WatchPage() {
               <>
                 <TabsContent value="summary">
                   <Card>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Resumo gerado por IA com base no título e tema — pode conter imprecisões.
+                    </p>
                     <p className="whitespace-pre-line leading-relaxed">{pack.summary}</p>
                   </Card>
                 </TabsContent>

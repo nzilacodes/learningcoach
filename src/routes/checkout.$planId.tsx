@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   ArrowLeft,
   Sparkles,
+  AlertTriangle,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -274,6 +275,15 @@ function CheckoutPage() {
                       Efetue o pagamento com os dados abaixo. Após confirmação, os cursos são
                       liberados automaticamente.
                     </p>
+
+                    <div className="mt-4 flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-900 dark:text-amber-200">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>
+                        <strong>Atenção:</strong> a integração com o gateway de pagamento real ainda
+                        não está ativa — os dados abaixo são de exemplo. Não transfiras valores sem
+                        confirmar primeiro com o nosso suporte pelo e-mail associado à tua conta.
+                      </span>
+                    </div>
 
                     <div className="mt-6 grid gap-3 sm:grid-cols-2">
                       {method === "reference" && (
