@@ -54,12 +54,12 @@ export const Route = createFileRoute("/")({
 });
 
 const cefr = [
-  { code: "A1", label: "Beginner", h: "h-16", bg: "bg-teal-50", text: "text-[#0EA5A4]" },
-  { code: "A2", label: "Elementary", h: "h-20", bg: "bg-teal-100", text: "text-[#0EA5A4]" },
-  { code: "B1", label: "Intermediate", h: "h-24", bg: "bg-teal-200", text: "text-[#0EA5A4]" },
-  { code: "B2", label: "Upper-Int.", h: "h-28", bg: "bg-teal-300", text: "text-[#0EA5A4]" },
-  { code: "C1", label: "Advanced", h: "h-32", bg: "bg-teal-400", text: "text-[#0EA5A4]" },
-  { code: "C2", label: "Proficient", h: "h-36", bg: "bg-[#0EA5A4]", text: "text-white" },
+  { code: "A1", label: "Beginner", h: "h-16", bg: "bg-teal-50", text: "text-marketing-teal" },
+  { code: "A2", label: "Elementary", h: "h-20", bg: "bg-teal-100", text: "text-marketing-teal" },
+  { code: "B1", label: "Intermediate", h: "h-24", bg: "bg-teal-200", text: "text-marketing-teal" },
+  { code: "B2", label: "Upper-Int.", h: "h-28", bg: "bg-teal-300", text: "text-marketing-teal" },
+  { code: "C1", label: "Advanced", h: "h-32", bg: "bg-teal-400", text: "text-marketing-teal" },
+  { code: "C2", label: "Proficient", h: "h-36", bg: "bg-marketing-teal", text: "text-white" },
 ];
 
 const features = [
@@ -106,27 +106,27 @@ function LandingPage() {
     .filter((l) => l.unit_id === demoUnit?.id)
     .sort((a, b) => a.order_index - b.order_index)[0];
   return (
-    <div ref={root} className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
+    <div ref={root} className="min-h-screen bg-marketing-surface text-marketing-ink">
       <SiteHeader />
 
       {/* HERO — Pinned with stats overlay */}
       <section data-anim="hero-section" className="relative overflow-hidden pt-28 pb-28 md:pt-36">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(1000px_500px_at_10%_-10%,color-mix(in_oklab,#0EA5A4_18%,transparent),transparent_60%),radial-gradient(800px_500px_at_95%_10%,color-mix(in_oklab,#84CC16_16%,transparent),transparent_60%)]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(1000px_500px_at_10%_-10%,color-mix(in_oklab,var(--marketing-teal)_18%,transparent),transparent_60%),radial-gradient(800px_500px_at_95%_10%,color-mix(in_oklab,var(--marketing-lime)_16%,transparent),transparent_60%)]" />
         {/* Hero content — z-10 */}
         <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-14 px-6 lg:grid-cols-2">
           <div>
             <div
               data-anim="hero-badge"
-              className="mb-6 inline-flex items-center gap-2 rounded-full bg-lime-100 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#65a30d]"
+              className="mb-6 inline-flex items-center gap-2 rounded-full bg-lime-100 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-marketing-lime-dark"
             >
               <Sparkles className="h-3.5 w-3.5" /> Premium English Coaching
             </div>
-            <h1 className="text-5xl font-extrabold leading-[1.05] tracking-tight text-[#0F172A] md:text-6xl lg:text-7xl">
+            <h1 className="text-5xl font-extrabold leading-[1.05] tracking-tight text-marketing-ink md:text-6xl lg:text-7xl">
               <span data-anim="hero-line" className="block">
                 Learn English Faster.
               </span>
               <span data-anim="hero-line" className="block">
-                Speak With <span className="text-[#0EA5A4]">Confidence.</span>
+                Speak With <span className="text-marketing-teal">Confidence.</span>
               </span>
               <span data-anim="hero-line" className="block">
                 Learn With Coach.
@@ -137,24 +137,24 @@ function LandingPage() {
               className="mt-6 max-w-xl text-lg leading-relaxed text-slate-600"
             >
               A plataforma{" "}
-              <span className="font-bold text-[#0F172A]">LEARNING ENGLISH WITH COACH</span> ensina
-              inglês do A1 ao C2 com IA, pronúncia IPA, conversação, vídeos, jogos, quizzes e aulas
-              interativas — para crianças, adolescentes e adultos.
+              <span className="font-bold text-marketing-ink">LEARNING ENGLISH WITH COACH</span>{" "}
+              ensina inglês do A1 ao C2 com IA, pronúncia IPA, conversação, vídeos, jogos, quizzes e
+              aulas interativas — para crianças, adolescentes e adultos.
             </p>
             <div data-anim="hero-cta" className="mt-9 flex flex-wrap items-center gap-4">
               <Link
                 to="/placement"
-                className="group inline-flex items-center gap-3 rounded-full bg-[#0F172A] px-8 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:scale-[1.02] hover:shadow-2xl"
+                className="group inline-flex items-center gap-3 rounded-full bg-marketing-ink px-8 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:scale-[1.02] hover:shadow-2xl"
               >
                 {locale === "pt" ? "Começar agora" : "Start now"}
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#0F172A]">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-marketing-ink">
                   <ArrowRight className="h-5 w-5 -rotate-45 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
               </Link>
               <Link
                 to={demoLesson ? "/lesson/$lessonId" : "/curriculum"}
                 params={demoLesson ? { lessonId: demoLesson.id } : undefined}
-                className="inline-flex items-center gap-3 rounded-full border-2 border-slate-200 bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-[#0F172A] transition-all hover:border-[#0EA5A4] hover:text-[#0EA5A4]"
+                className="inline-flex items-center gap-3 rounded-full border-2 border-slate-200 bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-marketing-ink transition-all hover:border-marketing-teal hover:text-marketing-teal"
               >
                 <Play className="h-4 w-4" />
                 {locale === "pt" ? "Ver demo" : "Watch demo"}
@@ -175,7 +175,7 @@ function LandingPage() {
               <div>
                 <div className="flex items-center gap-0.5">
                   {[0, 1, 2, 3, 4].map((i) => (
-                    <Star key={i} className="h-4 w-4 fill-[#84CC16] text-[#84CC16]" />
+                    <Star key={i} className="h-4 w-4 fill-marketing-lime text-marketing-lime" />
                   ))}
                 </div>
                 <p className="text-sm font-medium text-slate-500">
@@ -197,8 +197,8 @@ function LandingPage() {
                 height={1024}
                 className="h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#0EA5A4]/25 via-transparent to-[#84CC16]/10" />
-              <div className="absolute left-6 top-6 rounded-2xl bg-white/85 px-4 py-2 text-xs font-black uppercase tracking-widest text-[#0EA5A4] backdrop-blur-md">
+              <div className="absolute inset-0 bg-gradient-to-tr from-marketing-teal/25 via-transparent to-marketing-lime/10" />
+              <div className="absolute left-6 top-6 rounded-2xl bg-white/85 px-4 py-2 text-xs font-black uppercase tracking-widest text-marketing-teal backdrop-blur-md">
                 Learning English with Coach
               </div>
             </div>
@@ -208,10 +208,10 @@ function LandingPage() {
               className="absolute -bottom-6 -left-6 flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-xl"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-lime-100">
-                <Trophy className="h-6 w-6 text-[#65a30d]" />
+                <Trophy className="h-6 w-6 text-marketing-lime-dark" />
               </div>
               <div>
-                <p className="text-lg font-black text-[#0F172A]">98%</p>
+                <p className="text-lg font-black text-marketing-ink">98%</p>
                 <p className="text-xs font-medium text-slate-500">Fluency success rate</p>
               </div>
             </div>
@@ -219,7 +219,7 @@ function LandingPage() {
               data-anim="hero-float"
               className="absolute -right-4 top-10 flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-xl"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-100 text-[#0EA5A4]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-100 text-marketing-teal">
                 <Volume2 className="h-5 w-5" />
               </div>
               <div>
@@ -251,7 +251,7 @@ function LandingPage() {
                   data-target={s.target ?? 0}
                   data-suffix={"suffix" in s ? s.suffix : undefined}
                   data-decimals={"decimals" in s ? s.decimals : undefined}
-                  className="font-['Poppins',_sans-serif] text-3xl font-extrabold text-[#0EA5A4] sm:text-4xl"
+                  className="font-['Poppins',_sans-serif] text-3xl font-extrabold text-marketing-teal sm:text-4xl"
                 >
                   {"target" in s && s.target !== undefined ? "0" : s.value}
                 </div>
@@ -272,7 +272,7 @@ function LandingPage() {
               key={s.label}
               className="rounded-2xl border border-slate-100 bg-white p-4 text-center shadow-md"
             >
-              <div className="font-['Poppins',_sans-serif] text-2xl font-extrabold text-[#0EA5A4]">
+              <div className="font-['Poppins',_sans-serif] text-2xl font-extrabold text-marketing-teal">
                 {s.value}
               </div>
               <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
@@ -289,11 +289,14 @@ function LandingPage() {
         className="relative min-h-screen overflow-visible md:h-screen md:overflow-clip"
       >
         {/* SECTION 1: Choose Your Path */}
-        <section data-anim="age-panels-section" className="h-full flex items-center bg-[#F8FAFC]">
+        <section
+          data-anim="age-panels-section"
+          className="h-full flex items-center bg-marketing-surface"
+        >
           <div className="mx-auto max-w-7xl px-6 w-full py-10">
             <div className="headline-container text-center mb-10">
               <h2>Choose Your Path</h2>
-              <div className="mx-auto mt-3 h-1 w-16 rounded-full bg-[#84CC16]" />
+              <div className="mx-auto mt-3 h-1 w-16 rounded-full bg-marketing-lime" />
               <p className="mx-auto mt-3 max-w-xl text-sm text-slate-500">
                 Programas especializados para cada fase da vida — todos na plataforma LEARNING
                 ENGLISH WITH COACH.
@@ -353,7 +356,7 @@ function LandingPage() {
               <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <h2 className="text-2xl font-extrabold tracking-tight text-white md:text-3xl">
                   The complete toolkit of{" "}
-                  <span className="text-[#14b8a6]">Learning English with Coach</span>
+                  <span className="text-marketing-teal-dark">Learning English with Coach</span>
                 </h2>
                 <p className="max-w-xs text-xs leading-relaxed text-gray-500 lg:text-right">
                   Todas as ferramentas para dominares o inglês — do A1 ao C2.
@@ -385,7 +388,7 @@ function LandingPage() {
           <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 shadow-sm md:p-14">
             <div className="grid items-end gap-10 lg:grid-cols-4">
               <div data-anim="section-heading" className="lg:col-span-1">
-                <div className="mb-3 inline-block rounded-full bg-lime-100 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[#65a30d]">
+                <div className="mb-3 inline-block rounded-full bg-lime-100 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-marketing-lime-dark">
                   CEFR Aligned
                 </div>
                 <h2 className="text-3xl font-extrabold tracking-tight">
@@ -424,28 +427,28 @@ function LandingPage() {
       <section data-anim="results-section" className="py-24">
         <div className="mx-auto grid max-w-7xl items-center gap-16 px-6 md:grid-cols-2">
           <div data-anim="testimonial-copy">
-            <div className="mb-4 inline-block rounded-full bg-teal-50 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#0EA5A4]">
+            <div className="mb-4 inline-block rounded-full bg-teal-50 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-marketing-teal">
               Real Results
             </div>
             <h2 className="text-4xl font-extrabold leading-tight tracking-tight">
               The results speak <br />
-              <span className="text-[#84CC16]">for themselves.</span>
+              <span className="text-marketing-lime">for themselves.</span>
             </h2>
             <div className="mt-8 flex gap-12">
               <div data-anim="result-stat">
-                <div className="text-4xl font-black text-[#0EA5A4]">98%</div>
+                <div className="text-4xl font-black text-marketing-teal">98%</div>
                 <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   Satisfaction
                 </div>
               </div>
               <div data-anim="result-stat">
-                <div className="text-4xl font-black text-[#84CC16]">15k+</div>
+                <div className="text-4xl font-black text-marketing-lime">15k+</div>
                 <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   Lessons done
                 </div>
               </div>
               <div data-anim="result-stat">
-                <div className="text-4xl font-black text-[#0F172A]">4.9★</div>
+                <div className="text-4xl font-black text-marketing-ink">4.9★</div>
                 <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   Rating
                 </div>
@@ -454,11 +457,11 @@ function LandingPage() {
           </div>
           <div
             data-anim="testimonial-card"
-            className="relative rounded-[2rem] bg-[#0F172A] p-10 text-white shadow-2xl"
+            className="relative rounded-[2rem] bg-marketing-ink p-10 text-white shadow-2xl"
           >
             <div
               data-anim="testimonial-quote-mark"
-              className="absolute -left-6 -top-6 flex h-14 w-14 items-center justify-center rounded-full bg-[#84CC16] font-serif text-4xl leading-none text-[#0F172A]"
+              className="absolute -left-6 -top-6 flex h-14 w-14 items-center justify-center rounded-full bg-marketing-lime font-serif text-4xl leading-none text-marketing-ink"
             >
               "
             </div>
@@ -467,10 +470,12 @@ function LandingPage() {
               eu lidero-as.
             </p>
             <div className="mt-8 flex items-center gap-4">
-              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0EA5A4] to-[#84CC16]" />
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-marketing-teal to-marketing-lime" />
               <div>
                 <div className="font-bold">Sarah Jenkins</div>
-                <div className="text-xs text-[#14B8A6]">Marketing Director · Level C1</div>
+                <div className="text-xs text-marketing-teal-dark">
+                  Marketing Director · Level C1
+                </div>
               </div>
             </div>
           </div>
@@ -481,7 +486,7 @@ function LandingPage() {
       <section className="px-6 py-20">
         <div
           data-anim="final-cta"
-          className="relative mx-auto max-w-6xl overflow-hidden rounded-[3rem] bg-gradient-to-br from-[#0EA5A4] to-[#14B8A6] p-14 text-center text-white md:p-20"
+          className="relative mx-auto max-w-6xl overflow-hidden rounded-[3rem] bg-gradient-to-br from-marketing-teal to-marketing-teal-dark p-14 text-center text-white md:p-20"
         >
           <div
             data-anim="decor-circle"
@@ -489,7 +494,7 @@ function LandingPage() {
           />
           <div
             data-anim="decor-circle"
-            className="absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-[#84CC16]/20 blur-2xl"
+            className="absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-marketing-lime/20 blur-2xl"
           />
           <div className="relative">
             <div className="mb-4 inline-block rounded-full bg-white/15 px-4 py-1.5 text-xs font-black uppercase tracking-widest">
@@ -505,10 +510,10 @@ function LandingPage() {
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Link
                 to="/placement"
-                className="group inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-[#0F172A] shadow-2xl transition-all hover:scale-105"
+                className="group inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 text-sm font-bold uppercase tracking-widest text-marketing-ink shadow-2xl transition-all hover:scale-105"
               >
                 {locale === "pt" ? "Começar grátis" : "Start for free"}
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0F172A] text-white">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-marketing-ink text-white">
                   <ArrowRight className="h-5 w-5 -rotate-45 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
               </Link>
@@ -547,9 +552,9 @@ function AgePanel({
 }) {
   const chip =
     tone === "teal"
-      ? "bg-teal-100 text-[#0EA5A4]"
+      ? "bg-teal-100 text-marketing-teal"
       : tone === "lime"
-        ? "bg-lime-100 text-[#65a30d]"
+        ? "bg-lime-100 text-marketing-lime-dark"
         : "bg-slate-900 text-white";
   return (
     <div className="card-wrapper" data-anim="age-panel">
@@ -564,11 +569,11 @@ function AgePanel({
             className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-          <div className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-[#0F172A] backdrop-blur">
+          <div className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-marketing-ink backdrop-blur">
             {tag}
           </div>
           {highlighted && (
-            <div className="absolute right-3 top-3 rounded-full bg-[#0EA5A4] px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-white">
+            <div className="absolute right-3 top-3 rounded-full bg-marketing-teal px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-white">
               Popular
             </div>
           )}
@@ -579,18 +584,18 @@ function AgePanel({
         <div className={`isometric-icon ${chip}`}>
           <Target className="h-8 w-8" />
         </div>
-        <h3 className="text-base font-bold text-[#0F172A]">{title}</h3>
+        <h3 className="text-base font-bold text-marketing-ink">{title}</h3>
         <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{desc}</p>
         <ul className="mt-3 space-y-1.5">
           {bullets.map((b) => (
             <li key={b} className="flex items-center gap-2 text-sm font-medium text-slate-600">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#84CC16]" /> {b}
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-marketing-lime" /> {b}
             </li>
           ))}
         </ul>
         <Link
           to="/placement"
-          className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-[#0EA5A4] transition-all hover:gap-2.5"
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-marketing-teal transition-all hover:gap-2.5"
         >
           Explore Curriculum <ArrowRight className="h-3.5 w-3.5" />
         </Link>

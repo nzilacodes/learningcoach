@@ -6,7 +6,10 @@
 
 /*
  * Learning English with Coach — Design System
- * Palette: Sunset Blaze (#ff6b35, #f7931e, #e84393, #6c5ce7)
+ * App tokens (--sunset/--amber/--magenta/--violet below) vary per age-theme
+ * — see .theme-kids/.theme-teens/.theme-adults. The public/marketing pages
+ * (landing, header, pricing, maintenance) use a separate, fixed teal/lime/
+ * slate identity — see --marketing-* tokens — that doesn't change per theme.
  * Type: Sora (display) + Manrope (body)
  */
 
@@ -54,6 +57,13 @@
   --color-chart-3: var(--magenta);
   --color-chart-4: var(--violet);
   --color-chart-5: var(--ink);
+
+  --color-marketing-teal: var(--marketing-teal);
+  --color-marketing-teal-dark: var(--marketing-teal-dark);
+  --color-marketing-lime: var(--marketing-lime);
+  --color-marketing-lime-dark: var(--marketing-lime-dark);
+  --color-marketing-ink: var(--marketing-ink);
+  --color-marketing-surface: var(--marketing-surface);
 }
 
 :root {
@@ -69,6 +79,16 @@
 
   --background: oklch(0.985 0.005 250);
   --foreground: oklch(0.18 0.03 260);
+
+  /* Public/marketing site — fixed across age-themes, unlike --sunset etc.
+     Consolidates ~75 raw hex occurrences that were previously repeated
+     across index.tsx, site-header.tsx, pricing.tsx and maintenance.tsx. */
+  --marketing-teal: #0ea5a4;
+  --marketing-teal-dark: #14b8a6;
+  --marketing-lime: #84cc16;
+  --marketing-lime-dark: #65a30d;
+  --marketing-ink: #0f172a;
+  --marketing-surface: #f8fafc;
 
   --card: oklch(1 0 0);
   --card-foreground: var(--foreground);
@@ -290,7 +310,7 @@
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.03em;
-  color: #0c111d;
+  color: var(--marketing-ink);
 }
 
 .cards-grid {

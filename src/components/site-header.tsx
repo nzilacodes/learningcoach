@@ -61,7 +61,7 @@ export function SiteHeader() {
       {/* Scroll Progress Bar */}
       <div className="fixed left-0 top-0 z-[60] h-[3px] w-full">
         <div
-          className="h-full bg-gradient-to-r from-[#0EA5A4] via-[#84CC16] to-[#0EA5A4] transition-[width] duration-150 ease-out"
+          className="h-full bg-gradient-to-r from-marketing-teal via-marketing-lime to-marketing-teal transition-[width] duration-150 ease-out"
           style={{ width: `${scrollProgress}%` }}
         />
       </div>
@@ -93,9 +93,9 @@ export function SiteHeader() {
                 <img
                   src={coachLogo}
                   alt="LEWC"
-                  className="h-10 w-10 rounded-xl object-contain shadow-lg ring-1 ring-slate-200 transition-all duration-300 group-hover:ring-[#0EA5A4]/50 group-hover:shadow-[#0EA5A4]/20"
+                  className="h-10 w-10 rounded-xl object-contain shadow-lg ring-1 ring-slate-200 transition-all duration-300 group-hover:ring-marketing-teal/50 group-hover:shadow-marketing-teal/20"
                 />
-                <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-[#84CC16]" />
+                <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-marketing-lime" />
               </div>
               <div className="hidden leading-tight sm:block">
                 <div className="text-sm font-bold text-slate-800">Learning English</div>
@@ -112,7 +112,7 @@ export function SiteHeader() {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className="group relative rounded-xl bg-gradient-to-r from-[#0EA5A4] to-[#14B8A6] px-5 py-2 text-sm font-bold text-white shadow-lg shadow-[#0EA5A4]/25 transition-all duration-300 hover:shadow-[#0EA5A4]/40 hover:scale-[1.03]"
+                    className="group relative rounded-xl bg-gradient-to-r from-marketing-teal to-marketing-teal-dark px-5 py-2 text-sm font-bold text-white shadow-lg shadow-marketing-teal/25 transition-all duration-300 hover:shadow-marketing-teal/40 hover:scale-[1.03]"
                   >
                     <span className="relative z-10 flex items-center gap-1.5">
                       {link.label}
@@ -126,7 +126,7 @@ export function SiteHeader() {
                     className="group relative rounded-lg px-4 py-2 text-sm font-medium text-slate-500 transition-colors duration-300 hover:text-slate-900"
                   >
                     {link.label}
-                    <span className="absolute bottom-0.5 left-1/2 h-0.5 w-0 rounded-full bg-[#0EA5A4] transition-all duration-300 group-hover:left-4 group-hover:w-[calc(100%-2rem)]" />
+                    <span className="absolute bottom-0.5 left-1/2 h-0.5 w-0 rounded-full bg-marketing-teal transition-all duration-300 group-hover:left-4 group-hover:w-[calc(100%-2rem)]" />
                   </Link>
                 ),
               )}
@@ -165,7 +165,7 @@ export function SiteHeader() {
               {/* Language Toggle — icon only */}
               <button
                 onClick={() => setLocale(locale === "pt" ? "en" : "pt")}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-all duration-300 hover:border-[#0EA5A4]/30 hover:bg-[#0EA5A4]/5 hover:text-[#0EA5A4]"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-all duration-300 hover:border-marketing-teal/30 hover:bg-marketing-teal/5 hover:text-marketing-teal"
                 aria-label="Toggle language"
               >
                 <Languages className="h-4 w-4" />
@@ -187,7 +187,7 @@ export function SiteHeader() {
               {/* CTA Button */}
               <Link
                 to={user ? "/dashboard" : "/auth"}
-                className="group hidden items-center gap-2.5 rounded-full bg-[#0F172A] px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white transition-all duration-300 hover:shadow-lg lg:inline-flex"
+                className="group hidden items-center gap-2.5 rounded-full bg-marketing-ink px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white transition-all duration-300 hover:shadow-lg lg:inline-flex"
               >
                 {user
                   ? locale === "pt"
@@ -196,7 +196,7 @@ export function SiteHeader() {
                   : locale === "pt"
                     ? "Entrar"
                     : "Sign in"}
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#0F172A]">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-marketing-ink">
                   <ArrowRight className="h-4 w-4 -rotate-45 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
               </Link>
@@ -204,7 +204,7 @@ export function SiteHeader() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-all duration-300 hover:border-[#0EA5A4]/30 hover:bg-[#0EA5A4]/5 hover:text-[#0EA5A4] lg:hidden"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-all duration-300 hover:border-marketing-teal/30 hover:bg-marketing-teal/5 hover:text-marketing-teal lg:hidden"
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
               >
                 <div className="relative h-5 w-5">
@@ -267,7 +267,7 @@ export function SiteHeader() {
                   onClick={closeMenu}
                   className={`flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium transition-all duration-300 ${
                     link.cta
-                      ? "bg-gradient-to-r from-[#0EA5A4] to-[#14B8A6] text-white shadow-lg shadow-[#0EA5A4]/20"
+                      ? "bg-gradient-to-r from-marketing-teal to-marketing-teal-dark text-white shadow-lg shadow-marketing-teal/20"
                       : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                   }`}
                   style={{ transitionDelay: `${i * 50}ms` }}
@@ -317,7 +317,7 @@ export function SiteHeader() {
                   <Link
                     to="/auth"
                     onClick={closeMenu}
-                    className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#0EA5A4] to-[#14B8A6] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-[#0EA5A4]/25 transition-all hover:shadow-[#0EA5A4]/40"
+                    className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-marketing-teal to-marketing-teal-dark px-4 py-3 text-sm font-bold text-white shadow-lg shadow-marketing-teal/25 transition-all hover:shadow-marketing-teal/40"
                   >
                     {locale === "pt" ? "Começar grátis" : "Start for free"}
                     <ArrowRight className="ml-2 h-4 w-4" />

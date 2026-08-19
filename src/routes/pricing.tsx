@@ -150,7 +150,7 @@ function PricingPage() {
       <div className="mx-auto max-w-[1440px] px-4 py-12">
         <>
           <div className="mb-12 text-center">
-            <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl text-[#0F172A]">
+            <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl text-marketing-ink">
               {locale === "pt" ? "Aprenda inglês " : "Learn English "}
               <span className="text-gradient-sunset">
                 {locale === "pt" ? "no seu ritmo" : "your way"}
@@ -172,7 +172,7 @@ function PricingPage() {
                   onClick={() => setCycle(c)}
                   className={`rounded-full px-4 sm:px-7 py-2.5 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
                     cycle === c
-                      ? "bg-white text-[#0F172A] shadow-[0_2px_8px_rgba(15,23,42,0.08)] ring-1 ring-slate-100"
+                      ? "bg-white text-marketing-ink shadow-[0_2px_8px_rgba(15,23,42,0.08)] ring-1 ring-slate-100"
                       : "text-slate-400 hover:text-slate-600"
                   }`}
                 >
@@ -233,11 +233,11 @@ function PricingPage() {
                             <div className="absolute inset-0 bg-gradient-to-br from-pink-400/20 to-orange-400/20" />
                           )}
                           <Icon
-                            className={`h-8 w-8 relative z-10 ${plan.tier === "essential" ? "text-[#0EA5A4]" : plan.tier === "premium" ? "text-pink-500" : "text-indigo-600"}`}
+                            className={`h-8 w-8 relative z-10 ${plan.tier === "essential" ? "text-marketing-teal" : plan.tier === "premium" ? "text-pink-500" : "text-indigo-600"}`}
                           />
                         </div>
 
-                        <h2 className="font-display text-3xl font-bold mb-2 text-[#0F172A]">
+                        <h2 className="font-display text-3xl font-bold mb-2 text-marketing-ink">
                           {meta.label[locale]}
                         </h2>
                         <p className="text-sm text-slate-500 mb-10 leading-relaxed max-w-[280px]">
@@ -245,7 +245,7 @@ function PricingPage() {
                         </p>
 
                         <div className="flex items-baseline gap-1 mb-1">
-                          <span className="text-5xl sm:text-6xl font-black tracking-tighter text-[#0F172A]">
+                          <span className="text-5xl sm:text-6xl font-black tracking-tighter text-marketing-ink">
                             {plan.price_kz.toLocaleString("pt-AO")}
                           </span>
                           <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">
@@ -273,7 +273,7 @@ function PricingPage() {
                               </li>
                             ))}
                             {plan.call_minutes > 0 && (
-                              <li className="flex items-start gap-4 text-sm font-bold text-[#0F172A]">
+                              <li className="flex items-start gap-4 text-sm font-bold text-marketing-ink">
                                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
                                 <span>
                                   {plan.call_minutes} min{" "}
@@ -286,7 +286,7 @@ function PricingPage() {
 
                         <Button
                           onClick={() => handleSubscribe(plan)}
-                          className="mt-12 w-full py-8 px-6 bg-[#0F172A] text-white text-xs font-bold uppercase tracking-[0.25em] rounded-full shadow-[0_20px_45px_-5px_rgba(15,23,42,0.35)] transition-all hover:bg-slate-900 active:scale-95 overflow-hidden group/btn"
+                          className="mt-12 w-full py-8 px-6 bg-marketing-ink text-white text-xs font-bold uppercase tracking-[0.25em] rounded-full shadow-[0_20px_45px_-5px_rgba(15,23,42,0.35)] transition-all hover:bg-slate-900 active:scale-95 overflow-hidden group/btn"
                           variant="default"
                         >
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
