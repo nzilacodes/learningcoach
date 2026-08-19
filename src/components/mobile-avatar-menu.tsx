@@ -1,10 +1,27 @@
-import { useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { User, Settings, LogOut, Zap, HelpCircle, Gift } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { useClickOutside } from "@/hooks/use-click-outside";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+
+function AccountAvatar({ url }: { url: string | null }) {
+  return (
+    <Avatar className="h-8 w-8">
+      {url && <AvatarImage src={url} alt="" />}
+      <AvatarFallback className="bg-gray-200">
+        <User className="h-4 w-4 text-gray-600" />
+      </AvatarFallback>
+    </Avatar>
+  );
+}
 
 /** The Upgrade/Help/Gift/Notifications cluster at the start of every
  * VideosSidebar page header — was duplicated (and the bell absent) across
@@ -49,67 +66,55 @@ export function HeaderActionLinks() {
  */
 export function MobileAvatarMenu() {
   const { locale } = useLocale();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useClickOutside(ref, setOpen);
 
   return (
-    <div className="relative md:hidden" ref={ref}>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-            <button
-              onClick={() => {
-                setOpen(false);
-                navigate({ to: "/profile" });
-              }}
-              className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-            >
-              <User className="w-4 h-4 text-[var(--violet)]" />
-              {locale === "pt" ? "Ver perfil" : "View profile"}
-            </button>
-            <button
-              onClick={() => {
-                setOpen(false);
-                navigate({ to: "/settings" });
-              }}
-              className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-            >
-              <Settings className="w-4 h-4 text-gray-400" />
-              {locale === "pt" ? "Definições" : "Settings"}
-            </button>
-            <div className="mx-3 my-1 h-px bg-gray-50" />
-            <button
-              onClick={() => signOut()}
-              className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left"
-            >
-              <LogOut className="w-4 h-4" />
-              {locale === "pt" ? "Sair da conta" : "Sign out"}
-            </button>
-          </div>
-        </>
-      )}
-      <button
-        onClick={() => setOpen(!open)}
-        aria-label={locale === "pt" ? "Menu de conta" : "Account menu"}
-        aria-expanded={open}
-        className="relative inline-flex"
-      >
-        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-          <User className="w-4 h-4 text-gray-600" />
-        </div>
-        <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-      </button>
+    <div className="relative md:hidden">
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          aria-label={locale === "pt" ? "Menu de conta" : "Account menu"}
+          className="relative inline-flex rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <AccountAvatar url={user?.avatarUrl ?? null} />
+          <span className="absolute -bottom-0.5 -right-0.5 block h-3 w-3 rounded-full border-2 border-white bg-green-500" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="w-52 rounded-2xl border-gray-100 p-2 premium-shadow"
+        >
+          <DropdownMenuItem
+            onClick={() => navigate({ to: "/profile" })}
+            className="gap-3 rounded-lg px-3 py-2.5 text-xs font-bold text-gray-600"
+          >
+            <User className="h-4 w-4 text-[var(--violet)]" />
+            {locale === "pt" ? "Ver perfil" : "View profile"}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => navigate({ to: "/settings" })}
+            className="gap-3 rounded-lg px-3 py-2.5 text-xs font-bold text-gray-600"
+          >
+            <Settings className="h-4 w-4 text-gray-400" />
+            {locale === "pt" ? "Definições" : "Settings"}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => signOut()}
+            className="gap-3 rounded-lg px-3 py-2.5 text-xs font-bold text-red-400 focus:text-red-500"
+          >
+            <LogOut className="h-4 w-4" />
+            {locale === "pt" ? "Sair da conta" : "Sign out"}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
 
-/** The desktop-only avatar link next to it — also duplicated, also dead (no destination) in every copy. */
+/** The desktop-only avatar link next to it. */
 export function DesktopAvatarLink() {
   const { locale } = useLocale();
+  const { user } = useAuth();
   return (
     <Link
       to="/profile"
@@ -117,9 +122,7 @@ export function DesktopAvatarLink() {
       title={locale === "pt" ? "Ver perfil" : "View profile"}
     >
       <div className="relative inline-flex">
-        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
-          <User className="w-4 h-4 text-gray-600" />
-        </div>
+        <AccountAvatar url={user?.avatarUrl ?? null} />
         <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
       </div>
     </Link>

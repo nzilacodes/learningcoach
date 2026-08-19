@@ -70,6 +70,7 @@ export function NotificationBell() {
         <button
           type="button"
           title={locale === "pt" ? "Notificações" : "Notifications"}
+          aria-label={locale === "pt" ? "Notificações" : "Notifications"}
           className="relative p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex"
         >
           <Bell className="w-5 h-5" />

@@ -3,6 +3,13 @@ import { Link } from "@tanstack/react-router";
 import { Languages, User as UserIcon, X, ArrowRight, ChevronDown } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import coachLogo from "@/assets/coach-logo.png";
 
 export function SiteHeader() {
@@ -10,6 +17,7 @@ export function SiteHeader() {
   const { user, isAdmin } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
@@ -24,16 +32,8 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [menuOpen]);
+  // Sheet (Radix Dialog) manages body scroll lock itself while menuOpen —
+  // no manual document.body.style.overflow needed anymore.
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
@@ -131,23 +131,32 @@ export function SiteHeader() {
                 ),
               )}
 
-              {/* More dropdown */}
-              <div className="group relative">
-                <button className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-colors duration-300 hover:text-slate-600">
-                  {locale === "pt" ? "Mais" : "More"}
-                  <ChevronDown className="h-3.5 w-3.5 transition-transform duration-300 group-hover:rotate-180" />
-                </button>
-                <div className="invisible absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-900/10 opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100">
-                  {moreLinks.map((link) => (
-                    <Link
-                      key={link.to}
-                      to={link.to}
-                      className="block rounded-xl px-4 py-2.5 text-sm text-slate-500 transition-all duration-200 hover:bg-slate-50 hover:text-slate-900"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
+              {/* More dropdown — hover-controlled to match the rest of the desktop nav,
+                  but backed by Radix for real focus/keyboard/Escape handling. */}
+              <div onMouseEnter={() => setMoreOpen(true)} onMouseLeave={() => setMoreOpen(false)}>
+                <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
+                  <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 outline-none transition-colors duration-300 hover:text-slate-600 focus-visible:text-slate-600">
+                    {locale === "pt" ? "Mais" : "More"}
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 transition-transform duration-300 ${moreOpen ? "rotate-180" : ""}`}
+                    />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    sideOffset={8}
+                    className="w-56 rounded-2xl border-slate-200 p-2 shadow-2xl shadow-slate-900/10"
+                  >
+                    {moreLinks.map((link) => (
+                      <DropdownMenuItem
+                        key={link.to}
+                        asChild
+                        className="rounded-xl px-4 py-2.5 text-sm text-slate-500 focus:bg-slate-50 focus:text-slate-900"
+                      >
+                        <Link to={link.to}>{link.label}</Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
@@ -221,117 +230,111 @@ export function SiteHeader() {
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
-      <div
-        className={`fixed inset-0 z-[55] bg-black/60 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
-          menuOpen ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-        onClick={closeMenu}
-      />
-
       {/* Mobile Menu Panel */}
-      <div
-        className={`fixed right-0 top-0 z-[58] h-full w-[85%] max-w-sm bg-white transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-2xl shadow-slate-900/20 lg:hidden ${
-          menuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="flex h-full flex-col overflow-y-auto px-6 pt-6 pb-10">
-          {/* Mobile menu header */}
-          <div className="mb-8 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <img src={coachLogo} alt="LEWC" className="h-9 w-9 rounded-xl object-contain" />
-              <div>
-                <div className="text-sm font-bold text-slate-800">Learning English</div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider">
-                  with Coach
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+        <SheetContent
+          side="right"
+          className="w-[85%] max-w-sm border-none bg-white p-0 shadow-2xl shadow-slate-900/20 [&>button]:hidden lg:hidden"
+        >
+          <SheetTitle className="sr-only">{locale === "pt" ? "Menu" : "Menu"}</SheetTitle>
+          <div className="flex h-full flex-col overflow-y-auto px-6 pt-6 pb-10">
+            {/* Mobile menu header */}
+            <div className="mb-8 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <img src={coachLogo} alt="LEWC" className="h-9 w-9 rounded-xl object-contain" />
+                <div>
+                  <div className="text-sm font-bold text-slate-800">Learning English</div>
+                  <div className="text-[10px] text-slate-400 uppercase tracking-wider">
+                    with Coach
+                  </div>
                 </div>
               </div>
-            </div>
-            <button
-              onClick={closeMenu}
-              aria-label="Close menu"
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Mobile nav links */}
-          <div className="space-y-1">
-            {navLinks.map((link, i) => (
-              <Link
-                key={link.to}
-                to={link.to}
+              <button
                 onClick={closeMenu}
-                className={`flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium transition-all duration-300 ${
-                  link.cta
-                    ? "bg-gradient-to-r from-[#0EA5A4] to-[#14B8A6] text-white shadow-lg shadow-[#0EA5A4]/20"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                }`}
-                style={{ transitionDelay: `${i * 50}ms` }}
+                aria-label="Close menu"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700"
               >
-                {link.label}
-                <ArrowRight className="h-4 w-4 opacity-50" />
-              </Link>
-            ))}
-          </div>
-
-          {/* Divider */}
-          <div className="my-6 h-px bg-slate-100" />
-
-          {/* More links */}
-          <div className="space-y-1">
-            <div className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-300">
-              {locale === "pt" ? "Mais" : "More"}
+                <X className="h-5 w-5" />
+              </button>
             </div>
-            {moreLinks.map((link, i) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                onClick={closeMenu}
-                className="block rounded-xl px-4 py-2.5 text-sm text-slate-400 transition-all duration-200 hover:bg-slate-50 hover:text-slate-700"
-                style={{ transitionDelay: `${(i + navLinks.length) * 40}ms` }}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
 
-          {/* Mobile auth */}
-          <div className="mt-auto pt-8">
-            {user ? (
-              <div className="space-y-2">
+            {/* Mobile nav links */}
+            <div className="space-y-1">
+              {navLinks.map((link, i) => (
                 <Link
-                  to={isAdmin ? "/admin" : "/dashboard"}
+                  key={link.to}
+                  to={link.to}
                   onClick={closeMenu}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900"
+                  className={`flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium transition-all duration-300 ${
+                    link.cta
+                      ? "bg-gradient-to-r from-[#0EA5A4] to-[#14B8A6] text-white shadow-lg shadow-[#0EA5A4]/20"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  }`}
+                  style={{ transitionDelay: `${i * 50}ms` }}
                 >
-                  <UserIcon className="h-4 w-4" />
-                  {isAdmin ? "Admin" : locale === "pt" ? "Painel" : "Dashboard"}
+                  {link.label}
+                  <ArrowRight className="h-4 w-4 opacity-50" />
                 </Link>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="my-6 h-px bg-slate-100" />
+
+            {/* More links */}
+            <div className="space-y-1">
+              <div className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-300">
+                {locale === "pt" ? "Mais" : "More"}
               </div>
-            ) : (
-              <div className="space-y-2">
+              {moreLinks.map((link, i) => (
                 <Link
-                  to="/auth"
+                  key={link.to}
+                  to={link.to}
                   onClick={closeMenu}
-                  className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#0EA5A4] to-[#14B8A6] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-[#0EA5A4]/25 transition-all hover:shadow-[#0EA5A4]/40"
+                  className="block rounded-xl px-4 py-2.5 text-sm text-slate-400 transition-all duration-200 hover:bg-slate-50 hover:text-slate-700"
+                  style={{ transitionDelay: `${(i + navLinks.length) * 40}ms` }}
                 >
-                  {locale === "pt" ? "Começar grátis" : "Start for free"}
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  {link.label}
                 </Link>
-                <Link
-                  to="/auth"
-                  onClick={closeMenu}
-                  className="flex w-full items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-700"
-                >
-                  {t("nav.signin")}
-                </Link>
-              </div>
-            )}
+              ))}
+            </div>
+
+            {/* Mobile auth */}
+            <div className="mt-auto pt-8">
+              {user ? (
+                <div className="space-y-2">
+                  <Link
+                    to={isAdmin ? "/admin" : "/dashboard"}
+                    onClick={closeMenu}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900"
+                  >
+                    <UserIcon className="h-4 w-4" />
+                    {isAdmin ? "Admin" : locale === "pt" ? "Painel" : "Dashboard"}
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Link
+                    to="/auth"
+                    onClick={closeMenu}
+                    className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#0EA5A4] to-[#14B8A6] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-[#0EA5A4]/25 transition-all hover:shadow-[#0EA5A4]/40"
+                  >
+                    {locale === "pt" ? "Começar grátis" : "Start for free"}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                  <Link
+                    to="/auth"
+                    onClick={closeMenu}
+                    className="flex w-full items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-700"
+                  >
+                    {t("nav.signin")}
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

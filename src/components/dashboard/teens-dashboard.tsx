@@ -1,6 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
-import { useClickOutside } from "@/hooks/use-click-outside";
+import { Link } from "@tanstack/react-router";
 import {
   Flame,
   Star,
@@ -8,16 +6,13 @@ import {
   Lock,
   Check,
   Play,
-  User,
-  Settings,
-  LogOut,
   Users,
   MessagesSquare,
   ChevronRight,
 } from "lucide-react";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
 import { useLocale } from "@/lib/i18n";
-import { useAuth } from "@/lib/auth";
 import { AGE_TRACKS } from "@/lib/age-tracks";
 import type { DashboardData } from "@/lib/learning";
 import {
@@ -33,11 +28,6 @@ import {
  * status that's read-only (teens usually don't manage their own billing). */
 export function TeensDashboard(data: DashboardData) {
   const { locale } = useLocale();
-  const { signOut } = useAuth();
-  const navigate = useNavigate();
-  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
-  const avatarRef = useRef<HTMLDivElement>(null);
-  useClickOutside(avatarRef, setAvatarMenuOpen);
   const track = AGE_TRACKS.teens;
 
   const {
@@ -71,54 +61,8 @@ export function TeensDashboard(data: DashboardData) {
               <Star className="w-4 h-4" />
               {(data.userStats?.xp ?? 0).toLocaleString()}
             </div>
-            <div className="relative" ref={avatarRef}>
-              {avatarMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        navigate({ to: "/profile" });
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-                    >
-                      <User className="w-4 h-4 text-[var(--violet)]" />
-                      {locale === "pt" ? "Ver perfil" : "View profile"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        navigate({ to: "/settings" });
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-                    >
-                      <Settings className="w-4 h-4 text-gray-400" />
-                      {locale === "pt" ? "Definições" : "Settings"}
-                    </button>
-                    <div className="mx-3 my-1 h-px bg-gray-50" />
-                    <button
-                      onClick={() => signOut()}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {locale === "pt" ? "Sair da conta" : "Sign out"}
-                    </button>
-                  </div>
-                </>
-              )}
-              <button
-                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
-                aria-label={locale === "pt" ? "Menu de conta" : "Account menu"}
-                aria-expanded={avatarMenuOpen}
-                className="relative inline-flex"
-              >
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
-                <span className="absolute -bottom-0.5 -right-0.5 block w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-              </button>
-            </div>
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
           </div>
         </header>
 
