@@ -20,6 +20,7 @@ import {
   Settings,
   LogOut,
   Grid3X3,
+  Award,
 } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -70,6 +71,12 @@ const NAV_SECTIONS = [
       },
       { to: "/reading", Icon: BookMarked, hoverColor: "", label: { pt: "Reading", en: "Reading" } },
       { to: "/rewards", Icon: Trophy, hoverColor: "", label: { pt: "Recompensas", en: "Rewards" } },
+      {
+        to: "/certificates",
+        Icon: Award,
+        hoverColor: "",
+        label: { pt: "Certificados", en: "Certificates" },
+      },
     ],
   },
   {
@@ -288,6 +295,7 @@ const MOBILE_MORE_ITEMS = [
   { to: "/pronunciation", Icon: Mic, label: { pt: "Pronúncia", en: "Pronunciation" } },
   { to: "/reading", Icon: BookMarked, label: { pt: "Reading", en: "Reading" } },
   { to: "/rewards", Icon: Trophy, label: { pt: "Recompensas", en: "Rewards" } },
+  { to: "/certificates", Icon: Award, label: { pt: "Certificados", en: "Certificates" } },
 ];
 
 export function VideosMobileNav() {

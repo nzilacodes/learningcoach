@@ -65,6 +65,8 @@ function OnboardingWizard() {
   const { locale } = useLocale();
   const { user, loading, refresh: refreshAuth } = useAuth();
   const navigate = useNavigate();
+  const notify = useNotification();
+  const [goingBack, setGoingBack] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -73,6 +75,25 @@ function OnboardingWizard() {
   const status: Status = (user?.onboardingStatus as Status) ?? "profile";
   const activeIdx = STEPS.findIndex((s) => s.key === status);
   const knownStep = activeIdx !== -1;
+
+  // onboardingStatus is server-authoritative (each step's onDone() PATCHes it
+  // forward) — going back means PATCHing it to the previous step's key, same
+  // mechanism UnknownStatusStep's reset already uses, not a client-side index.
+  const goBack = async () => {
+    if (activeIdx <= 0) return;
+    setGoingBack(true);
+    try {
+      await apiFetch("/v1/me", {
+        method: "PATCH",
+        body: JSON.stringify({ onboardingStatus: STEPS[activeIdx - 1].key }),
+      });
+      await refreshAuth();
+    } catch (e) {
+      notify.fromError(e, { dedupeKey: "onboarding:back" });
+    } finally {
+      setGoingBack(false);
+    }
+  };
 
   if (loading || !user) {
     return (
@@ -124,6 +145,23 @@ function OnboardingWizard() {
               })}
             </div>
           </div>
+
+          {knownStep && activeIdx > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goBack}
+              disabled={goingBack}
+              className="mb-3"
+            >
+              {goingBack ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowLeft className="mr-1.5 h-4 w-4" />
+              )}
+              {locale === "pt" ? "Voltar" : "Back"}
+            </Button>
+          )}
 
           {status === "profile" && <ProfileStep user={user} onDone={refreshAuth} />}
           {status === "placement" && <PlacementStep onDone={refreshAuth} />}

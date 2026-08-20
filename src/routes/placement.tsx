@@ -74,6 +74,19 @@ type Section =
   | "loading"
   | "report";
 
+// The 8 content-bearing steps a candidate actually walks through — "loading"
+// and "report" are terminal states, not steps to count progress against.
+const SECTION_ORDER: Section[] = [
+  "intro",
+  "grammar",
+  "vocab",
+  "reading",
+  "listening",
+  "writing",
+  "speaking",
+  "pron",
+];
+
 interface Report {
   scores: {
     grammar: number;
@@ -216,6 +229,30 @@ function DiagnosticPage() {
         </header>
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
           <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10">
+            {SECTION_ORDER.includes(section) && (
+              <div className="mb-6">
+                <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                  <span>
+                    {locale === "pt" ? "Passo" : "Step"} {SECTION_ORDER.indexOf(section) + 1}{" "}
+                    {locale === "pt" ? "de" : "of"} {SECTION_ORDER.length}
+                  </span>
+                  <span>
+                    {Math.round(
+                      ((SECTION_ORDER.indexOf(section) + 1) / SECTION_ORDER.length) * 100,
+                    )}
+                    %
+                  </span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-gradient-sunset transition-all"
+                    style={{
+                      width: `${((SECTION_ORDER.indexOf(section) + 1) / SECTION_ORDER.length) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
             {section === "intro" && (
               <Intro
                 hasPrevious={!!report}
