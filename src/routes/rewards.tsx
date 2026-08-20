@@ -91,7 +91,16 @@ type RankRow = {
 };
 
 type TabId = "missions" | "calendar" | "rankings" | "shop" | "avatar" | "friends";
-type RankScope = "world" | "national" | "friends";
+type RankScope = "world" | "national" | "friends" | "week";
+
+// Tier from NTILE(4) OVER weekly XP — see backend getWeeklyLeaderboard.
+// 1 = top quarter of this week's active earners, 4 = bottom quarter.
+const WEEK_TIER = {
+  1: { pt: "Diamante", en: "Diamond", emoji: "💎" },
+  2: { pt: "Ouro", en: "Gold", emoji: "🥇" },
+  3: { pt: "Prata", en: "Silver", emoji: "🥈" },
+  4: { pt: "Bronze", en: "Bronze", emoji: "🥉" },
+} as const;
 
 function RewardsPage() {
   const { locale } = useLocale();
@@ -103,13 +112,17 @@ function RewardsPage() {
   const [shop, setShop] = useState<ShopItem[]>([]);
   const [inventory, setInventory] = useState<{ item_id: string; equipped: boolean }[]>([]);
   const [events, setEvents] = useState<XpEvent[]>([]);
-  const [ranks, setRanks] = useState<{ world: RankRow[]; national: RankRow[]; friends: RankRow[] }>(
-    {
-      world: [],
-      national: [],
-      friends: [],
-    },
-  );
+  const [ranks, setRanks] = useState<{
+    world: RankRow[];
+    national: RankRow[];
+    friends: RankRow[];
+    week: RankRow[];
+  }>({
+    world: [],
+    national: [],
+    friends: [],
+    week: [],
+  });
   const [friendEmail, setFriendEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -174,6 +187,26 @@ function RewardsPage() {
         xp: r.xp,
         sublabel: `${r.cefr_level ?? "—"} · 🔥${r.streak}`,
       }));
+      const weekly = await apiFetch<
+        {
+          rank: string;
+          user_id: string;
+          display_name: string;
+          weekly_xp: number;
+          cefr_level: string | null;
+          tier: 1 | 2 | 3 | 4;
+        }[]
+      >("/v1/weekly-leaderboard?limit=50");
+      const weekRows: RankRow[] = weekly.map((r) => {
+        const tier = WEEK_TIER[r.tier];
+        return {
+          id: r.user_id,
+          name: r.display_name,
+          avatar_url: null,
+          xp: r.weekly_xp,
+          sublabel: `${tier.emoji} ${locale === "pt" ? tier.pt : tier.en} · ${r.cefr_level ?? "—"}`,
+        };
+      });
       const national = user.country
         ? await apiFetch<typeof world>(
             `/v1/leaderboard?limit=50&country=${encodeURIComponent(user.country)}`,
@@ -216,7 +249,7 @@ function RewardsPage() {
           sublabel: `${locale === "pt" ? "Nível" : "Level"} ${f.level} · ${f.country ?? "🌍"}`,
         }));
 
-      setRanks({ world: worldRows, national: nationalRows, friends: friendsRows });
+      setRanks({ world: worldRows, national: nationalRows, friends: friendsRows, week: weekRows });
     } catch (e) {
       setError(
         e instanceof Error
