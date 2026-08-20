@@ -123,7 +123,7 @@ export function VideosSidebar() {
             />
             <div className="leading-tight">
               <div className="font-display font-bold text-lg text-[var(--ink)]">Learning</div>
-              <div className="text-2xs font-medium text-gray-400 uppercase tracking-wider">
+              <div className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">
                 Coach
               </div>
             </div>
@@ -141,7 +141,7 @@ export function VideosSidebar() {
         {!collapsed ? (
           <button
             onClick={() => setCollapsed(true)}
-            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-black hover:bg-gray-50 rounded-lg transition-all"
+            className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-black hover:bg-gray-50 rounded-lg transition-all"
             title="Recolher Menu"
             aria-label="Recolher Menu"
           >
@@ -150,7 +150,7 @@ export function VideosSidebar() {
         ) : (
           <button
             onClick={() => setCollapsed(false)}
-            className="absolute -right-3 top-6 w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-full text-gray-400 hover:text-black hover:bg-gray-50 shadow-sm transition-all z-30"
+            className="absolute -right-3 top-6 w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-full text-muted-foreground hover:text-black hover:bg-gray-50 shadow-sm transition-all z-30"
             title="Expandir menu"
             aria-label="Expandir menu"
           >
@@ -164,7 +164,7 @@ export function VideosSidebar() {
         {NAV_SECTIONS.map((section) => (
           <div key={section.label.en} className="space-y-1">
             {!collapsed && (
-              <p className="px-4 text-2xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">
+              <p className="px-4 text-2xs font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3">
                 {locale === "pt" ? section.label.pt : section.label.en}
               </p>
             )}
@@ -177,7 +177,7 @@ export function VideosSidebar() {
                   className={`nav-item flex items-center gap-3 px-4 py-3 rounded-2xl font-medium group transition-all ${
                     isActive
                       ? "bg-[var(--violet)]/5 text-[var(--violet)] font-bold"
-                      : "text-gray-500 hover:bg-gray-50 hover:text-black"
+                      : "text-muted-foreground hover:bg-gray-50 hover:text-black"
                   } ${collapsed ? "justify-center px-3" : ""}`}
                   title={collapsed ? (locale === "pt" ? item.label.pt : item.label.en) : undefined}
                 >
@@ -213,7 +213,7 @@ export function VideosSidebar() {
                   setProfileOpen(false);
                   navigate({ to: "/profile" });
                 }}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-muted-foreground transition-colors w-full text-left"
               >
                 <User className="w-4 h-4 text-[var(--violet)]" />
                 {locale === "pt" ? "Ver perfil" : "View profile"}
@@ -223,9 +223,9 @@ export function VideosSidebar() {
                   setProfileOpen(false);
                   navigate({ to: "/settings" });
                 }}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-muted-foreground transition-colors w-full text-left"
               >
-                <Settings className="w-4 h-4 text-gray-400" />
+                <Settings className="w-4 h-4 text-muted-foreground" />
                 {locale === "pt" ? "Definições" : "Settings"}
               </button>
               <div className="mx-3 my-1 h-px bg-gray-50" />
@@ -261,12 +261,14 @@ export function VideosSidebar() {
                 <p className="text-sm font-bold truncate text-[var(--ink)]">
                   {user?.email?.split("@")[0] || "Utilizador"}
                 </p>
-                <p className="text-2xs text-gray-400 font-medium truncate">Premium Member</p>
+                <p className="text-2xs text-muted-foreground font-medium truncate">
+                  Premium Member
+                </p>
               </div>
               {profileOpen ? (
-                <ChevronUp className="w-4 h-4 text-gray-400" />
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
               )}
             </>
           )}
@@ -323,7 +325,7 @@ export function VideosMobileNav() {
           ref={moreRef}
           className="md:hidden fixed bottom-20 right-4 left-4 z-50 bg-white border border-gray-100 rounded-2xl shadow-2xl py-3 dropdown-enter max-h-[60vh] overflow-y-auto"
         >
-          <div className="px-4 pb-2 text-2xs font-bold text-gray-400 uppercase tracking-[0.2em]">
+          <div className="px-4 pb-2 text-2xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
             {locale === "pt" ? "Mais opções" : "More options"}
           </div>
           {MOBILE_MORE_ITEMS.map((item) => (
@@ -334,7 +336,7 @@ export function VideosMobileNav() {
               className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${
                 isActive(item.to)
                   ? "text-[var(--violet)] bg-[var(--violet)]/5"
-                  : "text-gray-600 hover:bg-gray-50"
+                  : "text-muted-foreground hover:bg-gray-50"
               }`}
             >
               <item.Icon className="w-5 h-5" />
@@ -352,7 +354,7 @@ export function VideosMobileNav() {
               key={item.to}
               to={item.to}
               className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors ${
-                isActive(item.to) ? "text-[var(--violet)]" : "text-gray-400"
+                isActive(item.to) ? "text-[var(--violet)]" : "text-muted-foreground"
               }`}
             >
               <item.Icon className="w-5 h-5" />
@@ -365,7 +367,7 @@ export function VideosMobileNav() {
           <button
             onClick={() => setMoreOpen(!moreOpen)}
             className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors ${
-              moreOpen ? "text-[var(--violet)]" : "text-gray-400"
+              moreOpen ? "text-[var(--violet)]" : "text-muted-foreground"
             }`}
           >
             <Grid3X3 className="w-5 h-5" />

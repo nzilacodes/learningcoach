@@ -76,7 +76,7 @@ export function TeensDashboard(data: DashboardData) {
               <ProfileHeader />
 
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm font-medium text-muted-foreground">
                   {locale === "pt" ? "E aí," : "Hey,"}
                 </p>
                 <h2 className="font-display text-2xl font-bold text-[var(--ink)]">
@@ -192,7 +192,7 @@ export function TeensDashboard(data: DashboardData) {
                           </>
                         )}
                       </div>
-                      <p className="text-2xs font-bold text-gray-500 px-2 pt-1.5">
+                      <p className="text-2xs font-bold text-muted-foreground px-2 pt-1.5">
                         {locale === "pt" ? "UNIDADE" : "UNIT"} {u.index}
                       </p>
                       <p className="text-xs font-bold text-[var(--ink)] px-2 pb-2 truncate">
@@ -216,7 +216,7 @@ export function TeensDashboard(data: DashboardData) {
                     <p className="font-display font-bold text-[var(--ink)]">
                       {locale === "pt" ? "Sala de conversa" : "Chat room"}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       {locale === "pt"
                         ? "Pratique com outros adolescentes"
                         : "Practice with other teens"}
@@ -246,7 +246,7 @@ export function TeensDashboard(data: DashboardData) {
                     style={{ width: `${week.pct * 100}%` }}
                   />
                 </div>
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-muted-foreground">
                   {completedLessonCount}{" "}
                   {locale === "pt" ? "lições concluídas" : "lessons completed"} · {week.label}{" "}
                   {locale === "pt" ? "esta semana" : "this week"}
@@ -268,7 +268,7 @@ export function TeensDashboard(data: DashboardData) {
                     style={{ width: `${todayXpPct * 100}%` }}
                   />
                 </div>
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-muted-foreground">
                   {todayXp >= DAILY_XP_GOAL
                     ? locale === "pt"
                       ? "Meta de hoje atingida! 🎉"
@@ -286,12 +286,12 @@ export function TeensDashboard(data: DashboardData) {
               {/* Read-only subscription status — teens don't manage billing */}
               <div className="rounded-3xl border border-gray-100/80 bg-white/70 backdrop-blur-md p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-1">
-                  <Users className="w-4 h-4 text-gray-400" />
+                  <Users className="w-4 h-4 text-muted-foreground" />
                   <h4 className="text-sm font-bold text-[var(--ink)]">
                     {locale === "pt" ? "Seu acesso" : "Your access"}
                   </h4>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   {subscription.sub?.status === "active"
                     ? locale === "pt"
                       ? "Acesso ativo pela sua conta responsável."

@@ -339,7 +339,7 @@ function ReadingPage() {
                 <Mic className="w-5 h-5 text-[var(--primary)]" />
                 <h2 className="font-display text-lg font-bold text-[var(--ink)]">Pronúncia</h2>
               </div>
-              <p className="text-gray-500 mb-6 text-sm md:text-base">
+              <p className="text-muted-foreground mb-6 text-sm md:text-base">
                 {locale === "pt"
                   ? "Repita a frase abaixo para praticar sua fluência:"
                   : "Repeat the sentence below to practice your fluency:"}
@@ -348,7 +348,7 @@ function ReadingPage() {
                 <p className="text-lg md:text-xl font-bold text-[var(--ink)] leading-relaxed mb-2">
                   "O aprendizado contínuo é a chave para o domínio de qualquer idioma."
                 </p>
-                <p className="text-xs md:text-sm text-gray-400 italic">
+                <p className="text-xs md:text-sm text-muted-foreground italic">
                   "Continuous learning is the key to mastering any language."
                 </p>
               </div>
@@ -388,7 +388,7 @@ function ReadingPage() {
                       key={m.label}
                       className="rounded-xl border border-gray-100 bg-gray-50 p-3 text-center"
                     >
-                      <div className="text-2xs md:text-xs text-gray-400">{m.label}</div>
+                      <div className="text-2xs md:text-xs text-muted-foreground">{m.label}</div>
                       <div className="mt-1 font-display text-xl md:text-2xl font-bold text-[var(--ink)]">
                         {Math.round(m.v)}
                       </div>
@@ -397,8 +397,8 @@ function ReadingPage() {
                 </div>
               )}
               {report && transcript && (
-                <div className="mt-4 rounded-xl border border-gray-100 bg-gray-50 p-3 text-sm text-gray-600">
-                  <span className="font-semibold text-gray-400">Ouvimos: </span>
+                <div className="mt-4 rounded-xl border border-gray-100 bg-gray-50 p-3 text-sm text-muted-foreground">
+                  <span className="font-semibold text-muted-foreground">Ouvimos: </span>
                   {transcript}
                 </div>
               )}
@@ -421,7 +421,7 @@ function ReadingPage() {
                           className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${
                             idx === i
                               ? "bg-[var(--primary)] text-white"
-                              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                              : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                           }`}
                         >
                           {p.level}
@@ -433,7 +433,7 @@ function ReadingPage() {
                     <h3 className="font-display text-xl font-bold mb-4 text-[var(--ink)]">
                       {passage.title.pt}
                     </h3>
-                    <div className="space-y-4 text-gray-600 text-sm md:text-base leading-relaxed">
+                    <div className="space-y-4 text-muted-foreground text-sm md:text-base leading-relaxed">
                       <p>{highlightVocab(passage.text, vocabWords)}</p>
                     </div>
                     <button
@@ -465,7 +465,7 @@ function ReadingPage() {
                           Palavra
                         </span>
                         <h4 className="font-bold text-base md:text-lg mb-0.5 md:mb-1">{v.word}</h4>
-                        <p className="text-xs md:text-sm text-gray-500">{v.pt}</p>
+                        <p className="text-xs md:text-sm text-muted-foreground">{v.pt}</p>
                         <button
                           onClick={() => speak(v.word, { accent: "uk" }).catch(() => {})}
                           className="mt-2 text-[var(--primary)]"
@@ -498,7 +498,9 @@ function ReadingPage() {
                     </h2>
                   </div>
                   <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-100">
-                    <p className="text-xs text-gray-400 mb-4">Teste seu entendimento do texto</p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Teste seu entendimento do texto
+                    </p>
 
                     <div className="space-y-6">
                       {passage.quiz.map((q, qi) => (
@@ -564,7 +566,7 @@ function ReadingPage() {
                       disabled={Object.keys(quizAnswers).length < passage.quiz.length}
                       className={`w-full mt-5 py-3 rounded-xl text-sm font-semibold transition-all ${
                         Object.keys(quizAnswers).length < passage.quiz.length
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          ? "bg-gray-100 text-muted-foreground cursor-not-allowed"
                           : "bg-[var(--primary)] text-white hover:opacity-90"
                       }`}
                     >

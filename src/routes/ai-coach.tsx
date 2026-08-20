@@ -288,7 +288,7 @@ function AICoachPage() {
             ) : (
               <div className="w-full max-w-[800px] flex-1 space-y-5 mb-8">
                 {transcriptLoading ? (
-                  <div className="flex items-center justify-center gap-2 py-12 text-gray-400">
+                  <div className="flex items-center justify-center gap-2 py-12 text-muted-foreground">
                     <Loader2 className="w-5 h-5 animate-spin" />
                     <span className="text-sm">
                       {locale === "pt" ? "Carregando conversa…" : "Loading conversation…"}
@@ -335,7 +335,7 @@ function AICoachPage() {
                 )}
                 {sending && (
                   <div className="flex justify-start">
-                    <div className="rounded-2xl px-4 py-2.5 bg-gray-50 border border-gray-100 flex items-center gap-2 text-gray-400">
+                    <div className="rounded-2xl px-4 py-2.5 bg-gray-50 border border-gray-100 flex items-center gap-2 text-muted-foreground">
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       <span className="text-xs">Coach</span>
                     </div>
@@ -375,12 +375,12 @@ function AICoachPage() {
                     }
                     disabled={transcribing}
                     rows={1}
-                    className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm text-[var(--ink)] placeholder:text-gray-400 max-h-40 outline-none"
+                    className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm text-[var(--ink)] placeholder:text-muted-foreground max-h-40 outline-none"
                   />
                   <button
                     onClick={send}
                     disabled={sending || !input.trim()}
-                    className="ml-2 p-2 text-gray-400 hover:text-[var(--primary)] transition-colors shrink-0 disabled:opacity-40"
+                    className="ml-2 p-2 text-muted-foreground hover:text-[var(--primary)] transition-colors shrink-0 disabled:opacity-40"
                   >
                     {sending ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -397,7 +397,7 @@ function AICoachPage() {
                       className={`flex items-center gap-1.5 px-3 py-1 rounded-full border transition-colors disabled:opacity-50 ${
                         recorder
                           ? "bg-red-50 border-red-200 text-red-600"
-                          : "bg-white border-gray-200/50 hover:bg-gray-50 text-gray-500"
+                          : "bg-white border-gray-200/50 hover:bg-gray-50 text-muted-foreground"
                       }`}
                     >
                       {recorder ? (
@@ -416,12 +416,12 @@ function AICoachPage() {
                       </span>
                     </button>
                   </div>
-                  <div className="text-2xs font-medium text-gray-400">
+                  <div className="text-2xs font-medium text-muted-foreground">
                     {input.length} / {MAX_MESSAGE_LENGTH.toLocaleString()}
                   </div>
                 </div>
               </div>
-              <p className="text-2xs text-center mt-3 text-gray-400">
+              <p className="text-2xs text-center mt-3 text-muted-foreground">
                 {locale === "pt"
                   ? "O Coach pode gerar informações imprecisas."
                   : "Coach may generate inaccurate information."}
@@ -436,7 +436,7 @@ function AICoachPage() {
               <div className="p-6 flex items-center">
                 <button
                   onClick={() => setProjectsSidebarOpen(false)}
-                  className="p-1 hover:bg-gray-50 rounded-md transition-colors text-gray-500 mr-2"
+                  className="p-1 hover:bg-gray-50 rounded-md transition-colors text-muted-foreground mr-2"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -444,7 +444,7 @@ function AICoachPage() {
                   <span className="font-display text-lg font-semibold text-[var(--ink)]">
                     {locale === "pt" ? "Conversas" : "Conversations"}
                   </span>
-                  <span className="text-gray-400 text-sm">({conversations.length})</span>
+                  <span className="text-muted-foreground text-sm">({conversations.length})</span>
                 </div>
               </div>
 
@@ -481,7 +481,7 @@ function AICoachPage() {
                           className={`w-2 h-2 rounded-full shrink-0 mt-1 ${active ? "bg-[var(--primary)]" : "bg-gray-200"}`}
                         />
                       </div>
-                      <p className="text-[12px] text-gray-500">
+                      <p className="text-[12px] text-muted-foreground">
                         {new Date(conversation.updated_at).toLocaleDateString(
                           locale === "pt" ? "pt-PT" : "en-US",
                           {
@@ -497,11 +497,11 @@ function AICoachPage() {
                 })}
                 {conversationsLoading && conversations.length === 0 && (
                   <div className="flex justify-center py-6">
-                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                   </div>
                 )}
                 {!conversationsLoading && conversations.length === 0 && (
-                  <p className="text-center text-xs text-gray-400 py-6">
+                  <p className="text-center text-xs text-muted-foreground py-6">
                     {locale === "pt" ? "Nenhuma conversa ainda." : "No conversations yet."}
                   </p>
                 )}
@@ -513,7 +513,7 @@ function AICoachPage() {
           {!projectsSidebarOpen && (
             <button
               onClick={() => setProjectsSidebarOpen(true)}
-              className="hidden lg:flex items-center justify-center w-10 shrink-0 border-l border-gray-100 hover:bg-gray-50 transition-colors text-gray-500"
+              className="hidden lg:flex items-center justify-center w-10 shrink-0 border-l border-gray-100 hover:bg-gray-50 transition-colors text-muted-foreground"
             >
               <ChevronRight className="w-5 h-5 rotate-180" />
             </button>

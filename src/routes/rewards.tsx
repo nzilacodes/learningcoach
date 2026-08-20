@@ -340,7 +340,7 @@ function RewardsPage() {
         <h2 className="font-display text-xl font-bold text-[var(--ink)]">
           {locale === "pt" ? "Não foi possível carregar as recompensas" : "Couldn't load rewards"}
         </h2>
-        <p className="mt-2 text-sm text-gray-500">{error}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{error}</p>
         <button
           onClick={() => refresh()}
           className="mt-6 inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
@@ -362,7 +362,7 @@ function RewardsPage() {
             ? "Inicia sessão para ver as recompensas"
             : "Sign in to see your rewards"}
         </h2>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-muted-foreground">
           {locale === "pt"
             ? "XP, missões, loja e rankings ficam disponíveis com a tua conta."
             : "XP, missions, shop and rankings unlock with your account."}
@@ -481,7 +481,7 @@ function RewardsPage() {
               className={`shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all ${
                 activeTab === id
                   ? "bg-[var(--primary)] text-white shadow-md"
-                  : "bg-white border border-gray-200 text-gray-500 hover:bg-gray-50"
+                  : "bg-white border border-gray-200 text-muted-foreground hover:bg-gray-50"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -514,7 +514,7 @@ function RewardsPage() {
                     <h2 className="font-display text-lg font-bold text-[var(--ink)]">
                       {locale === "pt" ? "Missões" : "Missions"} {label}
                     </h2>
-                    <span className="text-xs font-semibold text-gray-400">
+                    <span className="text-xs font-semibold text-muted-foreground">
                       {list.filter((m) => m.claimed_at).length}/{list.length}
                     </span>
                   </div>
@@ -542,7 +542,7 @@ function RewardsPage() {
                           <div className="mt-3 font-display text-base font-bold text-[var(--ink)]">
                             {m.title}
                           </div>
-                          <div className="mt-1 text-xs text-gray-500 leading-relaxed">
+                          <div className="mt-1 text-xs text-muted-foreground leading-relaxed">
                             {m.description}
                           </div>
                           <div className="mt-4 h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -553,16 +553,16 @@ function RewardsPage() {
                               style={{ width: `${pct}%` }}
                             />
                           </div>
-                          <div className="mt-1.5 text-2xs text-gray-400 font-medium">
+                          <div className="mt-1.5 text-2xs text-muted-foreground font-medium">
                             {Math.min(progress, m.target)} / {m.target}
                           </div>
                           <button
                             className={`mt-3 w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-opacity ${
                               claimed
-                                ? "bg-gray-50 text-gray-400 border border-gray-100"
+                                ? "bg-gray-50 text-muted-foreground border border-gray-100"
                                 : done
                                   ? "bg-[var(--primary)] text-white hover:opacity-90"
-                                  : "bg-gray-50 text-gray-500 border border-gray-100 cursor-default"
+                                  : "bg-gray-50 text-muted-foreground border border-gray-100 cursor-default"
                             }`}
                             disabled={!done || claimed || claiming === m.id}
                             onClick={() => claim(m.id)}
@@ -594,7 +594,7 @@ function RewardsPage() {
               );
             })}
             {missions.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-12">
+              <p className="text-sm text-muted-foreground text-center py-12">
                 {locale === "pt" ? "Ainda sem missões ativas." : "No active missions yet."}
               </p>
             )}
@@ -631,7 +631,7 @@ function RewardsPage() {
                   className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                     rankScope === id
                       ? "bg-[var(--ink)] text-white"
-                      : "bg-white border border-gray-200 text-gray-500 hover:bg-gray-50"
+                      : "bg-white border border-gray-200 text-muted-foreground hover:bg-gray-50"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -640,7 +640,7 @@ function RewardsPage() {
               ))}
             </div>
             {rankScope === "national" && !profile.country ? (
-              <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-500">
+              <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-muted-foreground">
                 {locale === "pt"
                   ? "Define o teu país no perfil para veres o ranking nacional."
                   : "Set your country in your profile to see the national ranking."}
@@ -674,13 +674,15 @@ function RewardsPage() {
                   <div className="h-24 rounded-xl bg-gradient-to-br from-gray-50 to-[var(--violet)]/5 flex items-center justify-center text-5xl group-hover:scale-105 transition-transform">
                     {it.icon}
                   </div>
-                  <span className="mt-3 inline-block rounded-full bg-gray-50 border border-gray-100 px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wider text-gray-400">
+                  <span className="mt-3 inline-block rounded-full bg-gray-50 border border-gray-100 px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                     {it.category}
                   </span>
                   <div className="mt-2 font-display text-lg font-bold text-[var(--ink)]">
                     {it.name}
                   </div>
-                  <div className="text-xs text-gray-500 leading-relaxed">{it.description}</div>
+                  <div className="text-xs text-muted-foreground leading-relaxed">
+                    {it.description}
+                  </div>
                   <div className="mt-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-1.5 font-bold text-yellow-600">
                       <Coins className="h-4 w-4" />
@@ -689,7 +691,7 @@ function RewardsPage() {
                     {owned ? (
                       <button
                         onClick={() => equip(it.id)}
-                        className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                        className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-gray-50 transition-colors"
                       >
                         {locale === "pt" ? "Equipar" : "Equip"}
                       </button>
@@ -713,7 +715,7 @@ function RewardsPage() {
               );
             })}
             {shop.length === 0 && (
-              <p className="col-span-full text-sm text-gray-500 text-center py-12">
+              <p className="col-span-full text-sm text-muted-foreground text-center py-12">
                 {locale === "pt" ? "Loja vazia por agora." : "Shop is empty for now."}
               </p>
             )}
@@ -740,7 +742,7 @@ function RewardsPage() {
                   ) : null;
                 })}
             </div>
-            <p className="mt-5 text-sm text-gray-500 max-w-sm mx-auto">
+            <p className="mt-5 text-sm text-muted-foreground max-w-sm mx-auto">
               {locale === "pt"
                 ? "Compra acessórios na loja e equipa-os para personalizar o teu avatar."
                 : "Buy accessories in the shop and equip them to customize your avatar."}
@@ -802,7 +804,7 @@ function StatCard({
     <div className="bg-white rounded-2xl border border-gray-100 p-4 md:p-5 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-2xs md:text-xs font-bold uppercase tracking-wider text-gray-400">
+          <p className="text-2xs md:text-xs font-bold uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
           <p className="mt-1 font-display text-2xl md:text-3xl font-bold text-[var(--ink)] truncate">
@@ -821,7 +823,7 @@ function RankList({ rows, me, locale }: { rows: RankRow[]; me: string; locale: s
   return (
     <div className="space-y-2">
       {rows.length === 0 && (
-        <p className="text-sm text-gray-500 text-center py-10">
+        <p className="text-sm text-muted-foreground text-center py-10">
           {locale === "pt" ? "Sem dados ainda." : "No data yet."}
         </p>
       )}
@@ -842,7 +844,7 @@ function RankList({ rows, me, locale }: { rows: RankRow[]; me: string; locale: s
                   ? "bg-gradient-to-br from-slate-300 to-slate-400 text-white"
                   : i === 2
                     ? "bg-gradient-to-br from-amber-600 to-amber-800 text-white"
-                    : "bg-gray-100 text-gray-500"
+                    : "bg-gray-100 text-muted-foreground"
             }`}
           >
             {i + 1}
@@ -859,13 +861,13 @@ function RankList({ rows, me, locale }: { rows: RankRow[]; me: string; locale: s
                 </span>
               )}
             </div>
-            <div className="text-xs text-gray-400">{r.sublabel}</div>
+            <div className="text-xs text-muted-foreground">{r.sublabel}</div>
           </div>
           <div className="text-right shrink-0">
             <div className="font-display text-base md:text-lg font-bold text-[var(--ink)]">
               {r.xp.toLocaleString()}
             </div>
-            <div className="text-2xs uppercase tracking-wider text-gray-400">XP</div>
+            <div className="text-2xs uppercase tracking-wider text-muted-foreground">XP</div>
           </div>
         </div>
       ))}
@@ -905,7 +907,7 @@ function CalendarHeatmap({ events, locale }: { events: XpEvent[]; locale: string
         <div className="font-display text-lg font-bold text-[var(--ink)]">
           {locale === "pt" ? "Últimos 90 dias" : "Last 90 days"}
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-muted-foreground">
           {activeDays} {locale === "pt" ? "dias ativos" : "active days"} · {totalXp} XP
         </div>
       </div>
@@ -918,7 +920,7 @@ function CalendarHeatmap({ events, locale }: { events: XpEvent[]; locale: string
           />
         ))}
       </div>
-      <div className="mt-4 flex items-center gap-2 text-2xs text-gray-400">
+      <div className="mt-4 flex items-center gap-2 text-2xs text-muted-foreground">
         <span>{locale === "pt" ? "Menos" : "Less"}</span>
         <span className="w-3 h-3 rounded-sm bg-gray-100" />
         <span className="w-3 h-3 rounded-sm bg-[var(--violet)]/20" />

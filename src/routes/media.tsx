@@ -158,7 +158,7 @@ function MediaPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="font-display text-2xl font-bold text-[var(--ink)]">Biblioteca</h2>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Gerencie vídeos, áudios, imagens e gravações.
                 </p>
               </div>
@@ -194,7 +194,7 @@ function MediaPage() {
 
             <div className="grid grid-cols-3 gap-4 rounded-2xl border border-gray-100 p-5 md:p-6">
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                   Armazenamento
                 </p>
                 <p className="font-display text-xl font-bold text-[var(--ink)]">
@@ -202,17 +202,21 @@ function MediaPage() {
                 </p>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Vídeos</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  Vídeos
+                </p>
                 <p className="font-display text-xl font-bold text-[var(--ink)]">{videoCount}</p>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Áudios</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  Áudios
+                </p>
                 <p className="font-display text-xl font-bold text-[var(--ink)]">{audioCount}</p>
               </div>
             </div>
 
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Pesquisar mídia…"
                 value={search}
@@ -230,7 +234,7 @@ function MediaPage() {
                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                       typeFilter === f.key
                         ? "bg-[var(--primary)] text-white shadow-md"
-                        : "bg-white border border-gray-200 text-gray-500"
+                        : "bg-white border border-gray-200 text-muted-foreground"
                     }`}
                   >
                     {f.label}
@@ -242,7 +246,7 @@ function MediaPage() {
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                   trashed
                     ? "bg-[var(--ink)] text-white"
-                    : "bg-white border border-gray-200 text-gray-500"
+                    : "bg-white border border-gray-200 text-muted-foreground"
                 }`}
               >
                 <Trash2 className="w-4 h-4" /> Lixeira
@@ -252,10 +256,10 @@ function MediaPage() {
             <div className="rounded-2xl border border-gray-100 overflow-hidden">
               {isLoading ? (
                 <div className="flex items-center justify-center py-16">
-                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                 </div>
               ) : items.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-2 py-16 text-gray-400">
+                <div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground">
                   <FolderOpen className="w-8 h-8" />
                   <p className="text-sm">
                     {trashed
@@ -294,16 +298,16 @@ function MediaPage() {
                               ) : item.status === "failed" ? (
                                 <XCircle className="w-4 h-4 text-red-400" />
                               ) : item.media_type === "video" ? (
-                                <Play className="w-4 h-4 text-gray-400" />
+                                <Play className="w-4 h-4 text-muted-foreground" />
                               ) : (
-                                <Icon className="w-4 h-4 text-gray-400" />
+                                <Icon className="w-4 h-4 text-muted-foreground" />
                               )}
                             </div>
                           </TableCell>
                           <TableCell className="font-medium text-[var(--ink)]">
                             {item.title || item.original_filename}
                           </TableCell>
-                          <TableCell className="text-gray-500 capitalize">
+                          <TableCell className="text-muted-foreground capitalize">
                             {item.media_type}
                           </TableCell>
                           <TableCell>
@@ -319,7 +323,7 @@ function MediaPage() {
                               {STATUS_LABEL[item.status]}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right text-gray-500">
+                          <TableCell className="text-right text-muted-foreground">
                             {formatBytes(item.size_bytes)}
                           </TableCell>
                         </TableRow>

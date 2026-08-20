@@ -478,7 +478,7 @@ export function ReminderCard({
           {r.enabled ? (
             <Bell className="w-4 h-4 text-[var(--violet)]" />
           ) : (
-            <BellOff className="w-4 h-4 text-gray-400" />
+            <BellOff className="w-4 h-4 text-muted-foreground" />
           )}
           {locale === "pt" ? "Lembrete de estudo" : "Study reminder"}
         </h3>
@@ -512,7 +512,7 @@ export function ReminderCard({
             }
             reminder.save.mutate({ interval_minutes: r.interval_minutes, enabled: turningOn });
           }}
-          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${r.enabled ? "bg-[var(--violet)] text-white" : "border border-gray-200 text-gray-500"}`}
+          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${r.enabled ? "bg-[var(--violet)] text-white" : "border border-gray-200 text-muted-foreground"}`}
         >
           {r.enabled ? (locale === "pt" ? "Ativo" : "On") : locale === "pt" ? "Desativado" : "Off"}
         </button>
@@ -525,14 +525,14 @@ export function ReminderCard({
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${
               r.interval_minutes === m
                 ? "bg-[var(--violet)] text-white"
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
             }`}
           >
             {m < 60 ? `${m}m` : `1h`}
           </button>
         ))}
       </div>
-      <p className="mt-3 text-xs text-gray-400">
+      <p className="mt-3 text-xs text-muted-foreground">
         {locale === "pt"
           ? `Notificação a cada ${r.interval_minutes} min`
           : `Notify every ${r.interval_minutes} min`}

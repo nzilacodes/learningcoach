@@ -120,7 +120,7 @@ function MultipleChoiceGame({
 
   return (
     <div className="space-y-5">
-      <div className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         {locale === "pt"
           ? `Pergunta ${step + 1} de ${rounds.length}`
           : `Question ${step + 1} of ${rounds.length}`}
@@ -166,7 +166,7 @@ function MultipleChoiceGame({
               : "Finish"}
         </Button>
       )}
-      <div className="text-center text-xs text-gray-400">
+      <div className="text-center text-xs text-muted-foreground">
         {locale === "pt" ? "Acertos" : "Correct"}: {score}/{rounds.length}
       </div>
     </div>
@@ -241,7 +241,7 @@ function ListeningGame({
 
   return (
     <div className="space-y-5">
-      <div className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         {locale === "pt"
           ? `Pergunta ${step + 1} de ${rounds.length}`
           : `Question ${step + 1} of ${rounds.length}`}
@@ -290,7 +290,7 @@ function ListeningGame({
               : "Finish"}
         </Button>
       )}
-      <div className="text-center text-xs text-gray-400">
+      <div className="text-center text-xs text-muted-foreground">
         {locale === "pt" ? "Acertos" : "Correct"}: {score}/{rounds.length}
       </div>
     </div>
@@ -369,11 +369,11 @@ function SpeakingGame({
 
   return (
     <div className="space-y-5 text-center">
-      <div className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         {locale === "pt" ? "Repita esta frase" : "Repeat this sentence"}
       </div>
       <div className="font-display text-xl font-bold">"{target.en}"</div>
-      <div className="text-sm text-gray-400">{target.pt}</div>
+      <div className="text-sm text-muted-foreground">{target.pt}</div>
       <button
         onClick={handleMic}
         disabled={processing}
@@ -383,7 +383,7 @@ function SpeakingGame({
       >
         {processing ? <Loader2 className="h-8 w-8 animate-spin" /> : <Mic className="h-8 w-8" />}
       </button>
-      <div className="text-xs text-gray-400">
+      <div className="text-xs text-muted-foreground">
         {processing
           ? locale === "pt"
             ? "Analisando..."
@@ -400,9 +400,9 @@ function SpeakingGame({
         <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-left">
           <div className="text-sm">
             <span className="font-semibold">{locale === "pt" ? "Você disse: " : "You said: "}</span>
-            <span className="text-gray-500">"{transcript}"</span>
+            <span className="text-muted-foreground">"{transcript}"</span>
           </div>
-          <div className="mt-2 text-sm text-gray-500">{feedbackFor(score, locale)}</div>
+          <div className="mt-2 text-sm text-muted-foreground">{feedbackFor(score, locale)}</div>
         </div>
       )}
       {score !== null && (
@@ -446,7 +446,7 @@ function WritingGame({
 
   return (
     <div className="space-y-4">
-      <div className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         {locale === "pt" ? "Prática de escrita" : "Writing practice"}
       </div>
       <p className="text-sm">
@@ -460,7 +460,7 @@ function WritingGame({
         rows={5}
         placeholder={locale === "pt" ? "Escreva aqui..." : "Write here..."}
       />
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-muted-foreground">
         {text.trim().length}/20 {locale === "pt" ? "caracteres mínimos" : "characters minimum"}
       </p>
       <Button onClick={finish} disabled={!ready || finishing} className="w-full">

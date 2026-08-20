@@ -143,7 +143,7 @@ export function MediaDetailSheet({
 
         {isLoading || !asset ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
           </div>
         ) : (
           <div className="mt-4 space-y-5">
@@ -168,13 +168,13 @@ export function MediaDetailSheet({
                   href={mediaStreamUrl(asset.id)}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex flex-col items-center gap-2 py-8 text-gray-500 text-sm"
+                  className="flex flex-col items-center gap-2 py-8 text-muted-foreground text-sm"
                 >
                   <FileText className="w-8 h-8" /> Abrir documento
                 </a>
               )}
               {asset.status !== "ready" && asset.media_type !== "document" && (
-                <div className="flex flex-col items-center gap-2 py-8 text-gray-400 text-sm">
+                <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground text-sm">
                   {asset.status === "failed" ? (
                     <XCircle className="w-6 h-6 text-red-400" />
                   ) : (
@@ -187,7 +187,7 @@ export function MediaDetailSheet({
               )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <Badge variant={asset.status === "failed" ? "destructive" : "secondary"}>
                 {STATUS_LABEL[asset.status]}
               </Badge>
@@ -202,7 +202,7 @@ export function MediaDetailSheet({
 
             {trashed ? (
               <div className="space-y-3">
-                <p className="text-sm text-gray-500">Este item está na lixeira.</p>
+                <p className="text-sm text-muted-foreground">Este item está na lixeira.</p>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -290,7 +290,7 @@ export function MediaDetailSheet({
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1 block">
+                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1 block">
                     Quem pode visualizar?
                   </label>
                   <div className="flex gap-2">
@@ -302,7 +302,7 @@ export function MediaDetailSheet({
                         className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                           visibility === v
                             ? "bg-[var(--primary)] text-white"
-                            : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                         }`}
                       >
                         {v === "private" ? "Apenas eu" : v === "class" ? "Turma" : "Todos"}

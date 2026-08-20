@@ -300,7 +300,7 @@ function CurriculumPage() {
                         {activeCourse?.title ??
                           `${locale === "pt" ? "Nível" : "Level"} ${activeLevel}`}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         {locale === "pt" ? levelMeta.label.pt : levelMeta.label.en}
                         {activeUnits.length > 0 &&
                           ` · ${activeUnits.length} ${locale === "pt" ? "unidades" : "units"}`}
@@ -310,14 +310,14 @@ function CurriculumPage() {
                     </div>
                   </div>
                   {activeCourse?.description && (
-                    <p className="mt-3 text-sm text-gray-600 max-w-2xl">
+                    <p className="mt-3 text-sm text-muted-foreground max-w-2xl">
                       {activeCourse.description}
                     </p>
                   )}
                 </div>
                 {user && !activeLevelLocked && totalLessonsInLevel > 0 && (
                   <div className="sm:w-48 shrink-0">
-                    <div className="flex justify-between text-2xs font-semibold text-gray-500 mb-1.5">
+                    <div className="flex justify-between text-2xs font-semibold text-muted-foreground mb-1.5">
                       <span>{locale === "pt" ? "Progresso" : "Progress"}</span>
                       <span>{levelPct}%</span>
                     </div>
@@ -348,7 +348,7 @@ function CurriculumPage() {
                         ? `Parabéns! Concluiu todas as lições de ${activeLevel}.`
                         : `Congrats! You finished all ${activeLevel} lessons.`}
                     </div>
-                    <div className="text-sm text-gray-500 mt-1">
+                    <div className="text-sm text-muted-foreground mt-1">
                       {locale === "pt"
                         ? `Faça o exame final para desbloquear o próximo nível. Nota mínima: ${minScore}%.`
                         : `Take the final exam to unlock the next level. Minimum score: ${minScore}%.`}
@@ -380,7 +380,7 @@ function CurriculumPage() {
                     <div className="font-display font-bold text-[var(--ink)] mt-0.5">
                       {nextLesson.lesson.title}
                     </div>
-                    <div className="text-sm text-gray-500 mt-1">
+                    <div className="text-sm text-muted-foreground mt-1">
                       {nextLesson.unit.title} ·{" "}
                       {LESSON_TYPE_LABEL[nextLesson.lesson.lesson_type] ??
                         nextLesson.lesson.lesson_type}
@@ -405,7 +405,7 @@ function CurriculumPage() {
             {user && activeLevelLocked && (
               <div className="rounded-2xl border border-gray-100 bg-white p-5 md:p-6 flex items-start gap-3">
                 <div className="rounded-xl bg-gray-50 p-3 shrink-0">
-                  <Lock className="w-5 h-5 text-gray-400" />
+                  <Lock className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <div>
                   <div className="font-display font-bold text-[var(--ink)]">
@@ -413,14 +413,14 @@ function CurriculumPage() {
                       ? `Nível ${activeLevel} bloqueado`
                       : `Level ${activeLevel} locked`}
                   </div>
-                  <p className="text-sm text-gray-500 mt-1 mb-3">
+                  <p className="text-sm text-muted-foreground mt-1 mb-3">
                     {locale === "pt"
                       ? `Para desbloquear ${activeLevel}, conclua o nível atual${unlocked ? ` (${unlocked})` : ""} e passe no exame final.`
                       : `To unlock ${activeLevel}, finish your current level${unlocked ? ` (${unlocked})` : ""} and pass the final exam.`}
                   </p>
                   <Link
                     to="/cefr-levels"
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-gray-50 transition-colors"
                   >
                     {locale === "pt" ? "Ver progresso de níveis" : "View level progress"}
                   </Link>
@@ -437,7 +437,7 @@ function CurriculumPage() {
                       ? "Entre para desbloquear o seu currículo"
                       : "Sign in to unlock your curriculum"}
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     {locale === "pt"
                       ? "Faça o teste de nivelamento e comece pela lição certa."
                       : "Take the placement test and start at the right lesson."}
@@ -446,7 +446,7 @@ function CurriculumPage() {
                 <div className="flex flex-wrap gap-2">
                   <Link
                     to="/auth"
-                    className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-gray-50 transition-colors"
                   >
                     {locale === "pt" ? "Entrar" : "Sign in"}
                   </Link>
@@ -462,7 +462,7 @@ function CurriculumPage() {
 
             {/* Units list */}
             {isLoading ? (
-              <div className="flex items-center justify-center gap-2 py-16 text-gray-400">
+              <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
                 <Loader2 className="w-5 h-5 animate-spin" />
                 <span className="text-sm">
                   {locale === "pt" ? "Carregando currículo…" : "Loading curriculum…"}
@@ -470,7 +470,7 @@ function CurriculumPage() {
               </div>
             ) : isError ? (
               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 py-16 text-center">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {locale === "pt"
                     ? "Não foi possível carregar o currículo."
                     : "Couldn't load the curriculum."}
@@ -485,7 +485,7 @@ function CurriculumPage() {
             ) : activeUnits.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 py-16 text-center">
                 <BookOpen className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {locale === "pt"
                     ? "Sem unidades publicadas neste nível ainda."
                     : "No units published for this level yet."}
@@ -493,7 +493,7 @@ function CurriculumPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 px-1">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">
                   {locale === "pt" ? "Unidades" : "Units"}
                 </h3>
                 {activeUnits.map((u, idx) => {
@@ -532,10 +532,14 @@ function CurriculumPage() {
                             <span className="font-semibold text-[var(--ink)] truncate">
                               {u.title}
                             </span>
-                            {locked && <Lock className="w-3.5 h-3.5 text-gray-400 shrink-0" />}
+                            {locked && (
+                              <Lock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                            )}
                           </div>
                           {u.theme && (
-                            <div className="text-xs text-gray-400 truncate mt-0.5">{u.theme}</div>
+                            <div className="text-xs text-muted-foreground truncate mt-0.5">
+                              {u.theme}
+                            </div>
                           )}
                           <div className="mt-2 flex items-center gap-3">
                             <div className="h-1.5 flex-1 max-w-[200px] bg-gray-100 rounded-full overflow-hidden">
@@ -546,22 +550,22 @@ function CurriculumPage() {
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
-                            <span className="text-xs text-gray-400 font-medium shrink-0">
+                            <span className="text-xs text-muted-foreground font-medium shrink-0">
                               {done}/{total} {locale === "pt" ? "lições" : "lessons"}
                             </span>
                           </div>
                         </div>
                         {open ? (
-                          <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />
+                          <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />
                         ) : (
-                          <ChevronRight className="w-5 h-5 text-gray-400 shrink-0" />
+                          <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
                         )}
                       </button>
 
                       {open && (
                         <div className="border-t border-gray-50 bg-gray-50/40">
                           {lessons.length === 0 ? (
-                            <div className="px-5 py-4 text-sm text-gray-500">
+                            <div className="px-5 py-4 text-sm text-muted-foreground">
                               {locale === "pt"
                                 ? "Nenhuma lição publicada."
                                 : "No lessons published."}
@@ -591,12 +595,12 @@ function CurriculumPage() {
                                       }`}
                                     >
                                       {locked ? (
-                                        <Lock className="w-4 h-4 text-gray-400" />
+                                        <Lock className="w-4 h-4 text-muted-foreground" />
                                       ) : isDone ? (
                                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                                       ) : (
                                         <BookOpen
-                                          className={`w-4 h-4 ${isNext ? "text-[var(--violet)]" : "text-gray-400"}`}
+                                          className={`w-4 h-4 ${isNext ? "text-[var(--violet)]" : "text-muted-foreground"}`}
                                         />
                                       )}
                                     </div>
@@ -609,14 +613,14 @@ function CurriculumPage() {
                                           </span>
                                         )}
                                       </div>
-                                      <div className="text-xs text-gray-400 mt-0.5">
+                                      <div className="text-xs text-muted-foreground mt-0.5">
                                         {LESSON_TYPE_LABEL[l.lesson_type] ?? l.lesson_type}
                                         {l.duration_min ? ` · ${l.duration_min} min` : ""}
                                         {l.xp_reward ? ` · +${l.xp_reward} XP` : ""}
                                       </div>
                                     </div>
                                     {locked ? (
-                                      <span className="text-xs text-gray-400 font-medium shrink-0">
+                                      <span className="text-xs text-muted-foreground font-medium shrink-0">
                                         {locale === "pt" ? "Bloqueado" : "Locked"}
                                       </span>
                                     ) : (
@@ -627,7 +631,7 @@ function CurriculumPage() {
                                           isNext
                                             ? "bg-[var(--primary)] text-white hover:opacity-90"
                                             : isDone
-                                              ? "border border-gray-200 text-gray-600 hover:bg-white"
+                                              ? "border border-gray-200 text-muted-foreground hover:bg-white"
                                               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                                         }`}
                                       >

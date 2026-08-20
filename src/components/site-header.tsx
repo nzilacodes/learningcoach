@@ -99,7 +99,7 @@ export function SiteHeader() {
               </div>
               <div className="hidden leading-tight sm:block">
                 <div className="text-sm font-bold text-slate-800">Learning English</div>
-                <div className="text-2xs font-medium tracking-wider text-slate-400 uppercase">
+                <div className="text-2xs font-medium tracking-wider text-muted-foreground uppercase">
                   with Coach
                 </div>
               </div>
@@ -123,7 +123,7 @@ export function SiteHeader() {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className="group relative rounded-lg px-4 py-2 text-sm font-medium text-slate-500 transition-colors duration-300 hover:text-slate-900"
+                    className="group relative rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-300 hover:text-slate-900"
                   >
                     {link.label}
                     <span className="absolute bottom-0.5 left-1/2 h-0.5 w-0 rounded-full bg-marketing-teal transition-all duration-300 group-hover:left-4 group-hover:w-[calc(100%-2rem)]" />
@@ -135,7 +135,7 @@ export function SiteHeader() {
                   but backed by Radix for real focus/keyboard/Escape handling. */}
               <div onMouseEnter={() => setMoreOpen(true)} onMouseLeave={() => setMoreOpen(false)}>
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
-                  <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 outline-none transition-colors duration-300 hover:text-slate-600 focus-visible:text-slate-600">
+                  <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground outline-none transition-colors duration-300 hover:text-foreground focus-visible:text-foreground">
                     {locale === "pt" ? "Mais" : "More"}
                     <ChevronDown
                       className={`h-3.5 w-3.5 transition-transform duration-300 ${moreOpen ? "rotate-180" : ""}`}
@@ -150,7 +150,7 @@ export function SiteHeader() {
                       <DropdownMenuItem
                         key={link.to}
                         asChild
-                        className="rounded-xl px-4 py-2.5 text-sm text-slate-500 focus:bg-slate-50 focus:text-slate-900"
+                        className="rounded-xl px-4 py-2.5 text-sm text-muted-foreground focus:bg-slate-50 focus:text-slate-900"
                       >
                         <Link to={link.to}>{link.label}</Link>
                       </DropdownMenuItem>
@@ -165,7 +165,7 @@ export function SiteHeader() {
               {/* Language Toggle — icon only */}
               <button
                 onClick={() => setLocale(locale === "pt" ? "en" : "pt")}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-all duration-300 hover:border-marketing-teal/30 hover:bg-marketing-teal/5 hover:text-marketing-teal"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-muted-foreground transition-all duration-300 hover:border-marketing-teal/30 hover:bg-marketing-teal/5 hover:text-marketing-teal"
                 aria-label="Toggle language"
               >
                 <Languages className="h-4 w-4" />
@@ -176,7 +176,7 @@ export function SiteHeader() {
                 <div className="hidden items-center gap-2 lg:flex">
                   <Link
                     to={isAdmin ? "/admin" : "/dashboard"}
-                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-all duration-300 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
                   >
                     <UserIcon className="h-4 w-4" />
                     {isAdmin ? "Admin" : locale === "pt" ? "Painel" : "Dashboard"}
@@ -204,7 +204,7 @@ export function SiteHeader() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-all duration-300 hover:border-marketing-teal/30 hover:bg-marketing-teal/5 hover:text-marketing-teal lg:hidden"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-muted-foreground transition-all duration-300 hover:border-marketing-teal/30 hover:bg-marketing-teal/5 hover:text-marketing-teal lg:hidden"
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
               >
                 <div className="relative h-5 w-5">
@@ -244,13 +244,15 @@ export function SiteHeader() {
                 <img src={coachLogo} alt="LEWC" className="h-9 w-9 rounded-xl object-contain" />
                 <div>
                   <div className="text-sm font-bold text-slate-800">Learning English</div>
-                  <div className="text-2xs text-slate-400 uppercase tracking-wider">with Coach</div>
+                  <div className="text-2xs text-muted-foreground uppercase tracking-wider">
+                    with Coach
+                  </div>
                 </div>
               </div>
               <button
                 onClick={closeMenu}
                 aria-label="Close menu"
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-muted-foreground transition-colors hover:bg-slate-200 hover:text-slate-700"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -266,7 +268,7 @@ export function SiteHeader() {
                   className={`flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium transition-all duration-300 ${
                     link.cta
                       ? "bg-gradient-to-r from-marketing-teal to-marketing-teal-dark text-white shadow-lg shadow-marketing-teal/20"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      : "text-muted-foreground hover:bg-slate-50 hover:text-slate-900"
                   }`}
                   style={{ transitionDelay: `${i * 50}ms` }}
                 >
@@ -289,7 +291,7 @@ export function SiteHeader() {
                   key={link.to}
                   to={link.to}
                   onClick={closeMenu}
-                  className="block rounded-xl px-4 py-2.5 text-sm text-slate-400 transition-all duration-200 hover:bg-slate-50 hover:text-slate-700"
+                  className="block rounded-xl px-4 py-2.5 text-sm text-muted-foreground transition-all duration-200 hover:bg-slate-50 hover:text-slate-700"
                   style={{ transitionDelay: `${(i + navLinks.length) * 40}ms` }}
                 >
                   {link.label}
@@ -304,7 +306,7 @@ export function SiteHeader() {
                   <Link
                     to={isAdmin ? "/admin" : "/dashboard"}
                     onClick={closeMenu}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-muted-foreground transition-all hover:bg-slate-50 hover:text-slate-900"
                   >
                     <UserIcon className="h-4 w-4" />
                     {isAdmin ? "Admin" : locale === "pt" ? "Painel" : "Dashboard"}
@@ -323,7 +325,7 @@ export function SiteHeader() {
                   <Link
                     to="/auth"
                     onClick={closeMenu}
-                    className="flex w-full items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-700"
+                    className="flex w-full items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-muted-foreground transition-all hover:bg-slate-50 hover:text-slate-700"
                   >
                     {t("nav.signin")}
                   </Link>

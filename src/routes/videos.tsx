@@ -130,7 +130,7 @@ function VideosPage() {
           {/* Search */}
           <div className="flex-1 max-w-2xl">
             <div className="relative group">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-(--violet) transition-colors" />
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-(--violet) transition-colors" />
               <input
                 type="text"
                 value={searchQuery}
@@ -148,7 +148,7 @@ function VideosPage() {
                 className="w-full pl-14 pr-6 py-3.5 bg-gray-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-(--violet)/10 transition-all outline-none"
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                <span className="px-2 py-1 bg-white border border-gray-100 rounded-md text-2xs text-gray-400 font-bold">
+                <span className="px-2 py-1 bg-white border border-gray-100 rounded-md text-2xs text-muted-foreground font-bold">
                   ⌘ K
                 </span>
               </div>
@@ -167,13 +167,13 @@ function VideosPage() {
           {/* Mobile Stats */}
           <div className="md:hidden grid grid-cols-3 gap-3">
             <div className="glass-card rounded-2xl p-4 text-center premium-shadow">
-              <div className="text-2xs font-bold uppercase tracking-wider text-gray-400">
+              <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 Study Hours
               </div>
               <div className="text-xl font-bold text-(--ink)">{weekHours}</div>
             </div>
             <div className="glass-card rounded-2xl p-4 text-center premium-shadow">
-              <div className="text-2xs font-bold uppercase tracking-wider text-gray-400">
+              <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 Streak
               </div>
               <div className="text-xl font-bold text-(--ink)">
@@ -181,7 +181,7 @@ function VideosPage() {
               </div>
             </div>
             <div className="glass-card rounded-2xl p-4 text-center premium-shadow">
-              <div className="text-2xs font-bold uppercase tracking-wider text-gray-400">
+              <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 Watched
               </div>
               <div className="text-xl font-bold text-(--ink)">{watchedCount}</div>
@@ -197,7 +197,7 @@ function VideosPage() {
                 className={`px-6 py-2.5 rounded-2xl text-sm font-bold whitespace-nowrap transition-all ${
                   activeFilter === f
                     ? "bg-black text-white shadow-lg shadow-black/10"
-                    : "bg-white border border-gray-100 text-gray-500 hover:text-black hover:border-gray-200"
+                    : "bg-white border border-gray-100 text-muted-foreground hover:text-black hover:border-gray-200"
                 }`}
               >
                 {f}
@@ -310,7 +310,9 @@ function VideosPage() {
                         <h4 className="font-display font-bold text-sm leading-tight group-hover:text-(--violet) transition-colors line-clamp-2">
                           {r.title ?? r.video_id}
                         </h4>
-                        <span className="text-2xs text-gray-400 font-bold">{r.channel}</span>
+                        <span className="text-2xs text-muted-foreground font-bold">
+                          {r.channel}
+                        </span>
                       </div>
                     </Link>
                   );
@@ -321,7 +323,7 @@ function VideosPage() {
 
           {/* Video Grid */}
           {filteredCatalog.length === 0 && (
-            <p className="text-sm text-gray-400 font-medium">
+            <p className="text-sm text-muted-foreground font-medium">
               {locale === "pt"
                 ? "Nenhum vídeo encontrado para esta pesquisa/categoria."
                 : "No videos found for this search/category."}
@@ -365,7 +367,9 @@ function VideosPage() {
                       <h4 className="font-display font-bold text-sm leading-tight group-hover:text-(--violet) transition-colors line-clamp-2">
                         {video.title}
                       </h4>
-                      <span className="text-2xs text-gray-400 font-bold">{video.level}</span>
+                      <span className="text-2xs text-muted-foreground font-bold">
+                        {video.level}
+                      </span>
                     </Link>
 
                     {/* 3-dot menu */}
@@ -377,7 +381,7 @@ function VideosPage() {
                       aria-label={locale === "pt" ? "Mais opções" : "More options"}
                       className="p-1.5 hover:bg-gray-100 rounded-xl transition-colors"
                     >
-                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                      <MoreVertical className="w-4 h-4 text-muted-foreground" />
                     </button>
 
                     {/* Dropdown */}
@@ -411,7 +415,7 @@ function VideosPage() {
                                 notify.fromError(e, { dedupeKey: "videos:mark-complete" });
                               }
                             }}
-                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-muted-foreground transition-colors w-full text-left"
                           >
                             <CheckCircle className="w-4 h-4 text-green-500" />
                             {locale === "pt" ? "Marcar como concluído" : "Mark as completed"}
@@ -431,7 +435,7 @@ function VideosPage() {
                                 notify.success(locale === "pt" ? "Link copiado" : "Link copied");
                               }
                             }}
-                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-muted-foreground transition-colors w-full text-left"
                           >
                             <Share2 className="w-4 h-4 text-blue-500" />
                             {locale === "pt" ? "Compartilhar" : "Share"}
@@ -447,10 +451,10 @@ function VideosPage() {
 
           {/* Footer */}
           <footer className="pt-10 pb-20 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-6">
-            <span className="text-sm font-bold text-gray-400">
+            <span className="text-sm font-bold text-muted-foreground">
               © {new Date().getFullYear()} Learning Coach Platform
             </span>
-            <div className="flex gap-8 text-sm font-bold text-gray-400">
+            <div className="flex gap-8 text-sm font-bold text-muted-foreground">
               <span>Privacy</span>
               <span>Terms</span>
               <span>Support</span>

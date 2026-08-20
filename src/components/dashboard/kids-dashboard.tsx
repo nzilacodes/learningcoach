@@ -32,7 +32,7 @@ export function KidsDashboard(data: DashboardData) {
           <button
             onClick={() => signOut()}
             aria-label={locale === "pt" ? "Sair da conta" : "Sign out"}
-            className="p-2 text-gray-400 hover:bg-gray-50 rounded-full transition-colors"
+            className="p-2 text-muted-foreground hover:bg-gray-50 rounded-full transition-colors"
           >
             <LogOut className="w-5 h-5" />
           </button>
@@ -126,7 +126,7 @@ export function KidsDashboard(data: DashboardData) {
                         </Link>
                       );
                     })()}
-                    <span className="mt-1 text-2xs font-bold text-gray-500">{u.title}</span>
+                    <span className="mt-1 text-2xs font-bold text-muted-foreground">{u.title}</span>
                     {i < units.length - 1 && (
                       <div className="h-4 w-1 bg-amber-200 rounded-full my-1" />
                     )}

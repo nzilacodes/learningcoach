@@ -404,7 +404,7 @@ function Intro({
           <h1 className="font-display text-[32px] font-semibold text-[var(--ink)] mb-2 tracking-tight leading-tight">
             {locale === "pt" ? "Diagnóstico completo" : "Full diagnostic"}
           </h1>
-          <p className="text-sm text-gray-500 max-w-[280px]">
+          <p className="text-sm text-muted-foreground max-w-[280px]">
             {locale === "pt"
               ? "Avaliação em 7 skills com plano personalizado."
               : "7-skill assessment with personalized plan."}
@@ -459,7 +459,7 @@ function Intro({
         <h1 className="mt-6 font-display text-4xl font-bold text-[var(--ink)]">
           {locale === "pt" ? "Diagnóstico completo" : "Full diagnostic"}
         </h1>
-        <p className="mx-auto mt-3 max-w-xl text-gray-500">
+        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
           {locale === "pt"
             ? "Avaliação em 7 skills. Duração: ~15 minutos. Vai usar o microfone para as secções de fala e pronúncia."
             : "7-skill assessment. ~15 minutes. Uses your microphone for speaking and pronunciation."}
@@ -470,7 +470,7 @@ function Intro({
             return (
               <div
                 key={s.label}
-                className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50/80 p-3 text-sm text-gray-600"
+                className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50/80 p-3 text-sm text-muted-foreground"
               >
                 <Icon className="h-4 w-4 text-[var(--violet)]" />
                 {s.label}
@@ -524,7 +524,7 @@ function McqSection({
       <div className="mt-6 space-y-6">
         {items.map((it, i) => (
           <div key={it.id}>
-            <div className="text-sm font-semibold text-gray-500">
+            <div className="text-sm font-semibold text-muted-foreground">
               {i + 1}. {it.prompt}
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -779,7 +779,7 @@ function WritingSection({
                 }}
                 placeholder={locale === "pt" ? "Escreva aqui em inglês…" : "Write here in English…"}
               />
-              <div className="mt-2 text-xs text-gray-400">
+              <div className="mt-2 text-xs text-muted-foreground">
                 {words} / {w.minWords} {locale === "pt" ? "palavras (mínimo)" : "words (minimum)"}
               </div>
             </div>
@@ -854,7 +854,7 @@ function RecordSection({
               <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">
                 {it.level}
               </div>
-              <div className="text-xs text-gray-400">{it.hint}</div>
+              <div className="text-xs text-muted-foreground">{it.hint}</div>
             </div>
             <div className="mt-2 text-sm font-semibold text-gray-700">{it.prompt}</div>
             {kind === "pronunciation" && (
@@ -871,7 +871,7 @@ function RecordSection({
             />
             {answers[i] && (
               <div className="mt-3 rounded-xl bg-white border border-gray-100 p-3 text-sm">
-                <div className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {locale === "pt" ? "Transcrição" : "Transcript"}
                 </div>
                 <div className="mt-1 text-gray-700">{answers[i]}</div>
@@ -1055,7 +1055,7 @@ function NavBar({
 
 function SectionHeader({ icon: Icon, title }: { icon: typeof BookOpen; title: string }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-gray-100 bg-gray-50/80 px-3 py-1 text-xs font-semibold text-gray-600">
+    <div className="inline-flex items-center gap-2 rounded-full border border-gray-100 bg-gray-50/80 px-3 py-1 text-xs font-semibold text-muted-foreground">
       <Icon className="h-3.5 w-3.5 text-[var(--violet)]" />
       {title}
     </div>
@@ -1078,7 +1078,7 @@ function Loading() {
       <div className="mt-6">
         <StagedLoader stages={stages} status="running" autoAdvanceMs={[2500, 12000]} />
       </div>
-      <p className="mt-4 text-xs text-gray-400">
+      <p className="mt-4 text-xs text-muted-foreground">
         {locale === "pt" ? "Pode levar até 30 segundos." : "May take up to 30 seconds."}
       </p>
     </div>
@@ -1118,7 +1118,7 @@ function SubmitFailedView({
             ? "Não foi possível avaliar o seu diagnóstico"
             : "We couldn't evaluate your diagnostic"}
         </h2>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-muted-foreground">
           {locale === "pt"
             ? "As suas respostas continuam guardadas nesta sessão. Pode tentar enviar novamente."
             : "Your answers are still saved in this session. You can try submitting again."}
@@ -1166,7 +1166,7 @@ function ReportView({
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center premium-shadow">
-        <div className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+        <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {locale === "pt" ? "O seu nível CEFR" : "Your CEFR level"}
         </div>
         <div className="mt-2 font-display text-7xl font-bold bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] bg-clip-text text-transparent">
@@ -1176,7 +1176,7 @@ function ReportView({
           {locale === "pt" ? "Pontuação global" : "Overall score"}: {report.scores.overall}%
         </div>
         {report.feedback && (
-          <p className="mx-auto mt-4 max-w-2xl text-sm text-gray-500">{report.feedback}</p>
+          <p className="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground">{report.feedback}</p>
         )}
         {error && (
           <div className="mx-auto mt-4 max-w-xl text-left">
@@ -1200,7 +1200,7 @@ function ReportView({
                   <span className="flex items-center gap-2 font-semibold text-gray-700">
                     <Icon className="h-4 w-4 text-[var(--violet)]" /> {meta[locale]}
                   </span>
-                  <span className="font-mono text-gray-500">{v}%</span>
+                  <span className="font-mono text-muted-foreground">{v}%</span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
                   <div
@@ -1222,10 +1222,12 @@ function ReportView({
           </h3>
           <ul className="mt-3 space-y-2 text-sm">
             {report.strengths.length === 0 && (
-              <li className="text-gray-400">{locale === "pt" ? "Sem dados." : "No data."}</li>
+              <li className="text-muted-foreground">
+                {locale === "pt" ? "Sem dados." : "No data."}
+              </li>
             )}
             {report.strengths.map((s, i) => (
-              <li key={i} className="flex items-start gap-2 text-gray-600">
+              <li key={i} className="flex items-start gap-2 text-muted-foreground">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" /> {s}
               </li>
             ))}
@@ -1238,10 +1240,12 @@ function ReportView({
           </h3>
           <ul className="mt-3 space-y-2 text-sm">
             {report.weaknesses.length === 0 && (
-              <li className="text-gray-400">{locale === "pt" ? "Sem dados." : "No data."}</li>
+              <li className="text-muted-foreground">
+                {locale === "pt" ? "Sem dados." : "No data."}
+              </li>
             )}
             {report.weaknesses.map((s, i) => (
-              <li key={i} className="flex items-start gap-2 text-gray-600">
+              <li key={i} className="flex items-start gap-2 text-muted-foreground">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber" /> {s}
               </li>
             ))}
@@ -1263,14 +1267,14 @@ function ReportView({
                   <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">
                     {locale === "pt" ? `Semana ${w.week}` : `Week ${w.week}`}
                   </div>
-                  <span className="text-xs text-gray-400">{w.estimated_minutes} min</span>
+                  <span className="text-xs text-muted-foreground">{w.estimated_minutes} min</span>
                 </div>
                 <div className="mt-1 flex items-center gap-2 font-display text-lg font-bold text-[var(--ink)]">
                   <Icon className="h-4 w-4 text-[var(--violet)]" /> {w.title}
                 </div>
                 <ul className="mt-2 space-y-1.5 text-sm">
                   {w.goals.map((g, gi) => (
-                    <li key={gi} className="flex items-start gap-2 text-gray-600">
+                    <li key={gi} className="flex items-start gap-2 text-muted-foreground">
                       <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--violet)]" /> {g}
                     </li>
                   ))}

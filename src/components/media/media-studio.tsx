@@ -338,7 +338,7 @@ export function MediaStudio({
             <CheckCircle2 className="w-12 h-12 text-green-500" />
             <div>
               <p className="font-display text-lg font-bold text-[var(--ink)]">Gravação guardada</p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 {savedAsset.title || savedAsset.original_filename} ·{" "}
                 {formatBytes(savedAsset.size_bytes)}
               </p>
@@ -453,7 +453,7 @@ function DeviceErrorCard({
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center space-y-3">
         <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto" />
         <p className="font-bold text-[var(--ink)]">Gravação não suportada</p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Este navegador não suporta gravação de áudio/vídeo. Tente o Chrome, Firefox ou Safari
           atualizados.
         </p>
@@ -470,8 +470,8 @@ function DeviceErrorCard({
     <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center space-y-3">
       <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto" />
       <p className="font-bold text-[var(--ink)]">{title}</p>
-      <p className="text-sm text-gray-500">A câmara/microfone não pôde ser acedido.</p>
-      <ul className="text-xs text-gray-500 text-left max-w-xs mx-auto list-disc pl-4 space-y-0.5">
+      <p className="text-sm text-muted-foreground">A câmara/microfone não pôde ser acedido.</p>
+      <ul className="text-xs text-muted-foreground text-left max-w-xs mx-auto list-disc pl-4 space-y-0.5">
         <li>Permissão bloqueada no navegador</li>
         <li>Dispositivo já em uso por outra aplicação</li>
         <li>Dispositivo desconectado</li>
@@ -531,7 +531,7 @@ function RecordingPanel(props: {
 
   if (status === "checking") {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-16 text-gray-400">
+      <div className="flex flex-col items-center justify-center gap-3 py-16 text-muted-foreground">
         <Loader2 className="w-6 h-6 animate-spin" />
         <p className="text-sm">A verificar permissões…</p>
       </div>
@@ -567,7 +567,7 @@ function RecordingPanel(props: {
 
       {showVideo && props.level > 0 && (
         <div className="flex items-center gap-3">
-          <Mic className="w-4 h-4 text-gray-400 shrink-0" />
+          <Mic className="w-4 h-4 text-muted-foreground shrink-0" />
           <LevelMeterBars level={props.level} />
         </div>
       )}
@@ -575,7 +575,7 @@ function RecordingPanel(props: {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {mode !== "audio" && (
           <div>
-            <label className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1 block">
+            <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1 block">
               Câmara
             </label>
             <Select value={props.cameraId || undefined} onValueChange={props.setCameraId}>
@@ -593,7 +593,7 @@ function RecordingPanel(props: {
           </div>
         )}
         <div>
-          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1 block">
+          <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1 block">
             Microfone
           </label>
           <Select value={props.micId || undefined} onValueChange={props.setMicId}>
@@ -612,7 +612,7 @@ function RecordingPanel(props: {
         {mode !== "audio" && (
           <>
             <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1 block">
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1 block">
                 Resolução
               </label>
               <Select
@@ -633,7 +633,7 @@ function RecordingPanel(props: {
               </Select>
             </div>
             <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1 block">
+              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1 block">
                 FPS
               </label>
               <Select value={String(props.fps)} onValueChange={(v) => props.setFps(Number(v))}>
@@ -691,8 +691,8 @@ function RecordingPanel(props: {
 function ImportPanel({ onSelect }: { onSelect: (file: File) => void }) {
   return (
     <label className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-200 py-16 cursor-pointer hover:border-[var(--primary)]/40 transition-colors">
-      <UploadIcon className="w-8 h-8 text-gray-400" />
-      <p className="text-sm text-gray-500">Vídeo, áudio, imagem ou documento (PDF)</p>
+      <UploadIcon className="w-8 h-8 text-muted-foreground" />
+      <p className="text-sm text-muted-foreground">Vídeo, áudio, imagem ou documento (PDF)</p>
       <input
         type="file"
         accept="video/*,audio/*,image/*,application/pdf"
@@ -825,7 +825,7 @@ function ReviewPanel(props: {
         </div>
 
         <div>
-          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1 block">
+          <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1 block">
             Quem pode visualizar?
           </label>
           <div className="flex gap-2">
@@ -837,7 +837,7 @@ function ReviewPanel(props: {
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                   props.visibility === v
                     ? "bg-[var(--primary)] text-white"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >
                 {v === "private" ? "Apenas eu" : v === "class" ? "Turma" : "Todos"}
@@ -850,7 +850,9 @@ function ReviewPanel(props: {
       {props.uploading && (
         <div className="space-y-1">
           <Progress value={props.uploadProgress} />
-          <p className="text-xs text-gray-400 text-center">A carregar… {props.uploadProgress}%</p>
+          <p className="text-xs text-muted-foreground text-center">
+            A carregar… {props.uploadProgress}%
+          </p>
         </div>
       )}
 

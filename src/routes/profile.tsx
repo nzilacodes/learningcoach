@@ -139,7 +139,7 @@ function ProfilePage() {
         <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8">
           <div className="mx-auto max-w-2xl space-y-6">
             <div className="rounded-2xl border border-gray-100 bg-white p-6 premium-shadow">
-              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <Mail className="h-4 w-4" /> {user.email}
                 </span>
@@ -163,7 +163,7 @@ function ProfilePage() {
                     <FormItem>
                       <FormLabel>{locale === "pt" ? "Nome completo" : "Full name"}</FormLabel>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <FormControl>
                           <Input autoComplete="name" className="pl-9" {...field} />
                         </FormControl>
@@ -181,7 +181,7 @@ function ProfilePage() {
                       <FormItem>
                         <FormLabel>{locale === "pt" ? "Idade" : "Age"}</FormLabel>
                         <div className="relative">
-                          <Cake className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                          <Cake className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                           <FormControl>
                             <Input type="number" min={4} max={120} className="pl-9" {...field} />
                           </FormControl>
@@ -197,7 +197,7 @@ function ProfilePage() {
                       <FormItem>
                         <FormLabel>{locale === "pt" ? "País" : "Country"}</FormLabel>
                         <div className="relative">
-                          <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                          <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                           <FormControl>
                             <Input autoComplete="country-name" className="pl-9" {...field} />
                           </FormControl>
@@ -217,7 +217,7 @@ function ProfilePage() {
                         {locale === "pt" ? "Língua materna" : "Native language"}
                       </FormLabel>
                       <div className="relative">
-                        <Languages className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <Languages className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <FormControl>
                           <Input className="pl-9" {...field} />
                         </FormControl>

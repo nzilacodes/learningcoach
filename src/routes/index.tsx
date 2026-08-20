@@ -134,7 +134,7 @@ function LandingPage() {
             </h1>
             <p
               data-anim="hero-copy"
-              className="mt-6 max-w-xl text-lg leading-relaxed text-slate-600"
+              className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground"
             >
               A plataforma{" "}
               <span className="font-bold text-marketing-ink">LEARNING ENGLISH WITH COACH</span>{" "}
@@ -178,7 +178,7 @@ function LandingPage() {
                     <Star key={i} className="h-4 w-4 fill-marketing-lime text-marketing-lime" />
                   ))}
                 </div>
-                <p className="text-sm font-medium text-slate-500">
+                <p className="text-sm font-medium text-muted-foreground">
                   Trusted by 20,000+ students worldwide
                 </p>
               </div>
@@ -212,7 +212,7 @@ function LandingPage() {
               </div>
               <div>
                 <p className="text-lg font-black text-marketing-ink">98%</p>
-                <p className="text-xs font-medium text-slate-500">Fluency success rate</p>
+                <p className="text-xs font-medium text-muted-foreground">Fluency success rate</p>
               </div>
             </div>
             <div
@@ -223,7 +223,7 @@ function LandingPage() {
                 <Volume2 className="h-5 w-5" />
               </div>
               <div>
-                <p className="font-mono text-xs text-slate-500">/ˈkoʊtʃ/</p>
+                <p className="font-mono text-xs text-muted-foreground">/ˈkoʊtʃ/</p>
                 <p className="text-sm font-bold">coach</p>
               </div>
             </div>
@@ -255,7 +255,7 @@ function LandingPage() {
                 >
                   {"target" in s && s.target !== undefined ? "0" : s.value}
                 </div>
-                <div className="mt-2 text-2xs font-semibold uppercase tracking-wider text-slate-400 sm:text-xs">
+                <div className="mt-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
                   {s.label}
                 </div>
               </div>
@@ -275,7 +275,7 @@ function LandingPage() {
               <div className="font-display text-2xl font-extrabold text-marketing-teal">
                 {s.value}
               </div>
-              <div className="mt-1 text-2xs font-semibold uppercase tracking-wider text-slate-400">
+              <div className="mt-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {s.label}
               </div>
             </div>
@@ -297,7 +297,7 @@ function LandingPage() {
             <div className="headline-container text-center mb-10">
               <h2>Choose Your Path</h2>
               <div className="mx-auto mt-3 h-1 w-16 rounded-full bg-marketing-lime" />
-              <p className="mx-auto mt-3 max-w-xl text-sm text-slate-500">
+              <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
                 Programas especializados para cada fase da vida — todos na plataforma LEARNING
                 ENGLISH WITH COACH.
               </p>
@@ -358,7 +358,7 @@ function LandingPage() {
                   The complete toolkit of{" "}
                   <span className="text-marketing-teal-dark">Learning English with Coach</span>
                 </h2>
-                <p className="max-w-xs text-xs leading-relaxed text-gray-500 lg:text-right">
+                <p className="max-w-xs text-xs leading-relaxed text-muted-foreground lg:text-right">
                   Todas as ferramentas para dominares o inglês — do A1 ao C2.
                 </p>
               </div>
@@ -394,7 +394,7 @@ function LandingPage() {
                 <h2 className="text-3xl font-extrabold tracking-tight">
                   From first words to full fluency.
                 </h2>
-                <p className="mt-3 text-sm text-slate-500">
+                <p className="mt-3 text-sm text-muted-foreground">
                   Cada nível concluído gera um certificado LEWC oficial.
                 </p>
               </div>
@@ -410,7 +410,7 @@ function LandingPage() {
                       </div>
                       <div
                         data-anim="cefr-label"
-                        className="mt-2 text-2xs font-semibold uppercase tracking-widest text-slate-400"
+                        className="mt-2 text-2xs font-semibold uppercase tracking-widest text-muted-foreground"
                       >
                         {lvl.label}
                       </div>
@@ -437,19 +437,19 @@ function LandingPage() {
             <div className="mt-8 flex gap-12">
               <div data-anim="result-stat">
                 <div className="text-4xl font-black text-marketing-teal">98%</div>
-                <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   Satisfaction
                 </div>
               </div>
               <div data-anim="result-stat">
                 <div className="text-4xl font-black text-marketing-lime">15k+</div>
-                <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   Lessons done
                 </div>
               </div>
               <div data-anim="result-stat">
                 <div className="text-4xl font-black text-marketing-ink">4.9★</div>
-                <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   Rating
                 </div>
               </div>
@@ -585,10 +585,13 @@ function AgePanel({
           <Target className="h-8 w-8" />
         </div>
         <h3 className="text-base font-bold text-marketing-ink">{title}</h3>
-        <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{desc}</p>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{desc}</p>
         <ul className="mt-3 space-y-1.5">
           {bullets.map((b) => (
-            <li key={b} className="flex items-center gap-2 text-sm font-medium text-slate-600">
+            <li
+              key={b}
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground"
+            >
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-marketing-lime" /> {b}
             </li>
           ))}

@@ -153,7 +153,7 @@ export function AdultsDashboard(data: DashboardData) {
                   {/* Welcome */}
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">
+                      <p className="text-sm font-medium text-muted-foreground">
                         {locale === "pt" ? "Bons estudos," : "Good studies,"}
                       </p>
                       <h1 className="font-display text-2xl md:text-3xl font-bold text-[var(--ink)]">
@@ -191,7 +191,7 @@ export function AdultsDashboard(data: DashboardData) {
                           >
                             <s.icon className="w-4 h-4" />
                           </div>
-                          <span className="text-2xs font-bold uppercase tracking-wider text-gray-500">
+                          <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                             {s.label}
                           </span>
                         </div>
@@ -199,7 +199,9 @@ export function AdultsDashboard(data: DashboardData) {
                           <span className="font-display text-3xl font-bold text-[var(--ink)]">
                             {s.value}
                           </span>
-                          {s.unit && <span className="text-xs text-gray-400">{s.unit}</span>}
+                          {s.unit && (
+                            <span className="text-xs text-muted-foreground">{s.unit}</span>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -334,7 +336,7 @@ export function AdultsDashboard(data: DashboardData) {
                                 ? "text-[var(--violet)]"
                                 : u.locked
                                   ? "text-gray-300"
-                                  : "text-gray-500"
+                                  : "text-muted-foreground"
                             }`}
                           >
                             {u.current
@@ -398,12 +400,12 @@ export function AdultsDashboard(data: DashboardData) {
                     <span className="font-display text-2xl font-bold text-[var(--ink)]">
                       {week.days}/{goalDays}
                     </span>
-                    <span className="text-2xs uppercase font-bold text-gray-400">
+                    <span className="text-2xs uppercase font-bold text-muted-foreground">
                       {locale === "pt" ? "Dias" : "Days"}
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-center text-gray-500">
+                <p className="text-xs text-center text-muted-foreground">
                   {daysToGo === 0
                     ? locale === "pt"
                       ? "Meta da semana atingida! 🎉"
@@ -452,10 +454,10 @@ export function AdultsDashboard(data: DashboardData) {
                     <span className="font-display text-2xl font-bold text-[var(--ink)]">
                       {todayXp}/{DAILY_XP_GOAL}
                     </span>
-                    <span className="text-2xs uppercase font-bold text-gray-400">XP</span>
+                    <span className="text-2xs uppercase font-bold text-muted-foreground">XP</span>
                   </div>
                 </div>
-                <p className="text-xs text-center text-gray-500">
+                <p className="text-xs text-center text-muted-foreground">
                   {todayXp >= DAILY_XP_GOAL
                     ? locale === "pt"
                       ? "Meta de hoje atingida! 🎉"
@@ -490,7 +492,7 @@ export function AdultsDashboard(data: DashboardData) {
               {/* Welcome */}
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-xs font-medium text-gray-500">
+                  <p className="text-xs font-medium text-muted-foreground">
                     {locale === "pt" ? "Bons estudos," : "Good studies,"}
                   </p>
                   <h1 className="font-display text-xl font-bold text-[var(--ink)]">
@@ -517,7 +519,7 @@ export function AdultsDashboard(data: DashboardData) {
                       <s.icon className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-2xs font-bold uppercase tracking-wider text-gray-400">
+                      <p className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                         {s.label}
                       </p>
                       <p className="font-display text-base font-bold text-[var(--ink)]">
@@ -580,7 +582,9 @@ export function AdultsDashboard(data: DashboardData) {
                       <div className="w-14 h-14 rounded-2xl bg-[var(--violet)]/10 flex items-center justify-center text-[var(--violet)] shadow-sm">
                         <a.icon className="w-6 h-6" />
                       </div>
-                      <span className="text-2xs font-semibold text-gray-600">{a.label}</span>
+                      <span className="text-2xs font-semibold text-muted-foreground">
+                        {a.label}
+                      </span>
                     </Link>
                   ))}
                 </div>
@@ -609,7 +613,7 @@ export function AdultsDashboard(data: DashboardData) {
                     <span className="font-display text-sm font-bold text-[var(--violet)]">
                       {week.days}/{goalDays}
                     </span>
-                    <span className="text-2xs font-bold text-gray-400 uppercase">
+                    <span className="text-2xs font-bold text-muted-foreground uppercase">
                       {locale === "pt" ? "Dias" : "Days"}
                     </span>
                   </div>
@@ -618,7 +622,7 @@ export function AdultsDashboard(data: DashboardData) {
                   <h4 className="font-display text-base font-bold text-[var(--ink)]">
                     {locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
                   </h4>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {daysToGo === 0
                       ? locale === "pt"
                         ? "Meta da semana atingida! 🎉"
@@ -661,14 +665,14 @@ export function AdultsDashboard(data: DashboardData) {
                     <span className="font-display text-sm font-bold text-sunset">
                       {todayXp}/{DAILY_XP_GOAL}
                     </span>
-                    <span className="text-2xs font-bold text-gray-400 uppercase">XP</span>
+                    <span className="text-2xs font-bold text-muted-foreground uppercase">XP</span>
                   </div>
                 </div>
                 <div className="flex-1 space-y-1">
                   <h4 className="font-display text-base font-bold text-[var(--ink)]">
                     {locale === "pt" ? "Meta Diária" : "Daily Goal"}
                   </h4>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {todayXp >= DAILY_XP_GOAL
                       ? locale === "pt"
                         ? "Meta de hoje atingida! 🎉"
@@ -695,7 +699,7 @@ export function AdultsDashboard(data: DashboardData) {
                             ? "bg-emerald-500 text-white shadow-lg shadow-emerald-100"
                             : u.current
                               ? "bg-[var(--violet)]/10 text-[var(--violet)] ring-2 ring-[var(--violet)]/30 shadow-lg"
-                              : "bg-gray-100 text-gray-400"
+                              : "bg-gray-100 text-muted-foreground"
                         }`}
                       >
                         {u.done ? (
@@ -711,7 +715,7 @@ export function AdultsDashboard(data: DashboardData) {
                       >
                         <p
                           className={`text-2xs font-bold uppercase tracking-wider ${
-                            u.current ? "text-[var(--violet)]" : "text-gray-400"
+                            u.current ? "text-[var(--violet)]" : "text-muted-foreground"
                           }`}
                         >
                           {u.current
@@ -846,7 +850,7 @@ function SubscriptionCard({
         <p className="font-display text-base font-bold text-[var(--ink)]">
           {locale === "pt" ? "Pagamento em verificação" : "Payment under review"}
         </p>
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-muted-foreground">
           {locale === "pt"
             ? "O administrador irá ativar a sua assinatura após confirmar o pagamento."
             : "The admin will activate your subscription after confirming the payment."}
@@ -859,13 +863,13 @@ function SubscriptionCard({
     <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
       <div className="flex items-center gap-3 mb-3">
         <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-          <Zap className="w-5 h-5 text-gray-400" />
+          <Zap className="w-5 h-5 text-muted-foreground" />
         </div>
         <div>
           <p className="text-xs font-bold text-[var(--ink)]">
             {locale === "pt" ? "Sem assinatura" : "No subscription"}
           </p>
-          <p className="text-2xs text-gray-400">
+          <p className="text-2xs text-muted-foreground">
             {locale === "pt" ? "Escolha um plano" : "Choose a plan"}
           </p>
         </div>

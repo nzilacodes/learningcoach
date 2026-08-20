@@ -151,7 +151,7 @@ function SettingsPage() {
                 className="mt-4 flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--violet)]/50"
               >
                 {locale === "pt" ? "Gerir plano e faturação" : "Manage plan & billing"}
-                <ChevronRight className="h-4 w-4 text-gray-400" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </Link>
             </section>
 
@@ -189,7 +189,7 @@ function SettingsPage() {
                         <FormControl>
                           <Input type="password" autoComplete="new-password" {...field} />
                         </FormControl>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-muted-foreground">
                           {locale === "pt"
                             ? "Mínimo 8 caracteres, com pelo menos uma letra e um número."
                             : "At least 8 characters, with at least one letter and one number."}

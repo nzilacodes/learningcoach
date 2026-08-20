@@ -182,7 +182,7 @@ function PricingPage() {
                   className={`rounded-full px-4 sm:px-7 py-2.5 text-2xs sm:text-2xs font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
                     cycle === c
                       ? "bg-white text-marketing-ink shadow-flat-sm ring-1 ring-slate-100"
-                      : "text-slate-400 hover:text-slate-600"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {CYCLE_LABEL[c][locale]}
@@ -229,7 +229,7 @@ function PricingPage() {
                         {featured && (
                           <div className="absolute top-8 right-8 inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-slate-100 shadow-sm z-20">
                             <Star className="h-3 w-3 fill-pink-500 text-pink-500" />
-                            <span className="text-2xs font-black uppercase tracking-widest text-slate-600">
+                            <span className="text-2xs font-black uppercase tracking-widest text-muted-foreground">
                               {locale === "pt" ? "MAIS POPULAR" : "MOST POPULAR"}
                             </span>
                           </div>
@@ -247,7 +247,7 @@ function PricingPage() {
                         <h2 className="font-display text-3xl font-bold mb-2 text-marketing-ink">
                           {meta.label[locale]}
                         </h2>
-                        <p className="text-sm text-slate-500 mb-10 leading-relaxed max-w-[280px]">
+                        <p className="text-sm text-muted-foreground mb-10 leading-relaxed max-w-[280px]">
                           {meta.desc[locale]}
                         </p>
 
@@ -255,25 +255,25 @@ function PricingPage() {
                           <span className="text-5xl sm:text-6xl font-black tracking-tighter text-marketing-ink">
                             {plan.price_kz.toLocaleString("pt-AO")}
                           </span>
-                          <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                          <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
                             Kz
                           </span>
                         </div>
-                        <div className="text-2xs font-black uppercase tracking-[0.2em] text-slate-400 mb-10">
+                        <div className="text-2xs font-black uppercase tracking-[0.2em] text-muted-foreground mb-10">
                           {plan.duration_days} {locale === "pt" ? "DIAS" : "DAYS"}
                         </div>
 
                         <div className="w-full h-px bg-slate-200/80 mb-10" />
 
                         <div className="flex-grow">
-                          <p className="text-2xs font-black uppercase tracking-[0.2em] text-slate-400 mb-6">
+                          <p className="text-2xs font-black uppercase tracking-[0.2em] text-muted-foreground mb-6">
                             {locale === "pt" ? "O que está incluído:" : "What's included:"}
                           </p>
                           <ul className="space-y-4">
                             {plan.features.map((f, i) => (
                               <li
                                 key={i}
-                                className="flex items-start gap-4 text-sm font-medium text-slate-600"
+                                className="flex items-start gap-4 text-sm font-medium text-muted-foreground"
                               >
                                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
                                 <span>{f}</span>
@@ -307,7 +307,7 @@ function PricingPage() {
             </div>
           </div>
 
-          <p className="text-center mt-12 text-2xs font-bold uppercase tracking-[0.2em] text-slate-400">
+          <p className="text-center mt-12 text-2xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
             {locale === "pt"
               ? "Pagamento Seguro via Multicaixa Express"
               : "Secure Payment via Multicaixa Express"}
