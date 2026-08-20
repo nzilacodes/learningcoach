@@ -36,6 +36,7 @@ import {
   recordStream,
   stopStreamTracks,
   capturePhoto,
+  isRecordingSupported,
   type ActiveRecording,
 } from "@/lib/media-recorder-engine";
 import {
@@ -130,6 +131,12 @@ export function MediaStudio({
     let cancelled = false;
     setDeviceStatus("checking");
     setErrorReason(null);
+
+    if (!isRecordingSupported()) {
+      setErrorReason("unsupported");
+      setDeviceStatus("unavailable");
+      return;
+    }
 
     void (async () => {
       try {
@@ -382,7 +389,7 @@ export function MediaStudio({
                 setMode(v as Mode);
               }}
             >
-              <TabsList className="grid grid-cols-4 w-full">
+              <TabsList className="grid grid-cols-2 gap-1 sm:grid-cols-4 w-full">
                 <TabsTrigger value="video">
                   <Video className="w-4 h-4 mr-1" /> Vídeo
                 </TabsTrigger>
@@ -441,6 +448,18 @@ function DeviceErrorCard({
   reason: MediaDeviceErrorReason | null;
   onRetry: () => void;
 }) {
+  if (reason === "unsupported") {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center space-y-3">
+        <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto" />
+        <p className="font-bold text-[var(--ink)]">Gravação não suportada</p>
+        <p className="text-sm text-gray-500">
+          Este navegador não suporta gravação de áudio/vídeo. Tente o Chrome, Firefox ou Safari
+          atualizados.
+        </p>
+      </div>
+    );
+  }
   const title =
     reason === "denied"
       ? "Permissão bloqueada"
@@ -553,7 +572,7 @@ function RecordingPanel(props: {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {mode !== "audio" && (
           <div>
             <label className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1 block">
@@ -745,7 +764,7 @@ function ReviewPanel(props: {
           onChange={(e) => props.setTagsInput(e.target.value)}
         />
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <Select
             value={props.courseId}
             onValueChange={(v) => {

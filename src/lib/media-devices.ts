@@ -50,7 +50,7 @@ export async function queryPermission(
   }
 }
 
-export type MediaDeviceErrorReason = "denied" | "not-found" | "in-use" | "unknown";
+export type MediaDeviceErrorReason = "denied" | "not-found" | "in-use" | "unsupported" | "unknown";
 
 /** Maps getUserMedia()'s DOMException names onto the doc's three "causas
  * possíveis" (permission blocked / device in use elsewhere / disconnected). */
@@ -104,6 +104,13 @@ export function describeGetUserMediaError(
       description: [
         "Feche outras aplicações que possam estar a usar o microfone e tente novamente.",
         "Close other apps that might be using the microphone, then try again.",
+      ],
+    },
+    unsupported: {
+      title: ["Gravação não suportada", "Recording not supported"],
+      description: [
+        "Este navegador não suporta gravação de áudio/vídeo. Tente o Chrome, Firefox ou Safari atualizados.",
+        "This browser doesn't support audio/video recording. Try an up-to-date Chrome, Firefox, or Safari.",
       ],
     },
     unknown: {

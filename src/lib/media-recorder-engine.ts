@@ -21,6 +21,13 @@ export type ActiveRecording = {
   cancel: () => void;
 };
 
+/** Browsers without MediaRecorder (e.g. older Safari) would otherwise hit a
+ * raw ReferenceError the first time `new MediaRecorder(...)` runs — callers
+ * should check this before offering the record UI at all. */
+export function isRecordingSupported(): boolean {
+  return typeof MediaRecorder !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
+}
+
 function pickMimeType(candidates: string[]): string {
   for (const c of candidates) {
     if (MediaRecorder.isTypeSupported(c)) return c;
@@ -54,6 +61,9 @@ export async function startMicOnlyStream(micId?: string): Promise<MediaStream> {
  * startMicOnlyStream) — kept separate from stream acquisition so the caller
  * can show a live preview before the user presses record. */
 export function recordStream(stream: MediaStream, kind: "video" | "audio"): ActiveRecording {
+  if (!isRecordingSupported()) {
+    throw new Error("MediaRecorder is not supported in this browser");
+  }
   const mimeType =
     kind === "video"
       ? pickMimeType([

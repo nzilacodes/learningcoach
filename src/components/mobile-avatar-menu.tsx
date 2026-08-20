@@ -14,10 +14,10 @@ import {
 
 function AccountAvatar({ url }: { url: string | null }) {
   return (
-    <Avatar className="h-8 w-8">
+    <Avatar className="h-10 w-10">
       {url && <AvatarImage src={url} alt="" />}
       <AvatarFallback className="bg-gray-200">
-        <User className="h-4 w-4 text-gray-600" />
+        <User className="h-5 w-5 text-gray-600" />
       </AvatarFallback>
     </Avatar>
   );

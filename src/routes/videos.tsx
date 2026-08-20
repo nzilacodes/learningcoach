@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Play, Flame, MoreVertical, CheckCircle, Share2 } from "lucide-react";
@@ -80,7 +80,6 @@ function matchesFilter(video: { title: string; channel: string }, filter: string
 
 function VideosPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const qc = useQueryClient();
   const { group } = useAgeGroup();
   const { locale } = useLocale();
