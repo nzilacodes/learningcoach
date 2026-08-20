@@ -26,6 +26,7 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import type { DashboardData, SubscriptionRow } from "@/lib/learning";
+import { DAILY_XP_GOAL } from "@/lib/learning";
 import {
   ProfileHeader,
   LeaderboardCard,
@@ -85,6 +86,8 @@ export function AdultsDashboard(data: DashboardData) {
     data;
   const goalDays = week.goalDays;
   const daysToGo = Math.max(0, goalDays - week.days);
+  const todayXp = data.userStats?.today_xp ?? 0;
+  const todayXpPct = Math.min(1, todayXp / DAILY_XP_GOAL);
 
   const stats = [
     {
@@ -417,6 +420,50 @@ export function AdultsDashboard(data: DashboardData) {
                     />
                   ))}
                 </div>
+              </div>
+
+              {/* Daily XP Goal */}
+              <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm flex flex-col items-center">
+                <h4 className="text-sm font-bold text-[var(--ink)] self-start mb-4">
+                  {locale === "pt" ? "Meta Diária" : "Daily Goal"}
+                </h4>
+                <div className="relative w-32 h-32 mb-4">
+                  <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      fill="transparent"
+                      strokeWidth="10"
+                      className="stroke-gray-100"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      fill="transparent"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                      className="stroke-sunset transition-all duration-1000"
+                      strokeDasharray={`${(todayXpPct * 2 * Math.PI * 42).toFixed(1)} 999`}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="font-display text-2xl font-bold text-[var(--ink)]">
+                      {todayXp}/{DAILY_XP_GOAL}
+                    </span>
+                    <span className="text-2xs uppercase font-bold text-gray-400">XP</span>
+                  </div>
+                </div>
+                <p className="text-xs text-center text-gray-500">
+                  {todayXp >= DAILY_XP_GOAL
+                    ? locale === "pt"
+                      ? "Meta de hoje atingida! 🎉"
+                      : "Today's goal reached! 🎉"
+                    : locale === "pt"
+                      ? `Falta${DAILY_XP_GOAL - todayXp === 1 ? "" : "m"} ${DAILY_XP_GOAL - todayXp} XP para a meta de hoje.`
+                      : `${DAILY_XP_GOAL - todayXp} XP to go today.`}
+                </p>
               </div>
 
               {/* Study Reminder */}

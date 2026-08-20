@@ -12,8 +12,12 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/lib/i18n";
@@ -453,6 +457,31 @@ function LessonBody({ lesson, locale }: { lesson: LessonDetail; locale: "pt" | "
   );
 }
 
+// Same app-shell wrapper curriculum.tsx uses — a lesson is reached from
+// there, so it should keep the same sidebar/header instead of dropping to
+// the marketing SiteHeader (NAV-2).
+function LessonShell({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+      <VideosSidebar />
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white border-b border-gray-100 shrink-0 z-10">
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="font-display text-xl font-bold text-[var(--ink)] truncate">{title}</h1>
+          </div>
+          <div className="flex items-center gap-2 md:gap-3">
+            <HeaderActionLinks />
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">{children}</main>
+      </div>
+      <VideosMobileNav />
+    </div>
+  );
+}
+
 function LessonPage() {
   const { lessonId } = Route.useParams();
   // Forces a fresh mount (and fresh local state — completing/justCompleted,
@@ -603,23 +632,20 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen">
-        <SiteHeader />
+      <LessonShell title={locale === "pt" ? "Aula" : "Lesson"}>
         <div className="flex items-center justify-center gap-2 py-32 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
           <span className="text-sm">
             {locale === "pt" ? "Carregando lição…" : "Loading lesson…"}
           </span>
         </div>
-        <SiteFooter />
-      </div>
+      </LessonShell>
     );
   }
 
   if (isError) {
     return (
-      <div className="min-h-screen">
-        <SiteHeader />
+      <LessonShell title={locale === "pt" ? "Aula" : "Lesson"}>
         <div className="mx-auto max-w-2xl px-6 py-20 text-center">
           <p className="text-destructive">
             {locale === "pt" ? "Não foi possível carregar a lição." : "Couldn't load the lesson."}
@@ -628,15 +654,13 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
             {locale === "pt" ? "Tentar novamente" : "Try again"}
           </Button>
         </div>
-        <SiteFooter />
-      </div>
+      </LessonShell>
     );
   }
 
   if (!lesson) {
     return (
-      <div className="min-h-screen">
-        <SiteHeader />
+      <LessonShell title={locale === "pt" ? "Aula" : "Lesson"}>
         <div className="mx-auto max-w-2xl px-6 py-20 text-center">
           <p className="text-destructive">
             {locale === "pt" ? "Lição não encontrada." : "Lesson not found."}
@@ -647,16 +671,14 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
             </Link>
           </Button>
         </div>
-        <SiteFooter />
-      </div>
+      </LessonShell>
     );
   }
 
   const done = alreadyDone || justCompleted;
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
+    <LessonShell title={lesson.title}>
       <div className="mx-auto max-w-5xl px-6 py-10">
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <Link to="/dashboard" className="hover:text-foreground">
@@ -780,7 +802,6 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
           </div>
         )}
       </div>
-      <SiteFooter />
-    </div>
+    </LessonShell>
   );
 }
