@@ -1,8 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Award, Download, ShieldCheck, QrCode, Loader2, ExternalLink } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -108,137 +112,153 @@ function CertificatesPage() {
   const owned = new Set(items.map((c) => c.level));
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <div className="bg-hero">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:px-6">
-          <div className="text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-aurora shadow-glow">
-              <Award className="h-7 w-7 text-white" />
-            </div>
-            <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl">
-              Certificados oficiais
-            </h1>
-            <p className="mx-auto mt-2 max-w-xl text-muted-foreground">
-              Cada nível concluído gera automaticamente um certificado com QR Code, código único e
-              assinatura digital.
-            </p>
+    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+      <VideosSidebar />
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white border-b border-gray-100 shrink-0 z-10">
+          <div className="flex items-center gap-2 min-w-0">
+            <h2 className="font-display text-xl font-bold text-[var(--ink)] truncate">
+              Certificados
+            </h2>
           </div>
-
-          {/* Emitir */}
-          <Card className="mt-10 border-border/60">
-            <CardContent className="p-6">
-              <div className="mb-4 flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                <h2 className="font-display text-lg font-bold">Emitir certificado</h2>
+          <div className="flex items-center gap-2 md:gap-3">
+            <HeaderActionLinks />
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide bg-hero">
+          <div className="mx-auto max-w-6xl px-4 py-12 md:px-6">
+            <div className="text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-aurora shadow-glow">
+                <Award className="h-7 w-7 text-white" />
               </div>
-              <div className="flex flex-wrap gap-2">
-                {LEVELS.map((lvl) => {
-                  const has = owned.has(lvl);
-                  return (
-                    <Button
-                      key={lvl}
-                      variant={has ? "outline" : "default"}
-                      size="sm"
-                      disabled={!!issuing || has}
-                      onClick={() => handleIssue(lvl)}
-                    >
-                      {issuing === lvl ? (
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                      ) : null}
-                      {has ? `${lvl} ✓` : `Emitir ${lvl}`}
-                    </Button>
-                  );
-                })}
-              </div>
-              <p className="mt-3 text-xs text-muted-foreground">
-                Só emite o certificado depois de concluíres o nível. Cada certificado tem um código
-                único e verificável.
+              <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl">
+                Certificados oficiais
+              </h1>
+              <p className="mx-auto mt-2 max-w-xl text-muted-foreground">
+                Cada nível concluído gera automaticamente um certificado com QR Code, código único e
+                assinatura digital.
               </p>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Verificação */}
-          <VerifyBox />
+            {/* Emitir */}
+            <Card className="mt-10 border-border/60">
+              <CardContent className="p-6">
+                <div className="mb-4 flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                  <h2 className="font-display text-lg font-bold">Emitir certificado</h2>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {LEVELS.map((lvl) => {
+                    const has = owned.has(lvl);
+                    return (
+                      <Button
+                        key={lvl}
+                        variant={has ? "outline" : "default"}
+                        size="sm"
+                        disabled={!!issuing || has}
+                        onClick={() => handleIssue(lvl)}
+                      >
+                        {issuing === lvl ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : null}
+                        {has ? `${lvl} ✓` : `Emitir ${lvl}`}
+                      </Button>
+                    );
+                  })}
+                </div>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Só emite o certificado depois de concluíres o nível. Cada certificado tem um
+                  código único e verificável.
+                </p>
+              </CardContent>
+            </Card>
 
-          {/* Histórico */}
-          <div className="mt-8">
-            <h2 className="mb-3 font-display text-lg font-bold">Histórico</h2>
-            {loading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" /> A carregar…
-              </div>
-            ) : items.length === 0 ? (
-              <Card className="border-dashed">
-                <CardContent className="p-8 text-center text-sm text-muted-foreground">
-                  Ainda não tens certificados. Conclui um nível e emite o teu primeiro.
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2">
-                {items.map((c) => (
-                  <Card
-                    key={c.id}
-                    className="overflow-hidden border-2 border-double border-magenta/30"
-                  >
-                    <CardContent className="p-5">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <Badge variant="secondary" className="mb-2">
-                            CEFR {c.level}
-                          </Badge>
-                          <div className="font-display text-xl font-bold">
-                            {c.full_name || "Student"}
+            {/* Verificação */}
+            <VerifyBox />
+
+            {/* Histórico */}
+            <div className="mt-8">
+              <h2 className="mb-3 font-display text-lg font-bold">Histórico</h2>
+              {loading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" /> A carregar…
+                </div>
+              ) : items.length === 0 ? (
+                <Card className="border-dashed">
+                  <CardContent className="p-8 text-center text-sm text-muted-foreground">
+                    Ainda não tens certificados. Conclui um nível e emite o teu primeiro.
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {items.map((c) => (
+                    <Card
+                      key={c.id}
+                      className="overflow-hidden border-2 border-double border-magenta/30"
+                    >
+                      <CardContent className="p-5">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <Badge variant="secondary" className="mb-2">
+                              CEFR {c.level}
+                            </Badge>
+                            <div className="font-display text-xl font-bold">
+                              {c.full_name || "Student"}
+                            </div>
+                            {c.course_title && (
+                              <div className="text-sm text-muted-foreground">{c.course_title}</div>
+                            )}
                           </div>
-                          {c.course_title && (
-                            <div className="text-sm text-muted-foreground">{c.course_title}</div>
-                          )}
+                          <QrCode className="h-8 w-8 text-muted-foreground" />
                         </div>
-                        <QrCode className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
-                        <div>
-                          <div className="uppercase tracking-wider text-muted-foreground">Data</div>
-                          <div className="font-semibold">
-                            {new Date(c.issued_at).toLocaleDateString()}
+                        <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
+                          <div>
+                            <div className="uppercase tracking-wider text-muted-foreground">
+                              Data
+                            </div>
+                            <div className="font-semibold">
+                              {new Date(c.issued_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="uppercase tracking-wider text-muted-foreground">
+                              Score
+                            </div>
+                            <div className="font-semibold">
+                              {c.score != null ? `${Math.round(Number(c.score))}%` : "—"}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="uppercase tracking-wider text-muted-foreground">ID</div>
+                            <div className="font-mono text-2xs font-semibold">
+                              {c.verification_code}
+                            </div>
                           </div>
                         </div>
-                        <div>
-                          <div className="uppercase tracking-wider text-muted-foreground">
-                            Score
-                          </div>
-                          <div className="font-semibold">
-                            {c.score != null ? `${Math.round(Number(c.score))}%` : "—"}
-                          </div>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <Button size="sm" onClick={() => handleDownload(c)}>
+                            <Download className="mr-1.5 h-3.5 w-3.5" />
+                            PDF
+                          </Button>
+                          <Button asChild size="sm" variant="outline">
+                            <Link to="/verify/$code" params={{ code: c.verification_code }}>
+                              <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+                              Página pública
+                            </Link>
+                          </Button>
                         </div>
-                        <div>
-                          <div className="uppercase tracking-wider text-muted-foreground">ID</div>
-                          <div className="font-mono text-2xs font-semibold">
-                            {c.verification_code}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <Button size="sm" onClick={() => handleDownload(c)}>
-                          <Download className="mr-1.5 h-3.5 w-3.5" />
-                          PDF
-                        </Button>
-                        <Button asChild size="sm" variant="outline">
-                          <Link to="/verify/$code" params={{ code: c.verification_code }}>
-                            <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-                            Página pública
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </main>
       </div>
-      <SiteFooter />
+      <VideosMobileNav />
     </div>
   );
 }

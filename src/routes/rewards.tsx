@@ -15,6 +15,7 @@ import {
   Check,
   Loader2,
   Star,
+  Zap,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
 import { useNotification } from "@/lib/notifications/notification-provider";
@@ -656,6 +657,11 @@ function RewardsPage() {
                     label: locale === "pt" ? "Amigos" : "Friends",
                     Icon: Users,
                   },
+                  {
+                    id: "week" as const,
+                    label: locale === "pt" ? "Esta Semana" : "This Week",
+                    Icon: Zap,
+                  },
                 ] as const
               ).map(({ id, label, Icon }) => (
                 <button
@@ -685,7 +691,9 @@ function RewardsPage() {
                     ? ranks.world
                     : rankScope === "national"
                       ? ranks.national
-                      : ranks.friends
+                      : rankScope === "week"
+                        ? ranks.week
+                        : ranks.friends
                 }
                 me={profile.id}
                 locale={locale}

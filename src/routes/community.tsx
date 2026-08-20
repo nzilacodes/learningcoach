@@ -15,8 +15,12 @@ import {
   Flag,
   UserX,
 } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocale } from "@/lib/i18n";
@@ -89,6 +93,33 @@ type Message = {
   kind: string;
   created_at: string;
 };
+
+// Same app-shell wrapper as the rest of the authenticated app (curriculum,
+// games, rewards, etc.) — community was still on the marketing SiteHeader,
+// one of the un-reclassified SiteHeader pages the NAV-1 audit flagged.
+function CommunityShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+      <VideosSidebar />
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white border-b border-gray-100 shrink-0 z-10">
+          <div className="flex items-center gap-2 min-w-0">
+            <h2 className="font-display text-xl font-bold text-[var(--ink)] truncate">
+              Comunidade
+            </h2>
+          </div>
+          <div className="flex items-center gap-2 md:gap-3">
+            <HeaderActionLinks />
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">{children}</main>
+      </div>
+      <VideosMobileNav />
+    </div>
+  );
+}
 
 function CommunityPage() {
   const { locale } = useLocale();
@@ -237,10 +268,9 @@ function CommunityPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen">
-        <SiteHeader />
+      <CommunityShell>
         <div className="p-16 text-center text-muted-foreground">Loading…</div>
-      </div>
+      </CommunityShell>
     );
   }
 
@@ -248,8 +278,7 @@ function CommunityPage() {
     const meta = roomsMeta[room];
     const Icon = meta.icon;
     return (
-      <div className="min-h-screen">
-        <SiteHeader />
+      <CommunityShell>
         <div className="mx-auto max-w-lg px-6 py-16">
           <div className="glass rounded-3xl p-8 text-center shadow-glow">
             <div
@@ -316,8 +345,7 @@ function CommunityPage() {
             </p>
           </div>
         </div>
-        <SiteFooter />
-      </div>
+      </CommunityShell>
     );
   }
 
@@ -326,8 +354,7 @@ function CommunityPage() {
   const onlineCount = new Set(messages.slice(-30).map((m) => m.user_id)).size || 1;
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
+    <CommunityShell>
       <div className="mx-auto max-w-7xl px-6 py-10">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
           <div>
@@ -564,7 +591,6 @@ function CommunityPage() {
           </aside>
         </div>
       </div>
-      <SiteFooter />
-    </div>
+    </CommunityShell>
   );
 }

@@ -1,7 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import {
@@ -146,104 +150,133 @@ function LevelExamPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <SiteHeader />
-      <main className="flex-1 container mx-auto px-4 py-10 max-w-2xl">
-        <div className="mb-6">
-          <Link
-            to="/cefr-levels"
-            className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-          >
-            <ArrowLeft className="w-4 h-4" /> Níveis
-          </Link>
-        </div>
-
-        <h1 className="text-3xl font-bold mb-2">Exame final {level}</h1>
-        <p className="text-muted-foreground mb-8">
-          Nota mínima: <strong>{minScore}%</strong>. Passar desbloqueia o próximo nível CEFR.
-        </p>
-
-        {result ? (
-          <div className="rounded-2xl border p-8 text-center bg-card">
-            {result.passed ? (
-              <Trophy className="w-14 h-14 mx-auto text-primary mb-4" />
-            ) : (
-              <XCircle className="w-14 h-14 mx-auto text-destructive mb-4" />
-            )}
-            <div className="text-4xl font-bold mb-2">{result.score}%</div>
-            <p className="text-lg mb-6">
-              {result.passed
-                ? `Aprovado! Nível seguinte desbloqueado.`
-                : `Não atingiu a nota mínima (${minScore}%).`}
-            </p>
-            <div className="flex gap-3 justify-center">
-              <Button asChild>
-                <Link to="/cefr-levels">Ver níveis</Link>
-              </Button>
-              {!result.passed && (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setResult(null);
-                    setAnswers({});
-                  }}
-                >
-                  Tentar novamente
-                </Button>
-              )}
-              {result.passed && (
-                <Button variant="outline" onClick={() => navigate({ to: "/dashboard" })}>
-                  Ir para o Dashboard
-                </Button>
-              )}
-            </div>
+    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+      <VideosSidebar />
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white border-b border-gray-100 shrink-0 z-10">
+          <div className="flex items-center gap-2 min-w-0">
+            <h2 className="font-display text-xl font-bold text-[var(--ink)] truncate">
+              Exame final
+            </h2>
           </div>
-        ) : (
-          <div className="space-y-6">
-            {questions.map((q, i) => (
-              <div key={i} className="rounded-xl border p-5 bg-card">
-                <div className="font-medium mb-3">
-                  {i + 1}. {q.q}
-                </div>
-                <div className="grid gap-2">
-                  {q.opts.map((opt, j) => {
-                    const active = answers[i] === j;
-                    return (
-                      <button
-                        key={j}
-                        type="button"
-                        onClick={() => setAnswers((a) => ({ ...a, [i]: j }))}
-                        className={`text-left px-4 py-2 rounded-lg border transition ${active ? "border-primary bg-primary/10" : "hover:bg-accent"}`}
-                      >
-                        <span className="inline-flex items-center gap-2">
-                          {active && <CheckCircle2 className="w-4 h-4 text-primary" />}
-                          {opt}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+          <div className="flex items-center gap-2 md:gap-3">
+            <HeaderActionLinks />
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide container mx-auto px-4 py-10 max-w-2xl">
+          <div className="mb-6">
+            <Link
+              to="/cefr-levels"
+              className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+            >
+              <ArrowLeft className="w-4 h-4" /> Níveis
+            </Link>
+          </div>
+
+          <h1 className="text-3xl font-bold mb-2">Exame final {level}</h1>
+          <p className="text-muted-foreground mb-8">
+            Nota mínima: <strong>{minScore}%</strong>. Passar desbloqueia o próximo nível CEFR.
+          </p>
+
+          {result ? (
+            <div className="rounded-2xl border p-8 text-center bg-card">
+              {result.passed ? (
+                <Trophy className="w-14 h-14 mx-auto text-primary mb-4" />
+              ) : (
+                <XCircle className="w-14 h-14 mx-auto text-destructive mb-4" />
+              )}
+              <div className="text-4xl font-bold mb-2">{result.score}%</div>
+              <p className="text-lg mb-6">
+                {result.passed
+                  ? `Aprovado! Nível seguinte desbloqueado.`
+                  : `Não atingiu a nota mínima (${minScore}%).`}
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Button asChild>
+                  <Link to="/cefr-levels">Ver níveis</Link>
+                </Button>
+                {!result.passed && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setResult(null);
+                      setAnswers({});
+                    }}
+                  >
+                    Tentar novamente
+                  </Button>
+                )}
+                {result.passed && (
+                  <Button variant="outline" onClick={() => navigate({ to: "/dashboard" })}>
+                    Ir para o Dashboard
+                  </Button>
+                )}
               </div>
-            ))}
-            <Button size="lg" className="w-full" onClick={submit} disabled={submitting}>
-              {submitting ? "A submeter…" : "Submeter exame"}
-            </Button>
-          </div>
-        )}
-      </main>
-      <SiteFooter />
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {questions.map((q, i) => (
+                <div key={i} className="rounded-xl border p-5 bg-card">
+                  <div className="font-medium mb-3">
+                    {i + 1}. {q.q}
+                  </div>
+                  <div className="grid gap-2">
+                    {q.opts.map((opt, j) => {
+                      const active = answers[i] === j;
+                      return (
+                        <button
+                          key={j}
+                          type="button"
+                          onClick={() => setAnswers((a) => ({ ...a, [i]: j }))}
+                          className={`text-left px-4 py-2 rounded-lg border transition ${active ? "border-primary bg-primary/10" : "hover:bg-accent"}`}
+                        >
+                          <span className="inline-flex items-center gap-2">
+                            {active && <CheckCircle2 className="w-4 h-4 text-primary" />}
+                            {opt}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <Button size="lg" className="w-full" onClick={submit} disabled={submitting}>
+                {submitting ? "A submeter…" : "Submeter exame"}
+              </Button>
+            </div>
+          )}
+        </main>
+      </div>
+      <VideosMobileNav />
     </div>
   );
 }
 
+// Same app-shell wrapper placement.tsx (the other test flow) already uses.
 function FullBleed({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <SiteHeader />
-      <main className="flex-1 container mx-auto px-4 py-16 max-w-xl flex flex-col items-center justify-center text-center">
-        {children}
-      </main>
-      <SiteFooter />
+    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+      <VideosSidebar />
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white border-b border-gray-100 shrink-0 z-10">
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="font-display text-xl font-bold text-[var(--ink)] truncate">
+              Exame final
+            </h1>
+          </div>
+          <div className="flex items-center gap-2 md:gap-3">
+            <HeaderActionLinks />
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide container mx-auto px-4 py-16 max-w-xl flex flex-col items-center justify-center text-center">
+          {children}
+        </main>
+      </div>
+      <VideosMobileNav />
     </div>
   );
 }
