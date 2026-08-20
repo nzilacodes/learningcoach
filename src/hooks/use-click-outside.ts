@@ -1,6 +1,6 @@
 import { useEffect, type RefObject } from "react";
 
-/** Closes an open dropdown/menu when a click lands outside its container ref. */
+/** Closes an open dropdown/menu on an outside click or on Escape. */
 export function useClickOutside(
   ref: RefObject<HTMLElement | null>,
   setOpen: (open: boolean) => void,
@@ -11,7 +11,14 @@ export function useClickOutside(
         setOpen(false);
       }
     }
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
     document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
   }, [ref, setOpen]);
 }

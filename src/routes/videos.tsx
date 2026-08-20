@@ -1,17 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, useRef } from "react";
-import {
-  Search,
-  Play,
-  Flame,
-  MoreVertical,
-  CheckCircle,
-  Share2,
-  User,
-  Settings,
-  LogOut,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Search, Play, Flame, MoreVertical, CheckCircle, Share2 } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { useAgeGroup } from "@/lib/use-age-group";
@@ -20,8 +10,8 @@ import { AGE_TRACKS } from "@/lib/age-tracks";
 import { extractYouTubeId, youtubeThumb, videoPoolForAge } from "@/lib/youtube";
 import { useUserStats, useWeeklyStudy } from "@/lib/learning";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
 import { useNotification } from "@/lib/notifications/notification-provider";
-import { useClickOutside } from "@/hooks/use-click-outside";
 
 export const Route = createFileRoute("/videos")({
   component: VideosPage,
@@ -89,7 +79,7 @@ function matchesFilter(video: { title: string; channel: string }, filter: string
 }
 
 function VideosPage() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { group } = useAgeGroup();
@@ -98,9 +88,13 @@ function VideosPage() {
   const [activeFilter, setActiveFilter] = useState("All Videos");
   const [searchQuery, setSearchQuery] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
-  const avatarRef = useRef<HTMLDivElement>(null);
-  useClickOutside(avatarRef, setAvatarMenuOpen);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenMenuId(null);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [openMenuId]);
 
   const { data: recent } = useQuery({
     queryKey: ["video_history_list", user?.id],
@@ -164,61 +158,8 @@ function VideosPage() {
 
           {/* Right side */}
           <div className="flex items-center gap-5">
-            {/* Avatar with dropdown — mobile only */}
-            <div className="relative md:hidden" ref={avatarRef}>
-              {avatarMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        navigate({ to: "/profile" });
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-                    >
-                      <User className="w-4 h-4 text-[var(--violet)]" />
-                      {locale === "pt" ? "Ver perfil" : "View profile"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        navigate({ to: "/settings" });
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-                    >
-                      <Settings className="w-4 h-4 text-gray-400" />
-                      {locale === "pt" ? "Definições" : "Settings"}
-                    </button>
-                    <div className="mx-3 my-1 h-px bg-gray-50" />
-                    <button
-                      onClick={() => signOut()}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {locale === "pt" ? "Sair da conta" : "Sign out"}
-                    </button>
-                  </div>
-                </>
-              )}
-              <button
-                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
-                className="h-10 w-10 rounded-full border-2 border-white shadow-sm overflow-hidden cursor-pointer hover:border-[var(--violet)] transition-all"
-              >
-                <div className="w-full h-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-white text-sm font-bold">
-                  {user?.email?.charAt(0).toUpperCase() || "U"}
-                </div>
-              </button>
-            </div>
-            {/* Avatar — desktop only (sidebar's own menu covers desktop; this just links straight to the profile page) */}
-            <Link
-              to="/profile"
-              className="hidden md:block h-10 w-10 rounded-full border-2 border-white shadow-sm overflow-hidden hover:border-[var(--violet)] transition-all"
-            >
-              <div className="w-full h-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-white text-sm font-bold">
-                {user?.email?.charAt(0).toUpperCase() || "U"}
-              </div>
-            </Link>
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
           </div>
         </header>
 
@@ -434,6 +375,7 @@ function VideosPage() {
                         e.stopPropagation();
                         setOpenMenuId(openMenuId === video.videoId ? null : video.videoId);
                       }}
+                      aria-label={locale === "pt" ? "Mais opções" : "More options"}
                       className="p-1.5 hover:bg-gray-100 rounded-xl transition-colors"
                     >
                       <MoreVertical className="w-4 h-4 text-gray-400" />

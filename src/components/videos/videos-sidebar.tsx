@@ -143,11 +143,11 @@ export function VideosSidebar() {
         ) : (
           <button
             onClick={() => setCollapsed(false)}
-            className="absolute -right-3 top-6 w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-full text-gray-400 hover:text-black hover:bg-gray-50 shadow-sm transition-all z-30"
+            className="absolute -right-3 top-6 w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-full text-gray-400 hover:text-black hover:bg-gray-50 shadow-sm transition-all z-30"
             title="Expandir menu"
             aria-label="Expandir menu"
           >
-            <PanelLeftOpen className="w-3.5 h-3.5" />
+            <PanelLeftOpen className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -235,6 +235,7 @@ export function VideosSidebar() {
 
         <button
           onClick={() => setProfileOpen(!profileOpen)}
+          aria-label={locale === "pt" ? "Menu de conta" : "Account menu"}
           className={`cursor-pointer group w-full text-left ${collapsed ? "" : "flex items-center gap-3 px-2"}`}
         >
           <div className="relative">
