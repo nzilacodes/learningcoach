@@ -12,12 +12,21 @@ import { useAuth } from "@/lib/auth";
 import { SITE_URL } from "@/lib/site-url";
 
 export const Route = createFileRoute("/pricing")({
-  // Fetched only so head()'s JSON-LD reflects live prices instead of a
-  // hardcoded snapshot that silently drifted whenever an admin changed a
-  // plan's price — the page body still uses its own useQuery for the actual
-  // pricing cards/interactivity.
-  loader: async () => {
-    const plans = await apiFetch<Plan[]>("/v1/plans").catch(() => []);
+  // Seeds the same "subscription_plans" query the page body's useQuery reads
+  // (same key + queryFn shape) via the router's shared queryClient, so the
+  // client-side useQuery is a cache hit instead of a second network request —
+  // this also gives head()'s JSON-LD live prices instead of a hardcoded
+  // snapshot that would silently drift whenever an admin changed a price.
+  loader: async ({ context }) => {
+    const plans = await context.queryClient
+      .ensureQueryData({
+        queryKey: ["subscription_plans"],
+        queryFn: async () => {
+          const data = await apiFetch<Plan[]>("/v1/plans");
+          return data.map((p) => ({ ...p, features: p.features ?? [] }));
+        },
+      })
+      .catch(() => [] as Plan[]);
     return { monthlyPlans: plans.filter((p) => p.billing_cycle === "monthly") };
   },
   component: PricingPage,

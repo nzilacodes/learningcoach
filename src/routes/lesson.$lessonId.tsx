@@ -1,7 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Volume2, Mic, Check, X, Trophy, Loader2, CheckCircle2 } from "lucide-react";
+import {
+  Volume2,
+  Mic,
+  Check,
+  X,
+  Trophy,
+  Loader2,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -19,6 +29,13 @@ import {
   type Recorder,
 } from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
+import {
+  CEFR_LEVELS,
+  cefrRank,
+  canAccessLevel,
+  useMaxUnlockedLevel,
+  type CefrLevel,
+} from "@/lib/level-access";
 
 export const Route = createFileRoute("/lesson/$lessonId")({
   component: LessonPage,
@@ -54,6 +71,9 @@ type CompleteResult = {
   level_up?: boolean;
   level?: number;
 };
+
+// What comes after the current lesson — see `nextStep` in LessonPageInner.
+type NextStep = { type: "lesson"; lessonId: string } | { type: "exam"; level: CefrLevel };
 
 function useLesson(lessonId: string) {
   return useQuery({
@@ -457,9 +477,100 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
   const alreadyDone = progress.some(
     (p) => p.lesson_id === lessonId && (!!p.completed_at || p.progress_pct >= 100),
   );
+  const { data: unlockedLevel } = useMaxUnlockedLevel();
+
+  // What comes after this lesson — the next lesson in this unit, the next
+  // unit's first lesson, the next level's first lesson (if already
+  // unlocked), or the current level's exam CTA (if not). Same walk
+  // curriculum.tsx already does for its "Continuar"/exam banners, just
+  // starting from this lesson instead of "first not-done lesson".
+  const nextStep = useMemo<NextStep | null>(() => {
+    if (!lesson || !unit || !course || !curriculum) return null;
+
+    const unitLessons = curriculum.lessons
+      .filter((l) => l.unit_id === unit.id)
+      .sort((a, b) => a.order_index - b.order_index);
+    const idx = unitLessons.findIndex((l) => l.id === lesson.id);
+    const withinUnit = idx >= 0 ? unitLessons[idx + 1] : undefined;
+    if (withinUnit) return { type: "lesson", lessonId: withinUnit.id };
+
+    const courseUnits = curriculum.units
+      .filter((u) => u.course_id === course.id)
+      .sort((a, b) => a.order_index - b.order_index);
+    const uIdx = courseUnits.findIndex((u) => u.id === unit.id);
+    const nextUnit = uIdx >= 0 ? courseUnits[uIdx + 1] : undefined;
+    if (nextUnit) {
+      const firstLesson = curriculum.lessons
+        .filter((l) => l.unit_id === nextUnit.id)
+        .sort((a, b) => a.order_index - b.order_index)[0];
+      if (firstLesson) return { type: "lesson", lessonId: firstLesson.id };
+    }
+
+    // End of this level's units — next stop is either the next CEFR level
+    // (if already unlocked) or that exam CTA (if not).
+    const currentLevel = course.level as CefrLevel;
+    const nextLevel = CEFR_LEVELS[cefrRank(currentLevel)];
+    if (!nextLevel) return null; // already the last level (C2) — nothing further
+    if (canAccessLevel(nextLevel, unlockedLevel)) {
+      const nextCourse = curriculum.courses.find((c) => c.level === nextLevel);
+      const firstUnit = nextCourse
+        ? curriculum.units
+            .filter((u) => u.course_id === nextCourse.id)
+            .sort((a, b) => a.order_index - b.order_index)[0]
+        : undefined;
+      const firstLesson = firstUnit
+        ? curriculum.lessons
+            .filter((l) => l.unit_id === firstUnit.id)
+            .sort((a, b) => a.order_index - b.order_index)[0]
+        : undefined;
+      return firstLesson ? { type: "lesson", lessonId: firstLesson.id } : null;
+    }
+    return { type: "exam", level: currentLevel };
+  }, [lesson, unit, course, curriculum, unlockedLevel]);
+
+  // Mirror of the forward walk above, minus the exam-gating branch — going
+  // back never requires unlocking anything, so it's just "previous lesson in
+  // this unit, else last lesson of the previous unit".
+  const prevLessonId = useMemo<string | null>(() => {
+    if (!lesson || !unit || !course || !curriculum) return null;
+
+    const unitLessons = curriculum.lessons
+      .filter((l) => l.unit_id === unit.id)
+      .sort((a, b) => a.order_index - b.order_index);
+    const idx = unitLessons.findIndex((l) => l.id === lesson.id);
+    const withinUnit = idx > 0 ? unitLessons[idx - 1] : undefined;
+    if (withinUnit) return withinUnit.id;
+
+    const courseUnits = curriculum.units
+      .filter((u) => u.course_id === course.id)
+      .sort((a, b) => a.order_index - b.order_index);
+    const uIdx = courseUnits.findIndex((u) => u.id === unit.id);
+    const prevUnit = uIdx > 0 ? courseUnits[uIdx - 1] : undefined;
+    if (prevUnit) {
+      const lastLesson = curriculum.lessons
+        .filter((l) => l.unit_id === prevUnit.id)
+        .sort((a, b) => b.order_index - a.order_index)[0];
+      if (lastLesson) return lastLesson.id;
+    }
+    return null;
+  }, [lesson, unit, course, curriculum]);
 
   const [completing, setCompleting] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
+
+  // Auto-advance only off a completion from *this* session (justCompleted),
+  // never off revisiting an already-completed lesson (alreadyDone) — someone
+  // rereading an old lesson shouldn't get yanked away. The component remounts
+  // on every lessonId change (see `key={lessonId}` in LessonPage below), so
+  // navigating away manually before the timer fires unmounts this effect and
+  // clearTimeout cancels the pending auto-advance on its own.
+  useEffect(() => {
+    if (!justCompleted || nextStep?.type !== "lesson") return;
+    const t = setTimeout(() => {
+      navigate({ to: "/lesson/$lessonId", params: { lessonId: nextStep.lessonId } });
+    }, 3000);
+    return () => clearTimeout(t);
+  }, [justCompleted, nextStep, navigate]);
 
   const completeLesson = async () => {
     setCompleting(true);
@@ -593,8 +704,21 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
         <div className="mt-10 flex flex-col items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5 sm:flex-row">
           {done ? (
             <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
-              <CheckCircle2 className="h-5 w-5" />{" "}
+              {justCompleted && nextStep?.type === "lesson" ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-5 w-5" />
+              )}{" "}
               {locale === "pt" ? "Lição concluída" : "Lesson completed"}
+              {justCompleted && nextStep?.type === "lesson" && (
+                <span className="font-normal text-muted-foreground">
+                  {" "}
+                  ·{" "}
+                  {locale === "pt"
+                    ? "a avançar para a próxima lição…"
+                    : "advancing to the next lesson…"}
+                </span>
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
@@ -607,6 +731,15 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
             <Button asChild variant="outline">
               <Link to="/curriculum">{locale === "pt" ? "Ver currículo" : "View curriculum"}</Link>
             </Button>
+            {done && nextStep?.type === "exam" && (
+              <Button asChild className="bg-amber-600 text-white hover:bg-amber-700">
+                <Link to="/level-exam/$level" params={{ level: nextStep.level }}>
+                  {locale === "pt"
+                    ? `Fazer exame de ${nextStep.level}`
+                    : `Take the ${nextStep.level} exam`}
+                </Link>
+              </Button>
+            )}
             {!done && (
               <Button
                 onClick={completeLesson}
@@ -623,6 +756,29 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
             )}
           </div>
         </div>
+
+        {(prevLessonId || nextStep?.type === "lesson") && (
+          <div className="mt-4 flex items-center justify-between gap-4">
+            {prevLessonId ? (
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/lesson/$lessonId" params={{ lessonId: prevLessonId }}>
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  {locale === "pt" ? "Lição anterior" : "Previous lesson"}
+                </Link>
+              </Button>
+            ) : (
+              <span />
+            )}
+            {nextStep?.type === "lesson" && (
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/lesson/$lessonId" params={{ lessonId: nextStep.lessonId }}>
+                  {locale === "pt" ? "Próxima lição" : "Next lesson"}
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
+            )}
+          </div>
+        )}
       </div>
       <SiteFooter />
     </div>

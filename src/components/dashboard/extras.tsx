@@ -254,7 +254,7 @@ export function AchievementsCard() {
 /* -------- Activity calendar (last 12 weeks heatmap) -------- */
 export function ActivityCalendar() {
   const { user } = useAuth();
-  const { data = [] } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ["activity_calendar", user?.id],
     enabled: !!user,
     queryFn: () => apiFetch<{ day: string; seconds: number }[]>("/v1/me/study-sessions?days=84"),
@@ -287,19 +287,27 @@ export function ActivityCalendar() {
         <h3 className="font-display font-bold">Calendário</h3>
         <Calendar className="h-4 w-4 text-muted-foreground" />
       </div>
-      <div className="grid grid-flow-col grid-rows-7 gap-1">
-        {cells.map((c) => (
-          <div
-            key={c.day}
-            title={`${c.day} · ${Math.round(c.seconds / 60)} min`}
-            className={`h-3 w-3 rounded-sm ${level(c.seconds)}`}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="grid grid-flow-col grid-rows-7 gap-1">
+          {Array.from({ length: 84 }).map((_, i) => (
+            <div key={i} className="h-3 w-3 animate-pulse rounded-sm bg-muted" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-flow-col grid-rows-7 gap-1">
+          {cells.map((c) => (
+            <div
+              key={c.day}
+              title={`${c.day} · ${Math.round(c.seconds / 60)} min`}
+              className={`h-3 w-3 rounded-sm ${level(c.seconds)}`}
+            />
+          ))}
+        </div>
+      )}
       <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-        <span>{activeDays} dias ativos · 12 semanas</span>
+        <span>{isLoading ? "A carregar…" : `${activeDays} dias ativos · 12 semanas`}</span>
         <span>
-          {Math.floor(total / 3600)}h {Math.floor((total % 3600) / 60)}m
+          {isLoading ? "" : `${Math.floor(total / 3600)}h ${Math.floor((total % 3600) / 60)}m`}
         </span>
       </div>
     </div>
