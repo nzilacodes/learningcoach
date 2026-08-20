@@ -63,6 +63,7 @@
   --color-chart-3: var(--magenta);
   --color-chart-4: var(--violet);
   --color-chart-5: var(--ink);
+  --color-chart-6: var(--chart-6);
 
   --color-marketing-teal: var(--marketing-teal);
   --color-marketing-teal-dark: var(--marketing-teal-dark);
@@ -82,6 +83,10 @@
   --violet: oklch(0.4 0.12 260); /* deep indigo */
   --ink: oklch(0.18 0.03 260);
   --cream: oklch(0.985 0.005 250);
+  /* 6th chart category color — same L/C family as sunset..ink above, at a
+     non-overlapping hue (green) instead of reusing --destructive, which
+     carries an error/danger meaning a chart category shouldn't imply. */
+  --chart-6: oklch(0.6 0.13 150);
 
   --background: oklch(0.985 0.005 250);
   --foreground: oklch(0.18 0.03 260);

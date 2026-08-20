@@ -15,6 +15,7 @@ import { MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-
 import { useLocale } from "@/lib/i18n";
 import { AGE_TRACKS } from "@/lib/age-tracks";
 import type { DashboardData } from "@/lib/learning";
+import { DAILY_XP_GOAL } from "@/lib/learning";
 import {
   ProfileHeader,
   LeaderboardCard,
@@ -42,6 +43,8 @@ export function TeensDashboard(data: DashboardData) {
   } = data;
   const displayName = data.firstName ?? (locale === "pt" ? "Aluno" : "Learner");
   const teenGames = track.games.slice(0, 4);
+  const todayXp = data.userStats?.today_xp ?? 0;
+  const todayXpPct = Math.min(1, todayXp / DAILY_XP_GOAL);
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
@@ -247,6 +250,32 @@ export function TeensDashboard(data: DashboardData) {
                   {completedLessonCount}{" "}
                   {locale === "pt" ? "lições concluídas" : "lessons completed"} · {week.label}{" "}
                   {locale === "pt" ? "esta semana" : "this week"}
+                </p>
+              </div>
+
+              <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-bold text-[var(--ink)]">
+                    {locale === "pt" ? "Meta Diária" : "Daily Goal"}
+                  </h4>
+                  <span className="text-xs font-bold text-sunset">
+                    {todayXp}/{DAILY_XP_GOAL} XP
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-sunset rounded-full transition-all duration-700"
+                    style={{ width: `${todayXpPct * 100}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-xs text-gray-500">
+                  {todayXp >= DAILY_XP_GOAL
+                    ? locale === "pt"
+                      ? "Meta de hoje atingida! 🎉"
+                      : "Today's goal reached! 🎉"
+                    : locale === "pt"
+                      ? `Falta${DAILY_XP_GOAL - todayXp === 1 ? "" : "m"} ${DAILY_XP_GOAL - todayXp} XP para a meta de hoje.`
+                      : `${DAILY_XP_GOAL - todayXp} XP to go today.`}
                 </p>
               </div>
 

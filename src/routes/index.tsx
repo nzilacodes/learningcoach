@@ -251,7 +251,7 @@ function LandingPage() {
                   data-target={s.target ?? 0}
                   data-suffix={"suffix" in s ? s.suffix : undefined}
                   data-decimals={"decimals" in s ? s.decimals : undefined}
-                  className="font-['Poppins',_sans-serif] text-3xl font-extrabold text-marketing-teal sm:text-4xl"
+                  className="font-display text-3xl font-extrabold text-marketing-teal sm:text-4xl"
                 >
                   {"target" in s && s.target !== undefined ? "0" : s.value}
                 </div>
@@ -272,7 +272,7 @@ function LandingPage() {
               key={s.label}
               className="rounded-2xl border border-slate-100 bg-white p-4 text-center shadow-md"
             >
-              <div className="font-['Poppins',_sans-serif] text-2xl font-extrabold text-marketing-teal">
+              <div className="font-display text-2xl font-extrabold text-marketing-teal">
                 {s.value}
               </div>
               <div className="mt-1 text-2xs font-semibold uppercase tracking-wider text-slate-400">

@@ -145,6 +145,16 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        {/* Activates the app's already-complete .dark token set (styles.css)
+            off the OS/browser preference — synchronous + blocking so the
+            class lands before first paint, avoiding a light->dark flash. No
+            manual toggle/persistence; that's a separate feature, not this fix. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'try{if(window.matchMedia("(prefers-color-scheme: dark)").matches)document.documentElement.classList.add("dark")}catch(e){}',
+          }}
+        />
         <HeadContent />
       </head>
       <body>

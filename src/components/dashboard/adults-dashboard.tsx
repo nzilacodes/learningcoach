@@ -638,6 +638,48 @@ export function AdultsDashboard(data: DashboardData) {
                 </div>
               </div>
 
+              {/* Daily XP Goal — horizontal layout */}
+              <div className="bg-white border border-gray-100 rounded-[2rem] p-5 flex items-center gap-5 shadow-sm">
+                <div className="relative w-20 h-20 shrink-0">
+                  <svg viewBox="0 0 36 36" className="w-full h-full">
+                    <path
+                      className="text-gray-100 stroke-current"
+                      fill="none"
+                      strokeWidth="3"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className="text-sunset stroke-current"
+                      fill="none"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeDasharray={`${todayXpPct * 100}, 100`}
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="font-display text-sm font-bold text-sunset">
+                      {todayXp}/{DAILY_XP_GOAL}
+                    </span>
+                    <span className="text-2xs font-bold text-gray-400 uppercase">XP</span>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-1">
+                  <h4 className="font-display text-base font-bold text-[var(--ink)]">
+                    {locale === "pt" ? "Meta Diária" : "Daily Goal"}
+                  </h4>
+                  <p className="text-xs text-gray-500">
+                    {todayXp >= DAILY_XP_GOAL
+                      ? locale === "pt"
+                        ? "Meta de hoje atingida! 🎉"
+                        : "Today's goal reached! 🎉"
+                      : locale === "pt"
+                        ? `Falta${DAILY_XP_GOAL - todayXp === 1 ? "" : "m"} ${DAILY_XP_GOAL - todayXp} XP para a meta de hoje.`
+                        : `${DAILY_XP_GOAL - todayXp} XP to go today.`}
+                  </p>
+                </div>
+              </div>
+
               {/* Learning Track — Vertical Timeline */}
               <div>
                 <h3 className="font-display text-base font-bold text-[var(--ink)] mb-4">

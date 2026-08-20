@@ -154,12 +154,17 @@ function PronunciationPage() {
                   <YAxis domain={[0, 100]} />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="Global" stroke="#2563eb" strokeWidth={2} />
-                  <Line type="monotone" dataKey="Pronúncia" stroke="#16a34a" />
-                  <Line type="monotone" dataKey="Fluência" stroke="#f59e0b" />
-                  <Line type="monotone" dataKey="Entoação" stroke="#db2777" />
-                  <Line type="monotone" dataKey="Ritmo" stroke="#9333ea" />
-                  <Line type="monotone" dataKey="Clareza" stroke="#0891b2" />
+                  <Line
+                    type="monotone"
+                    dataKey="Global"
+                    stroke="var(--color-chart-1)"
+                    strokeWidth={2}
+                  />
+                  <Line type="monotone" dataKey="Pronúncia" stroke="var(--color-chart-2)" />
+                  <Line type="monotone" dataKey="Fluência" stroke="var(--color-chart-3)" />
+                  <Line type="monotone" dataKey="Entoação" stroke="var(--color-chart-4)" />
+                  <Line type="monotone" dataKey="Ritmo" stroke="var(--color-chart-5)" />
+                  <Line type="monotone" dataKey="Clareza" stroke="var(--color-chart-6)" />
                 </LineChart>
               </ResponsiveContainer>
             </div>

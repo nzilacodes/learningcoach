@@ -70,7 +70,14 @@ export const Route = createFileRoute("/analytics")({
   }),
 });
 
-const COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#ef4444", "#8b5cf6", "#ec4899"];
+const COLORS = [
+  "var(--color-chart-1)",
+  "var(--color-chart-2)",
+  "var(--color-chart-3)",
+  "var(--color-chart-4)",
+  "var(--color-chart-5)",
+  "var(--color-chart-6)",
+];
 
 function fmtKz(n: number) {
   return new Intl.NumberFormat("pt-PT").format(n) + " Kz";
