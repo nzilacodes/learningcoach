@@ -334,7 +334,7 @@ function ReadingPage() {
           {/* Mobile: single column | Desktop: two columns */}
           <div className="px-4 md:px-6 py-6 md:py-10">
             {/* 1. Pronunciation Section — full width on both */}
-            <section className="bg-white rounded-2xl p-5 md:p-6 shadow-[0_4px_20px_0px_rgba(0,0,0,0.04)] border border-gray-100 mb-6 md:mb-8">
+            <section className="bg-white rounded-2xl p-5 md:p-6 shadow-flat-md border border-gray-100 mb-6 md:mb-8">
               <div className="flex items-center gap-2 mb-4">
                 <Mic className="w-5 h-5 text-[var(--primary)]" />
                 <h2 className="font-display text-lg font-bold text-[var(--ink)]">Pronúncia</h2>

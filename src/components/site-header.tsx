@@ -59,7 +59,7 @@ export function SiteHeader() {
   return (
     <>
       {/* Scroll Progress Bar */}
-      <div className="fixed left-0 top-0 z-[60] h-[3px] w-full">
+      <div className="fixed left-0 top-0 z-scroll-progress h-[3px] w-full">
         <div
           className="h-full bg-gradient-to-r from-marketing-teal via-marketing-lime to-marketing-teal transition-[width] duration-150 ease-out"
           style={{ width: `${scrollProgress}%` }}

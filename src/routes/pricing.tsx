@@ -181,7 +181,7 @@ function PricingPage() {
                   onClick={() => setCycle(c)}
                   className={`rounded-full px-4 sm:px-7 py-2.5 text-2xs sm:text-2xs font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
                     cycle === c
-                      ? "bg-white text-marketing-ink shadow-[0_2px_8px_rgba(15,23,42,0.08)] ring-1 ring-slate-100"
+                      ? "bg-white text-marketing-ink shadow-flat-sm ring-1 ring-slate-100"
                       : "text-slate-400 hover:text-slate-600"
                   }`}
                 >
@@ -222,10 +222,8 @@ function PricingPage() {
 
                       {/* Glass Card - Unified elegant styles for all, elevation for featured */}
                       <div
-                        className={`glass-card relative z-10 flex h-full flex-col p-8 w-full md:max-w-[420px] rounded-[2.5rem] bg-white/80 backdrop-blur-2xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-500 lg:min-h-[600px] ${
-                          featured
-                            ? `lg:-translate-y-10 ring-2 ${ringColor} shadow-[0_40px_80px_-20px_rgba(15,23,42,0.1)]`
-                            : ""
+                        className={`glass-card relative z-10 flex h-full flex-col p-8 w-full md:max-w-[420px] rounded-4xl bg-white/80 backdrop-blur-2xl border border-white/40 shadow-flat-md transition-all duration-500 lg:min-h-[600px] ${
+                          featured ? `lg:-translate-y-10 ring-2 ${ringColor} shadow-flat-lg` : ""
                         }`}
                       >
                         {featured && (
@@ -295,7 +293,7 @@ function PricingPage() {
 
                         <Button
                           onClick={() => handleSubscribe(plan)}
-                          className="mt-12 w-full py-8 px-6 bg-marketing-ink text-white text-xs font-bold uppercase tracking-[0.25em] rounded-full shadow-[0_20px_45px_-5px_rgba(15,23,42,0.35)] transition-all hover:bg-slate-900 active:scale-95 overflow-hidden group/btn"
+                          className="mt-12 w-full py-8 px-6 bg-marketing-ink text-white text-xs font-bold uppercase tracking-[0.25em] rounded-full shadow-flat-btn transition-all hover:bg-slate-900 active:scale-95 overflow-hidden group/btn"
                           variant="default"
                         >
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />

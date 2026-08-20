@@ -21,6 +21,7 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 16px);
   --radius-4xl: calc(var(--radius) + 24px);
+  --radius-5xl: calc(var(--radius) + 34px);
 
   --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
@@ -58,6 +59,8 @@
   --color-ink: var(--ink);
   --color-cream: var(--cream);
 
+  --color-panel-bg: var(--panel-bg);
+
   --color-chart-1: var(--sunset);
   --color-chart-2: var(--amber);
   --color-chart-3: var(--magenta);
@@ -90,6 +93,10 @@
 
   --background: oklch(0.985 0.005 250);
   --foreground: oklch(0.18 0.03 260);
+  /* Secondary panel background for the dashboard/video app shell — distinct
+     from --background, was 3 independently hand-picked #f7f9fb occurrences
+     across adults/teens-dashboard.tsx. Kids gets its own warm override below. */
+  --panel-bg: #f7f9fb;
 
   /* Public/marketing site — fixed across age-themes, unlike --sunset etc.
      Consolidates ~75 raw hex occurrences that were previously repeated
@@ -173,6 +180,7 @@
   --ring: var(--magenta);
   --accent: oklch(0.95 0.06 85 / 0.7);
   --radius: 1.25rem;
+  --panel-bg: #fdf7ec;
 }
 
 /* Teens — vibrant, modern, electric */
@@ -251,6 +259,30 @@
 }
 @utility shadow-card {
   box-shadow: var(--shadow-card);
+}
+
+/* Neutral (non brand-tinted) flat shadows for marketing/pricing cards — were
+   3 different hand-authored rgba() values with no token, one of them pixel-
+   matched to a design reference ("Refined toggle to match image-1.png").
+   Kept their exact values, just named. */
+@utility shadow-flat-sm {
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+@utility shadow-flat-md {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+@utility shadow-flat-lg {
+  box-shadow: 0 40px 80px -20px rgba(15, 23, 42, 0.1);
+}
+@utility shadow-flat-btn {
+  box-shadow: 0 20px 45px -5px rgba(15, 23, 42, 0.35);
+}
+
+/* One named layer above the fixed header (z-50) for the scroll-progress bar
+   that sits on top of it — the only spot in the app that needed to go past
+   Tailwind's default z-index scale. */
+@utility z-scroll-progress {
+  z-index: 60;
 }
 
 @utility shadow-premium-btn {

@@ -20,7 +20,7 @@ export function KidsDashboard(data: DashboardData) {
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
       <VideosSidebar />
-      <div className="flex-1 flex flex-col min-w-0 bg-[#fdf7ec]">
+      <div className="flex-1 flex flex-col min-w-0 bg-panel-bg">
         {/* ====== TopBar ====== */}
         <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white/90 backdrop-blur-xl border-b border-amber-100 shrink-0 z-10">
           <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export function KidsDashboard(data: DashboardData) {
 
             {/* Hero: one big CTA */}
             <div
-              className={`bg-gradient-to-br ${track.color} rounded-[2.5rem] p-6 text-white text-center shadow-xl relative overflow-hidden`}
+              className={`bg-gradient-to-br ${track.color} rounded-4xl p-6 text-white text-center shadow-xl relative overflow-hidden`}
             >
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 blur-3xl rounded-full" />
               <div className="relative z-10">

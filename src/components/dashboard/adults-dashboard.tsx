@@ -125,7 +125,7 @@ export function AdultsDashboard(data: DashboardData) {
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
       <VideosSidebar />
-      <div className="flex-1 flex flex-col min-w-0 bg-[#f7f9fb]">
+      <div className="flex-1 flex flex-col min-w-0 bg-panel-bg">
         {/* ====== TopBar ====== */}
         <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white/80 backdrop-blur-xl border-b border-gray-100 shrink-0 z-10">
           <div className="flex items-center gap-2 min-w-0">
@@ -367,7 +367,7 @@ export function AdultsDashboard(data: DashboardData) {
               </div>
             </div>
             {/* --- Right Sidebar (Desktop, fixed) --- */}
-            <aside className="hidden lg:flex flex-col fixed right-0 top-16 bottom-0 w-[380px] border-l border-gray-100 bg-[#f7f9fb] p-6 gap-6 overflow-y-auto">
+            <aside className="hidden lg:flex flex-col fixed right-0 top-16 bottom-0 w-[380px] border-l border-gray-100 bg-panel-bg p-6 gap-6 overflow-y-auto">
               {/* Weekly Goal */}
               <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm flex flex-col items-center">
                 <h4 className="text-sm font-bold text-[var(--ink)] self-start mb-4">
@@ -529,7 +529,7 @@ export function AdultsDashboard(data: DashboardData) {
               </div>
 
               {/* Continue Card — image bg overlay */}
-              <div className="relative h-48 rounded-[2rem] overflow-hidden shadow-md active:scale-[0.98] transition-transform">
+              <div className="relative h-48 rounded-3xl overflow-hidden shadow-md active:scale-[0.98] transition-transform">
                 <img
                   src={currentUnit.image}
                   alt=""
@@ -587,7 +587,7 @@ export function AdultsDashboard(data: DashboardData) {
               </div>
 
               {/* Weekly Goal — horizontal layout */}
-              <div className="bg-white border border-gray-100 rounded-[2rem] p-5 flex items-center gap-5 shadow-sm">
+              <div className="bg-white border border-gray-100 rounded-3xl p-5 flex items-center gap-5 shadow-sm">
                 <div className="relative w-20 h-20 shrink-0">
                   <svg viewBox="0 0 36 36" className="w-full h-full">
                     <path
@@ -639,7 +639,7 @@ export function AdultsDashboard(data: DashboardData) {
               </div>
 
               {/* Daily XP Goal — horizontal layout */}
-              <div className="bg-white border border-gray-100 rounded-[2rem] p-5 flex items-center gap-5 shadow-sm">
+              <div className="bg-white border border-gray-100 rounded-3xl p-5 flex items-center gap-5 shadow-sm">
                 <div className="relative w-20 h-20 shrink-0">
                   <svg viewBox="0 0 36 36" className="w-full h-full">
                     <path

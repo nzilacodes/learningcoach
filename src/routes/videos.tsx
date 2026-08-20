@@ -223,7 +223,7 @@ function VideosPage() {
                     }
                   : undefined
               }
-              className="group relative block aspect-21/9 rounded-[3rem] overflow-hidden premium-shadow cursor-pointer"
+              className="group relative block aspect-21/9 rounded-5xl overflow-hidden premium-shadow cursor-pointer"
             >
               <img
                 src={

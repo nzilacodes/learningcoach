@@ -49,7 +49,7 @@ export function TeensDashboard(data: DashboardData) {
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
       <VideosSidebar />
-      <div className="flex-1 flex flex-col min-w-0 bg-[#f7f9fb]">
+      <div className="flex-1 flex flex-col min-w-0 bg-panel-bg">
         {/* ====== TopBar ====== */}
         <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white/80 backdrop-blur-xl border-b border-gray-100 shrink-0 z-10">
           <h1 className="font-display text-xl font-bold text-[var(--ink)] truncate">

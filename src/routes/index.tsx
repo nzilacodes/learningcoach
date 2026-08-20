@@ -188,7 +188,7 @@ function LandingPage() {
           <div className="relative">
             <div
               data-anim="hero-image"
-              className="relative aspect-square overflow-hidden rounded-[2.5rem] shadow-2xl shadow-teal-900/20 ring-1 ring-white/40"
+              className="relative aspect-square overflow-hidden rounded-4xl shadow-2xl shadow-teal-900/20 ring-1 ring-white/40"
             >
               <img
                 src={heroStudents}
@@ -385,7 +385,7 @@ function LandingPage() {
       {/* CEFR */}
       <section data-anim="cefr-section" className="py-24">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-10 shadow-sm md:p-14">
+          <div className="rounded-4xl border border-slate-100 bg-white p-10 shadow-sm md:p-14">
             <div className="grid items-end gap-10 lg:grid-cols-4">
               <div data-anim="section-heading" className="lg:col-span-1">
                 <div className="mb-3 inline-block rounded-full bg-lime-100 px-3 py-1 text-2xs font-black uppercase tracking-widest text-marketing-lime-dark">
@@ -457,7 +457,7 @@ function LandingPage() {
           </div>
           <div
             data-anim="testimonial-card"
-            className="relative rounded-[2rem] bg-marketing-ink p-10 text-white shadow-2xl"
+            className="relative rounded-3xl bg-marketing-ink p-10 text-white shadow-2xl"
           >
             <div
               data-anim="testimonial-quote-mark"
@@ -486,7 +486,7 @@ function LandingPage() {
       <section className="px-6 py-20">
         <div
           data-anim="final-cta"
-          className="relative mx-auto max-w-6xl overflow-hidden rounded-[3rem] bg-gradient-to-br from-marketing-teal to-marketing-teal-dark p-14 text-center text-white md:p-20"
+          className="relative mx-auto max-w-6xl overflow-hidden rounded-5xl bg-gradient-to-br from-marketing-teal to-marketing-teal-dark p-14 text-center text-white md:p-20"
         >
           <div
             data-anim="decor-circle"
