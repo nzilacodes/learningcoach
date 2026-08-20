@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, Play, Flame, MoreVertical, CheckCircle, Share2 } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
@@ -87,6 +87,7 @@ function VideosPage() {
   const [activeFilter, setActiveFilter] = useState("All Videos");
   const [searchQuery, setSearchQuery] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!openMenuId) return;
@@ -94,6 +95,18 @@ function VideosPage() {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [openMenuId]);
+
+  // Makes the "⌘ K" hint next to the search box real instead of decorative.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
   const { data: recent } = useQuery({
     queryKey: ["video_history_list", user?.id],
@@ -132,6 +145,7 @@ function VideosPage() {
             <div className="relative group">
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-(--violet) transition-colors" />
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
