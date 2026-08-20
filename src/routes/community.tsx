@@ -145,13 +145,38 @@ function CommunityPage() {
   const room: Room | null = user ? ageToRoom(user.age) : null;
   const displayName = user?.fullName || (user?.email?.split("@")[0] ?? "You");
 
-  const { data, isError, refetch } = useQuery({
+  // Incremental polling (PERF-01): after the first snapshot, each 3s poll
+  // only asks the server for messages created after the last one we've
+  // seen, instead of re-fetching (and re-transferring) the same up-to-200-row
+  // snapshot every time. sinceRef lives outside React Query's cache on
+  // purpose — it must survive between polls without itself triggering one.
+  const [messages, setMessages] = useState<Message[]>([]);
+  const sinceRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    setMessages([]);
+    sinceRef.current = null;
+  }, [room]);
+
+  const { isError, refetch } = useQuery({
     queryKey: ["community_messages", room],
     enabled: !!room && started,
     refetchInterval: 3000,
-    queryFn: () => apiFetch<{ room: Room; messages: Message[] }>("/v1/community/messages"),
+    queryFn: async () => {
+      const since = sinceRef.current;
+      const qs = since ? `?since=${encodeURIComponent(since)}` : "";
+      const res = await apiFetch<{ room: Room; messages: Message[] }>(
+        `/v1/community/messages${qs}`,
+      );
+      if (res.messages.length > 0) {
+        sinceRef.current = res.messages[res.messages.length - 1]!.created_at;
+        setMessages((prev) => (since ? [...prev, ...res.messages] : res.messages));
+      } else if (!since) {
+        setMessages([]);
+      }
+      return res;
+    },
   });
-  const messages = data?.messages ?? [];
 
   const { data: blockedUsers = [], refetch: refetchBlocked } = useQuery({
     queryKey: ["community_blocked"],
@@ -211,6 +236,10 @@ function CommunityPage() {
     if (!ok) return;
     try {
       await apiFetch(`/v1/community/users/${targetUserId}/block`, { method: "POST" });
+      // Full re-snapshot, not an incremental poll — a block must also purge
+      // that user's messages already sitting in local state, which a
+      // since-cursor fetch would never touch (it only ever adds new rows).
+      sinceRef.current = null;
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["community_messages", room] }),
         refetchBlocked(),
@@ -223,6 +252,7 @@ function CommunityPage() {
   const unblockUser = async (targetUserId: string) => {
     try {
       await apiFetch(`/v1/community/users/${targetUserId}/block`, { method: "DELETE" });
+      sinceRef.current = null;
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["community_messages", room] }),
         refetchBlocked(),
