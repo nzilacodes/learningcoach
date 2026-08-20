@@ -135,7 +135,12 @@ function ClassesPage() {
       qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
       notify.success(locale === "pt" ? "Turma criada!" : "Class created!");
     },
-    onError: (e) => notify.fromError(e, { dedupeKey: "classes:create" }),
+    onError: (e) => {
+      const normalized = notify.fromError(e, { dedupeKey: "classes:create" });
+      if (normalized.fieldPaths?.includes("name")) {
+        createForm.setError("name", { type: "server", message: normalized.description });
+      }
+    },
   });
 
   const joinClass = useMutation({
@@ -146,7 +151,12 @@ function ClassesPage() {
       qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
       notify.success(locale === "pt" ? "Você entrou na turma!" : "You joined the class!");
     },
-    onError: (e) => notify.fromError(e, { dedupeKey: "classes:join" }),
+    onError: (e) => {
+      const normalized = notify.fromError(e, { dedupeKey: "classes:join" });
+      if (normalized.fieldPaths?.includes("inviteCode")) {
+        joinForm.setError("code", { type: "server", message: normalized.description });
+      }
+    },
   });
 
   const deleteClass = useMutation({

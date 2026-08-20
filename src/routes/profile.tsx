@@ -121,7 +121,20 @@ function ProfilePage() {
       await refresh();
       notify.success(locale === "pt" ? "Perfil atualizado" : "Profile updated");
     } catch (err) {
-      notify.fromError(err, { dedupeKey: "profile:save" });
+      const normalized = notify.fromError(err, { dedupeKey: "profile:save" });
+      // Backend field names diverge from the form's own for 2 of these.
+      const toFormField: Record<string, keyof ProfileValues> = {
+        fullName: "fullName",
+        country: "country",
+        age: "age",
+        nativeLanguage: "nativeLang",
+        learningGoal: "goal",
+        interests: "interests",
+      };
+      normalized.fieldPaths?.forEach((path) => {
+        const field = toFormField[path];
+        if (field) form.setError(field, { type: "server", message: normalized.description });
+      });
     } finally {
       setSaving(false);
     }

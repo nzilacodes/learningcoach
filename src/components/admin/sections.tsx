@@ -516,7 +516,20 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
       notify.success("Lição atualizada");
       invalidateLesson();
     },
-    onError: (e) => notify.fromError(e, { dedupeKey: "admin:save-lesson" }),
+    onError: (e) => {
+      const normalized = notify.fromError(e, { dedupeKey: "admin:save-lesson" });
+      const toFormField: Record<string, keyof LessonEditorValues> = {
+        title: "title",
+        summary: "summary",
+        content: "contentText",
+        xpReward: "xpReward",
+        isPublished: "published",
+      };
+      normalized.fieldPaths?.forEach((path) => {
+        const field = toFormField[path];
+        if (field) form.setError(field, { type: "server", message: normalized.description });
+      });
+    },
   });
 
   const submit = form.handleSubmit((values) => save.mutate(values));
@@ -765,7 +778,19 @@ function ExerciseRow({
       notify.success("Exercício salvo");
       onSaved();
     },
-    onError: (e) => notify.fromError(e, { dedupeKey: "admin:save-exercise" }),
+    onError: (e) => {
+      const normalized = notify.fromError(e, { dedupeKey: "admin:save-exercise" });
+      const toFormField: Record<string, keyof ExerciseRowValues> = {
+        prompt: "prompt",
+        data: "options",
+        correctAnswer: "correctIndex",
+        xpReward: "xpReward",
+      };
+      normalized.fieldPaths?.forEach((path) => {
+        const field = toFormField[path];
+        if (field) form.setError(field, { type: "server", message: normalized.description });
+      });
+    },
   });
 
   const submit = form.handleSubmit((values) => save.mutate(values));

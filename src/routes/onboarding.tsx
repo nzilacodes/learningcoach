@@ -284,7 +284,21 @@ function ProfileStep({ user, onDone }: { user: AuthUser; onDone: () => Promise<v
       });
     } catch (e) {
       setSaving(false);
-      return notify.fromError(e, { dedupeKey: "onboarding:profile" });
+      const normalized = notify.fromError(e, { dedupeKey: "onboarding:profile" });
+      // Backend field names diverge from the form's own for 2 of these.
+      const toFormField: Record<string, keyof OnboardingProfileValues> = {
+        fullName: "fullName",
+        country: "country",
+        age: "age",
+        nativeLanguage: "nativeLang",
+        learningGoal: "goal",
+        interests: "interests",
+      };
+      normalized.fieldPaths?.forEach((path) => {
+        const field = toFormField[path];
+        if (field) form.setError(field, { type: "server", message: normalized.description });
+      });
+      return;
     }
     setSaving(false);
     setTheme(ageToRoom(values.age));
