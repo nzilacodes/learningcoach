@@ -35,6 +35,7 @@ import {
   FileText,
   ShieldCheck,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 export type AnalyticsData = {
   students: number;
@@ -195,7 +196,12 @@ function AnalyticsPage() {
     notify.success("PDF exportado");
   }
 
-  if (authLoading) return <div className="p-10 text-center">...</div>;
+  if (authLoading)
+    return (
+      <div className="flex items-center justify-center gap-2 p-10 text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin" /> A carregar…
+      </div>
+    );
 
   if (user && !isAdmin) {
     return (

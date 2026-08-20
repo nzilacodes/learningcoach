@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   CheckCircle2,
   XCircle,
+  Loader2,
 } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
@@ -153,7 +154,12 @@ function AdminPage() {
     onError: (e) => notify.fromError(e, { dedupeKey: "admin:cancel-payment" }),
   });
 
-  if (loading) return <div className="p-10 text-center">...</div>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center gap-2 p-10 text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin" /> A carregar…
+      </div>
+    );
 
   if (user && !isAdmin) {
     return (

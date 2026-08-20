@@ -33,7 +33,9 @@ export default tseslint.config(
         },
       ],
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "warn",
+      // "warn" alone doesn't fail `npm run lint` (exit 0 on warnings-only) —
+      // CI would silently let dead code back in even with this rule on.
+      "@typescript-eslint/no-unused-vars": "error",
     },
   },
   eslintPluginPrettier,
