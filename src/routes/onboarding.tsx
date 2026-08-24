@@ -3,8 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 import {
   Sparkles,
+  Star,
   User,
   Globe,
   Cake,
@@ -849,90 +851,45 @@ function DemoStep({ onDone }: { onDone: () => Promise<void> }) {
 
 /* ---------------- STEP 5: CHECKOUT ---------------- */
 
-type PlanKey = "free" | "pro" | "premium";
-const PLANS: {
-  key: PlanKey;
-  icon: typeof Rocket;
-  pt: { name: string; price: string; desc: string; features: string[] };
-  en: { name: string; price: string; desc: string; features: string[] };
-}[] = [
-  {
-    key: "free",
-    icon: Rocket,
-    pt: {
-      name: "Grátis",
-      price: "0€ / mês",
-      desc: "Comece a aprender sem custo",
-      features: ["3 aulas / semana", "Coach IA (limitado)", "Progresso básico"],
-    },
-    en: {
-      name: "Free",
-      price: "0€ / mo",
-      desc: "Start learning at no cost",
-      features: ["3 lessons / week", "AI Coach (limited)", "Basic progress"],
-    },
-  },
-  {
-    key: "pro",
-    icon: Sparkles,
-    pt: {
-      name: "Pro",
-      price: "9,99€ / mês",
-      desc: "Para aprendizes sérios",
-      features: [
-        "Aulas ilimitadas",
-        "Coach IA ilimitado",
-        "Certificados CEFR",
-        "Análise de pronúncia",
-      ],
-    },
-    en: {
-      name: "Pro",
-      price: "9.99€ / mo",
-      desc: "For serious learners",
-      features: [
-        "Unlimited lessons",
-        "Unlimited AI Coach",
-        "CEFR certificates",
-        "Pronunciation analysis",
-      ],
-    },
-  },
-  {
-    key: "premium",
-    icon: Crown,
-    pt: {
-      name: "Premium",
-      price: "19,99€ / mês",
-      desc: "Tudo + sessões 1:1",
-      features: [
-        "Tudo do Pro",
-        "Aulas ao vivo semanais",
-        "Correções de escrita humanas",
-        "Prioridade no suporte",
-      ],
-    },
-    en: {
-      name: "Premium",
-      price: "19.99€ / mo",
-      desc: "Everything + 1:1 sessions",
-      features: [
-        "Everything in Pro",
-        "Weekly live classes",
-        "Human writing feedback",
-        "Priority support",
-      ],
-    },
-  },
-];
+// Real catalogue: same "subscription_plans" query + shape as pricing.tsx (Kz,
+// billed monthly/quarterly/semiannual). Onboarding used to ship its own
+// hardcoded EUR-priced free/pro/premium list here, disconnected from /v1/plans
+// — a plan "selected" during onboarding didn't correspond to any real plan
+// row. Reusing the same query key means a visit to /pricing before or after
+// onboarding hits the React Query cache instead of a second request.
+type Tier = "essential" | "premium" | "vip";
+
+interface SubscriptionPlan {
+  id: string;
+  tier: Tier;
+  billing_cycle: "monthly" | "quarterly" | "semiannual";
+  price_kz: number;
+  features: string[];
+}
+
+const TIER_META: Record<Tier, { icon: typeof Sparkles; pt: string; en: string }> = {
+  essential: { icon: Sparkles, pt: "Essencial", en: "Essential" },
+  premium: { icon: Star, pt: "Premium", en: "Premium" },
+  vip: { icon: Crown, pt: "VIP Elite", en: "VIP Elite" },
+};
+
+const FREE_OPTION = "free" as const;
 
 function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
   const { locale } = useLocale();
   const notify = useNotification();
-  const [selected, setSelected] = useState<PlanKey>("pro");
+  const [selected, setSelected] = useState<string>(FREE_OPTION);
   const [processing, setProcessing] = useState(false);
 
-  const currentPlan = useMemo(() => PLANS.find((p) => p.key === selected)!, [selected]);
+  const { data: plans = [], isLoading: plansLoading } = useQuery({
+    queryKey: ["subscription_plans"],
+    queryFn: async () => {
+      const data = await apiFetch<SubscriptionPlan[]>("/v1/plans");
+      return data.map((p) => ({ ...p, features: p.features ?? [] }));
+    },
+  });
+  const monthlyPlans = useMemo(() => plans.filter((p) => p.billing_cycle === "monthly"), [plans]);
+  const currentPlan = monthlyPlans.find((p) => p.id === selected) ?? null;
 
   const confirm = async () => {
     setProcessing(true);
@@ -941,7 +898,10 @@ function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
     try {
       await apiFetch("/v1/me", {
         method: "PATCH",
-        body: JSON.stringify({ selectedPlan: selected, onboardingStatus: "complete" }),
+        body: JSON.stringify({
+          onboardingStatus: "complete",
+          ...(currentPlan ? { selectedPlan: currentPlan.id } : {}),
+        }),
       });
     } catch (e) {
       setProcessing(false);
@@ -962,39 +922,76 @@ function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
         {locale === "pt" ? "Escolha o seu plano" : "Choose your plan"}
       </h2>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        {PLANS.map((p) => {
-          const Icon = p.icon;
-          const active = selected === p.key;
-          const info = p[locale];
-          return (
-            <button
-              key={p.key}
-              type="button"
-              onClick={() => setSelected(p.key)}
-              className={`rounded-2xl border-2 p-5 text-left transition ${
-                active
-                  ? "border-sunset bg-sunset/10 shadow-soft"
-                  : "border-border bg-background/60 hover:border-magenta/50"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Icon className="h-5 w-5 text-magenta" />
-                <div className="font-display text-lg font-bold">{info.name}</div>
+      {plansLoading ? (
+        <div className="mt-6 flex justify-center py-10">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <button
+            type="button"
+            onClick={() => setSelected(FREE_OPTION)}
+            className={`rounded-2xl border-2 p-5 text-left transition ${
+              selected === FREE_OPTION
+                ? "border-sunset bg-sunset/10 shadow-soft"
+                : "border-border bg-background/60 hover:border-magenta/50"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Rocket className="h-5 w-5 text-magenta" />
+              <div className="font-display text-lg font-bold">
+                {locale === "pt" ? "Grátis" : "Free"}
               </div>
-              <div className="mt-2 text-2xl font-bold text-gradient-sunset">{info.price}</div>
-              <div className="text-xs text-muted-foreground">{info.desc}</div>
-              <ul className="mt-3 space-y-1.5 text-sm">
-                {info.features.map((f, i) => (
-                  <li key={i} className="flex items-start gap-1.5">
-                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-magenta" /> {f}
-                  </li>
-                ))}
-              </ul>
-            </button>
-          );
-        })}
-      </div>
+            </div>
+            <div className="mt-2 text-lg font-bold text-gradient-sunset">
+              {locale === "pt" ? "Continuar sem plano" : "Continue without a plan"}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {locale === "pt"
+                ? "Explore a plataforma e escolha um plano mais tarde."
+                : "Explore the platform and pick a plan later."}
+            </div>
+          </button>
+
+          {monthlyPlans.map((p) => {
+            const meta = TIER_META[p.tier];
+            const Icon = meta.icon;
+            const active = selected === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setSelected(p.id)}
+                className={`rounded-2xl border-2 p-5 text-left transition ${
+                  active
+                    ? "border-sunset bg-sunset/10 shadow-soft"
+                    : "border-border bg-background/60 hover:border-magenta/50"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon className="h-5 w-5 text-magenta" />
+                  <div className="font-display text-lg font-bold">
+                    {locale === "pt" ? meta.pt : meta.en}
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl font-bold text-gradient-sunset">
+                  {p.price_kz.toLocaleString("pt-AO")} Kz
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {locale === "pt" ? "por mês" : "per month"}
+                </div>
+                <ul className="mt-3 space-y-1.5 text-sm">
+                  {p.features.map((f, i) => (
+                    <li key={i} className="flex items-start gap-1.5">
+                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-magenta" /> {f}
+                    </li>
+                  ))}
+                </ul>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <div className="mt-6 rounded-2xl border border-border bg-background/60 p-4 text-sm">
         <div className="flex items-center justify-between">
@@ -1003,12 +1000,16 @@ function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
               {locale === "pt" ? "Selecionado" : "Selected"}
             </div>
             <div className="font-bold">
-              {currentPlan[locale].name} · {currentPlan[locale].price}
+              {currentPlan
+                ? `${locale === "pt" ? TIER_META[currentPlan.tier].pt : TIER_META[currentPlan.tier].en} · ${currentPlan.price_kz.toLocaleString("pt-AO")} Kz`
+                : locale === "pt"
+                  ? "Grátis"
+                  : "Free"}
             </div>
           </div>
           <Button
             size="lg"
-            disabled={processing}
+            disabled={processing || plansLoading}
             onClick={confirm}
             className="bg-gradient-sunset text-white shadow-soft hover:opacity-90"
           >
@@ -1016,7 +1017,7 @@ function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
-                {selected === "free"
+                {!currentPlan
                   ? locale === "pt"
                     ? "Ativar plano grátis"
                     : "Activate free plan"
@@ -1028,7 +1029,7 @@ function CheckoutStep({ onDone }: { onDone: () => Promise<void> }) {
             )}
           </Button>
         </div>
-        {selected !== "free" && (
+        {currentPlan && (
           <p className="mt-3 text-xs text-muted-foreground">
             {locale === "pt"
               ? "Nota: o processamento de pagamentos será ativado em breve. Por agora, o plano será registado e poderá aceder à plataforma."

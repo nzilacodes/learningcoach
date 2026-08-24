@@ -117,7 +117,7 @@ interface Report {
 
 function DiagnosticPage() {
   const { locale } = useLocale();
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
   const navigate = useNavigate();
 
   const [section, setSection] = useState<Section>("intro");
@@ -349,7 +349,19 @@ function DiagnosticPage() {
                   setPronAns(PRONUNCIATION.map(() => ""));
                   setSection("grammar");
                 }}
-                onContinue={() => navigate({ to: "/dashboard" })}
+                onContinue={async () => {
+                  // The diagnostic result endpoint already advanced
+                  // onboarding_status server-side (see submit() above) — but
+                  // the in-memory `user` from useAuth() is still the copy
+                  // fetched when this page loaded, still showing the old
+                  // status. Without this refresh, OnboardingGate reads that
+                  // stale status on the next route, decides onboarding isn't
+                  // complete, and bounces straight back to /onboarding,
+                  // which re-shows this same placement step — an apparent
+                  // loop that never gets past a diagnostic already taken.
+                  await refresh();
+                  navigate({ to: "/dashboard" });
+                }}
               />
             )}
 
