@@ -11,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import { MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
 import { useLocale } from "@/lib/i18n";
 import { AGE_TRACKS } from "@/lib/age-tracks";
@@ -51,23 +52,24 @@ export function TeensDashboard(data: DashboardData) {
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-panel-bg">
         {/* ====== TopBar ====== */}
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white/80 backdrop-blur-xl border-b border-gray-100 shrink-0 z-10">
-          <h1 className="font-display text-xl font-bold text-[var(--ink)] truncate">
-            {locale === "pt" ? "Seu progresso 🎮" : "Your progress 🎮"}
-          </h1>
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="flex items-center gap-1.5 bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full text-sm font-bold">
-              <Flame className="w-4 h-4" />
-              {data.userStats?.streak_days ?? 0}
-            </div>
-            <div className="flex items-center gap-1.5 bg-amber-100 text-amber-600 px-3 py-1.5 rounded-full text-sm font-bold">
-              <Star className="w-4 h-4" />
-              {(data.userStats?.xp ?? 0).toLocaleString()}
-            </div>
-            <MobileAvatarMenu />
-            <DesktopAvatarLink />
-          </div>
-        </header>
+        <AppHeader
+          title={locale === "pt" ? "Seu progresso 🎮" : "Your progress 🎮"}
+          blur
+          actions={
+            <>
+              <div className="flex items-center gap-1.5 bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full text-sm font-bold">
+                <Flame className="w-4 h-4" />
+                {data.userStats?.streak_days ?? 0}
+              </div>
+              <div className="flex items-center gap-1.5 bg-amber-100 text-amber-600 px-3 py-1.5 rounded-full text-sm font-bold">
+                <Star className="w-4 h-4" />
+                {(data.userStats?.xp ?? 0).toLocaleString()}
+              </div>
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
 
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
           <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 grid gap-6 lg:grid-cols-[1fr_340px]">

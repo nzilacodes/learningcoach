@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Flame, Star, Lock, Check, Play, LogOut, PartyPopper } from "lucide-react";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { AGE_TRACKS } from "@/lib/age-tracks";
@@ -22,21 +23,22 @@ export function KidsDashboard(data: DashboardData) {
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-panel-bg">
         {/* ====== TopBar ====== */}
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white/90 backdrop-blur-xl border-b border-amber-100 shrink-0 z-10">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🌟</span>
-            <h1 className="font-display text-lg font-bold text-[var(--ink)] truncate">
-              {locale === "pt" ? `Oi, ${displayName}!` : `Hi, ${displayName}!`}
-            </h1>
-          </div>
-          <button
-            onClick={() => signOut()}
-            aria-label={locale === "pt" ? "Sair da conta" : "Sign out"}
-            className="p-2 text-muted-foreground hover:bg-gray-50 rounded-full transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-        </header>
+        <AppHeader
+          title={locale === "pt" ? `Oi, ${displayName}!` : `Hi, ${displayName}!`}
+          titleClassName="font-display text-lg font-bold text-[var(--ink)] truncate"
+          leftExtra={<span className="text-2xl">🌟</span>}
+          borderClassName="border-amber-100"
+          blur
+          actions={
+            <button
+              onClick={() => signOut()}
+              aria-label={locale === "pt" ? "Sair da conta" : "Sign out"}
+              className="p-2 text-muted-foreground hover:bg-gray-50 rounded-full transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          }
+        />
 
         <main className="flex-1 overflow-y-auto pb-24 scrollbar-hide">
           <div className="max-w-2xl mx-auto px-4 md:px-6 py-6 space-y-6">

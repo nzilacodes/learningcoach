@@ -9,6 +9,7 @@ import { useAgeGroup } from "@/lib/use-age-group";
 import { AGE_TRACKS, AGE_GROUP_LABEL, type AgeTrack } from "@/lib/age-tracks";
 import { AgeThemeSwitcher } from "@/components/age-theme-switcher";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import { GamePlayModal } from "@/components/games/game-play-modal";
 import {
   HeaderActionLinks,
@@ -131,21 +132,22 @@ function GamesPage() {
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         {/* Top Header Bar */}
-        <header className="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 shrink-0 z-10">
-          <div className="flex items-center gap-3 min-w-0">
-            <h1 className="font-display text-xl font-bold text-[var(--ink)] shrink-0">
-              {locale === "pt" ? "Jogos" : "Games"}
-            </h1>
+        <AppHeader
+          title={locale === "pt" ? "Jogos" : "Games"}
+          titleClassName="font-display text-xl font-bold text-[var(--ink)] shrink-0"
+          titleExtra={
             <div className="hidden md:block">
               <AgeThemeSwitcher />
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <HeaderActionLinks />
-            <MobileAvatarMenu />
-            <DesktopAvatarLink />
-          </div>
-        </header>
+          }
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">

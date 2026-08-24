@@ -19,6 +19,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import {
   HeaderActionLinks,
   MobileAvatarMenu,
@@ -216,18 +217,16 @@ function DiagnosticPage() {
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white border-b border-gray-100 shrink-0 z-10">
-          <div className="flex items-center gap-2 min-w-0">
-            <h1 className="font-display text-xl font-bold text-[var(--ink)] truncate">
-              {locale === "pt" ? "Diagnóstico" : "Placement Test"}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 md:gap-3">
-            <HeaderActionLinks />
-            <MobileAvatarMenu />
-            <DesktopAvatarLink />
-          </div>
-        </header>
+        <AppHeader
+          title={locale === "pt" ? "Diagnóstico" : "Placement Test"}
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
           <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10">
             {SECTION_ORDER.includes(section) && (

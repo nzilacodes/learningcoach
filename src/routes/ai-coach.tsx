@@ -16,6 +16,7 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import {
   HeaderActionLinks,
   MobileAvatarMenu,
@@ -258,16 +259,16 @@ function AICoachPage() {
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         {/* Top Header Bar */}
-        <header className="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 shrink-0 z-10">
-          <div className="flex items-center gap-2">
-            <h1 className="font-display text-xl font-bold text-[var(--ink)]">AI Coach</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <HeaderActionLinks />
-            <MobileAvatarMenu />
-            <DesktopAvatarLink />
-          </div>
-        </header>
+        <AppHeader
+          title="AI Coach"
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
 
         {/* Content area */}
         <div className="flex-1 flex overflow-hidden">

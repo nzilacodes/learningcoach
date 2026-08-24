@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Award, Download, ShieldCheck, QrCode, Loader2, ExternalLink } from "lucide-react";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import {
   HeaderActionLinks,
   MobileAvatarMenu,
@@ -115,18 +116,17 @@ function CertificatesPage() {
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white border-b border-gray-100 shrink-0 z-10">
-          <div className="flex items-center gap-2 min-w-0">
-            <h2 className="font-display text-xl font-bold text-[var(--ink)] truncate">
-              Certificados
-            </h2>
-          </div>
-          <div className="flex items-center gap-2 md:gap-3">
-            <HeaderActionLinks />
-            <MobileAvatarMenu />
-            <DesktopAvatarLink />
-          </div>
-        </header>
+        <AppHeader
+          title="Certificados"
+          titleLevel="h2"
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide bg-hero">
           <div className="mx-auto max-w-6xl px-4 py-12 md:px-6">
             <div className="text-center">

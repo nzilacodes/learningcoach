@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -146,11 +147,7 @@ function ProfilePage() {
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
-        <header className="h-16 flex items-center px-4 md:px-6 bg-white border-b border-gray-100 shrink-0 z-10">
-          <h1 className="font-display text-xl font-bold text-[var(--ink)] truncate">
-            {locale === "pt" ? "O meu perfil" : "My profile"}
-          </h1>
-        </header>
+        <AppHeader title={locale === "pt" ? "O meu perfil" : "My profile"} />
         <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8">
           <div className="mx-auto max-w-2xl space-y-6">
             <div className="rounded-2xl border border-gray-100 bg-white p-6 premium-shadow">
