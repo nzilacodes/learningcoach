@@ -963,7 +963,10 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
     } catch (e) {
       const rejection = describeTranscriptionRejection(e, locale);
       if (rejection) {
-        notify.warning(rejection.title, { description: rejection.description, dedupeKey: "placement:no-speech" });
+        notify.warning(rejection.title, {
+          description: rejection.description,
+          dedupeKey: "placement:no-speech",
+        });
       } else {
         notify.fromError(e, { dedupeKey: "placement:transcribe" });
       }

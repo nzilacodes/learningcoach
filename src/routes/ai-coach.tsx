@@ -21,7 +21,12 @@ import {
   MobileAvatarMenu,
   DesktopAvatarLink,
 } from "@/components/mobile-avatar-menu";
-import { startRecording, transcribe, describeTranscriptionRejection, type Recorder } from "@/lib/voice";
+import {
+  startRecording,
+  transcribe,
+  describeTranscriptionRejection,
+  type Recorder,
+} from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
 import { SITE_URL } from "@/lib/site-url";
 import { useNotification } from "@/lib/notifications/notification-provider";
@@ -209,7 +214,10 @@ function AICoachPage() {
       } catch (e) {
         const rejection = describeTranscriptionRejection(e, locale);
         if (rejection) {
-          notify.warning(rejection.title, { description: rejection.description, dedupeKey: "ai-coach:no-speech" });
+          notify.warning(rejection.title, {
+            description: rejection.description,
+            dedupeKey: "ai-coach:no-speech",
+          });
         } else {
           notify.fromError(e, { dedupeKey: "ai-coach:transcribe" });
         }

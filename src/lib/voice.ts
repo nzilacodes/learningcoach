@@ -114,7 +114,10 @@ export async function startRecording(): Promise<Recorder> {
   };
 }
 
-export async function transcribe(blob: Blob, opts: { language?: "en" | "pt" } = {}): Promise<string> {
+export async function transcribe(
+  blob: Blob,
+  opts: { language?: "en" | "pt" } = {},
+): Promise<string> {
   const form = new FormData();
   // "language" must come before "file": @fastify/multipart parses parts in
   // stream order, so a field appended after the file part isn't guaranteed
@@ -186,7 +189,9 @@ export function describeTranscriptionRejection(
     return {
       title: locale === "pt" ? "Não conseguimos ouvir claramente" : "We couldn't hear you clearly",
       description:
-        locale === "pt" ? "Fale mais alto e tente novamente." : "Please speak louder and try again.",
+        locale === "pt"
+          ? "Fale mais alto e tente novamente."
+          : "Please speak louder and try again.",
     };
   }
   return null;

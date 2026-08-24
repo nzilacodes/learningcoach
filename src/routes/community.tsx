@@ -27,7 +27,12 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import { ageToRoom, type AgeTheme } from "@/lib/age-theme";
-import { startRecording, transcribe, describeTranscriptionRejection, type Recorder } from "@/lib/voice";
+import {
+  startRecording,
+  transcribe,
+  describeTranscriptionRejection,
+  type Recorder,
+} from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNotification } from "@/lib/notifications/notification-provider";
@@ -292,7 +297,10 @@ function CommunityPage() {
     } catch (e) {
       const rejection = describeTranscriptionRejection(e, locale);
       if (rejection) {
-        notify.warning(rejection.title, { description: rejection.description, dedupeKey: "community:no-speech" });
+        notify.warning(rejection.title, {
+          description: rejection.description,
+          dedupeKey: "community:no-speech",
+        });
       } else {
         notify.fromError(e, { dedupeKey: "community:transcribe" });
       }

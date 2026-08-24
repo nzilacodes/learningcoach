@@ -219,7 +219,10 @@ function SpeakingPractice({
     } catch (e) {
       const rejection = describeTranscriptionRejection(e, locale);
       if (rejection) {
-        notify.warning(rejection.title, { description: rejection.description, dedupeKey: "lesson:no-speech" });
+        notify.warning(rejection.title, {
+          description: rejection.description,
+          dedupeKey: "lesson:no-speech",
+        });
       } else {
         notify.fromError(e, { dedupeKey: "lesson:transcribe" });
       }

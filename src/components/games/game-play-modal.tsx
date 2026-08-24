@@ -354,7 +354,10 @@ function SpeakingGame({
     } catch (e) {
       const rejection = describeTranscriptionRejection(e, locale);
       if (rejection) {
-        notify.warning(rejection.title, { description: rejection.description, dedupeKey: "game:no-speech" });
+        notify.warning(rejection.title, {
+          description: rejection.description,
+          dedupeKey: "game:no-speech",
+        });
       } else {
         notify.fromError(e, { dedupeKey: "game:transcribe" });
       }

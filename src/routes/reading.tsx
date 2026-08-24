@@ -11,7 +11,13 @@ import {
   XCircle,
 } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
-import { speak, startRecording, transcribe, describeTranscriptionRejection, type Recorder } from "@/lib/voice";
+import {
+  speak,
+  startRecording,
+  transcribe,
+  describeTranscriptionRejection,
+  type Recorder,
+} from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
 import { uploadMedia } from "@/lib/media";
 import { apiFetch } from "@/lib/api/client";
@@ -301,7 +307,10 @@ function ReadingPage() {
     } catch (e) {
       const rejection = describeTranscriptionRejection(e, locale);
       if (rejection) {
-        notify.warning(rejection.title, { description: rejection.description, dedupeKey: "reading:no-speech" });
+        notify.warning(rejection.title, {
+          description: rejection.description,
+          dedupeKey: "reading:no-speech",
+        });
       } else {
         notify.fromError(e, { dedupeKey: "reading:assess" });
       }
