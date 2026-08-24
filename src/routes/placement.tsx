@@ -214,7 +214,7 @@ function DiagnosticPage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         <AppHeader
@@ -396,12 +396,12 @@ function Intro({
         {/* Hero */}
         <section className="flex flex-col items-center text-center pt-8 pb-6 px-1">
           <div className="w-20 h-20 mb-6 relative">
-            <div className="absolute inset-0 bg-[var(--violet)]/10 rounded-full blur-2xl" />
+            <div className="absolute inset-0 bg-violet/10 rounded-full blur-2xl" />
             <div className="relative bg-white rounded-3xl p-5 shadow-sm flex items-center justify-center border border-gray-100">
-              <Sparkles className="h-9 w-9 text-[var(--violet)]" />
+              <Sparkles className="h-9 w-9 text-violet" />
             </div>
           </div>
-          <h1 className="font-display text-[32px] font-semibold text-[var(--ink)] mb-2 tracking-tight leading-tight">
+          <h1 className="font-display text-[32px] font-semibold text-ink mb-2 tracking-tight leading-tight">
             {locale === "pt" ? "Diagnóstico completo" : "Full diagnostic"}
           </h1>
           <p className="text-sm text-muted-foreground max-w-[280px]">
@@ -419,9 +419,9 @@ function Intro({
               return (
                 <div
                   key={s.label}
-                  className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col gap-3 hover:border-[var(--violet)]/50 transition-all shadow-sm"
+                  className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col gap-3 hover:border-violet/50 transition-all shadow-sm"
                 >
-                  <Icon className="h-6 w-6 text-[var(--violet)]" />
+                  <Icon className="h-6 w-6 text-violet" />
                   <span className="text-xs font-bold uppercase tracking-wider text-gray-700">
                     {s.label}
                   </span>
@@ -432,7 +432,7 @@ function Intro({
           {hasPrevious && (
             <button
               onClick={onSeeReport}
-              className="mt-4 w-full text-center text-xs font-semibold text-[var(--violet)] hover:opacity-80 transition-opacity py-2"
+              className="mt-4 w-full text-center text-xs font-semibold text-violet hover:opacity-80 transition-opacity py-2"
             >
               {locale === "pt" ? "Ver último relatório" : "View last report"}
             </button>
@@ -440,10 +440,10 @@ function Intro({
         </section>
 
         {/* Fixed CTA */}
-        <div className="fixed bottom-20 left-0 right-0 px-4 py-4 z-40 bg-gradient-to-t from-[var(--background)] via-[var(--background)] to-transparent">
+        <div className="fixed bottom-20 left-0 right-0 px-4 py-4 z-40 bg-gradient-to-t from-background via-background to-transparent">
           <button
             onClick={onStart}
-            className="w-full bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] text-white py-4 rounded-2xl font-semibold shadow-lg shadow-[var(--violet)]/20 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm"
+            className="w-full bg-gradient-to-r from-violet to-magenta text-white py-4 rounded-2xl font-semibold shadow-lg shadow-violet/20 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm"
           >
             {locale === "pt" ? "Começar" : "Start"}
             <ArrowRight className="w-5 h-5" />
@@ -453,10 +453,10 @@ function Intro({
 
       {/* ========= DESKTOP layout ========= */}
       <div className="hidden md:block bg-white rounded-2xl border border-gray-100 p-8 md:p-12 text-center premium-shadow">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] shadow-md">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-violet to-magenta shadow-md">
           <Sparkles className="h-8 w-8 text-white" />
         </div>
-        <h1 className="mt-6 font-display text-4xl font-bold text-[var(--ink)]">
+        <h1 className="mt-6 font-display text-4xl font-bold text-ink">
           {locale === "pt" ? "Diagnóstico completo" : "Full diagnostic"}
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
@@ -472,7 +472,7 @@ function Intro({
                 key={s.label}
                 className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50/80 p-3 text-sm text-muted-foreground"
               >
-                <Icon className="h-4 w-4 text-[var(--violet)]" />
+                <Icon className="h-4 w-4 text-violet" />
                 {s.label}
               </div>
             );
@@ -482,7 +482,7 @@ function Intro({
           <Button
             size="lg"
             onClick={onStart}
-            className="bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] text-white shadow-md hover:opacity-90"
+            className="bg-gradient-to-r from-violet to-magenta text-white shadow-md hover:opacity-90"
           >
             {locale === "pt" ? "Começar" : "Start"} <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
@@ -540,12 +540,12 @@ function McqSection({
                     }}
                     className={`flex items-center justify-between rounded-xl border-2 p-3 text-left text-sm transition ${
                       active
-                        ? "border-[var(--violet)] bg-[var(--violet)]/10"
-                        : "border-gray-200 bg-gray-50/80 hover:border-[var(--violet)]/50"
+                        ? "border-violet bg-violet/10"
+                        : "border-gray-200 bg-gray-50/80 hover:border-violet/50"
                     }`}
                   >
                     <span>{opt}</span>
-                    {active && <Check className="h-4 w-4 text-[var(--violet)]" />}
+                    {active && <Check className="h-4 w-4 text-violet" />}
                   </button>
                 );
               })}
@@ -585,7 +585,7 @@ function ReadingSection({
       <div className="mt-6 space-y-8">
         {READING.map((p) => (
           <div key={p.id} className="rounded-2xl border border-gray-100 bg-gray-50/80 p-5">
-            <div className="mb-3 text-xs font-bold uppercase tracking-wider text-[var(--violet)]">
+            <div className="mb-3 text-xs font-bold uppercase tracking-wider text-violet">
               {p.level}
             </div>
             <p className="text-sm leading-relaxed text-gray-700">{p.passage}</p>
@@ -608,12 +608,12 @@ function ReadingSection({
                             }}
                             className={`flex items-center justify-between rounded-xl border-2 p-2.5 text-left text-sm transition ${
                               active
-                                ? "border-[var(--violet)] bg-[var(--violet)]/10"
-                                : "border-gray-200 bg-gray-50/80 hover:border-[var(--violet)]/50"
+                                ? "border-violet bg-violet/10"
+                                : "border-gray-200 bg-gray-50/80 hover:border-violet/50"
                             }`}
                           >
                             <span>{opt}</span>
-                            {active && <Check className="h-4 w-4 text-[var(--violet)]" />}
+                            {active && <Check className="h-4 w-4 text-violet" />}
                           </button>
                         );
                       })}
@@ -686,7 +686,7 @@ function ListeningSection({
         {LISTENING.map((it, i) => (
           <div key={it.id} className="rounded-2xl border border-gray-100 bg-gray-50/80 p-5">
             <div className="flex items-center justify-between">
-              <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">
+              <div className="text-xs font-bold uppercase tracking-wider text-violet">
                 {it.level}
               </div>
               <Button
@@ -717,12 +717,12 @@ function ListeningSection({
                     }}
                     className={`flex items-center justify-between rounded-xl border-2 p-2.5 text-left text-sm transition ${
                       active
-                        ? "border-[var(--violet)] bg-[var(--violet)]/10"
-                        : "border-gray-200 bg-gray-50/80 hover:border-[var(--violet)]/50"
+                        ? "border-violet bg-violet/10"
+                        : "border-gray-200 bg-gray-50/80 hover:border-violet/50"
                     }`}
                   >
                     <span>{opt}</span>
-                    {active && <Check className="h-4 w-4 text-[var(--violet)]" />}
+                    {active && <Check className="h-4 w-4 text-violet" />}
                   </button>
                 );
               })}
@@ -765,7 +765,7 @@ function WritingSection({
           const words = (answers[i] ?? "").trim().split(/\s+/).filter(Boolean).length;
           return (
             <div key={w.id} className="rounded-2xl border border-gray-100 bg-gray-50/80 p-5">
-              <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">
+              <div className="text-xs font-bold uppercase tracking-wider text-violet">
                 {w.level}
               </div>
               <div className="mt-2 text-sm font-semibold text-gray-700">{w.prompt}</div>
@@ -851,14 +851,14 @@ function RecordSection({
         {items.map((it, i) => (
           <div key={it.id} className="rounded-2xl border border-gray-100 bg-gray-50/80 p-5">
             <div className="flex items-center justify-between">
-              <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">
+              <div className="text-xs font-bold uppercase tracking-wider text-violet">
                 {it.level}
               </div>
               <div className="text-xs text-muted-foreground">{it.hint}</div>
             </div>
             <div className="mt-2 text-sm font-semibold text-gray-700">{it.prompt}</div>
             {kind === "pronunciation" && (
-              <div className="mt-3 rounded-xl bg-white border border-gray-100 p-3 text-lg font-semibold text-[var(--ink)]">
+              <div className="mt-3 rounded-xl bg-white border border-gray-100 p-3 text-lg font-semibold text-ink">
                 {PRONUNCIATION[i].sentence}
               </div>
             )}
@@ -1040,7 +1040,7 @@ function NavBar({
             </Button>
           )}
           <Button
-            className="bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] text-white shadow-md hover:opacity-90"
+            className="bg-gradient-to-r from-violet to-magenta text-white shadow-md hover:opacity-90"
             onClick={onNext}
           >
             {nextLabel ?? (locale === "pt" ? "Continuar" : "Continue")}{" "}
@@ -1055,7 +1055,7 @@ function NavBar({
 function SectionHeader({ icon: Icon, title }: { icon: typeof BookOpen; title: string }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-gray-100 bg-gray-50/80 px-3 py-1 text-xs font-semibold text-muted-foreground">
-      <Icon className="h-3.5 w-3.5 text-[var(--violet)]" />
+      <Icon className="h-3.5 w-3.5 text-violet" />
       {title}
     </div>
   );
@@ -1071,7 +1071,7 @@ function Loading() {
       : ["Preparing analysis…", "Analyzing your answers…", "Finalizing the evaluation…"];
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center premium-shadow">
-      <h2 className="font-display text-2xl font-bold text-[var(--ink)]">
+      <h2 className="font-display text-2xl font-bold text-ink">
         {locale === "pt" ? "Coach a avaliar o seu inglês…" : "Coach is evaluating your English…"}
       </h2>
       <div className="mt-6">
@@ -1112,7 +1112,7 @@ function SubmitFailedView({
     <div className="mx-auto max-w-xl">
       <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center premium-shadow">
         <AlertCircle className="mx-auto h-10 w-10 text-destructive" />
-        <h2 className="mt-4 font-display text-xl font-bold text-[var(--ink)]">
+        <h2 className="mt-4 font-display text-xl font-bold text-ink">
           {locale === "pt"
             ? "Não foi possível avaliar o seu diagnóstico"
             : "We couldn't evaluate your diagnostic"}
@@ -1168,10 +1168,10 @@ function ReportView({
         <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {locale === "pt" ? "O seu nível CEFR" : "Your CEFR level"}
         </div>
-        <div className="mt-2 font-display text-7xl font-bold bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] bg-clip-text text-transparent">
+        <div className="mt-2 font-display text-7xl font-bold bg-gradient-to-r from-violet to-magenta bg-clip-text text-transparent">
           {report.cefr_level}
         </div>
-        <div className="mt-2 text-lg font-semibold text-[var(--ink)]">
+        <div className="mt-2 text-lg font-semibold text-ink">
           {locale === "pt" ? "Pontuação global" : "Overall score"}: {report.scores.overall}%
         </div>
         {report.feedback && (
@@ -1185,7 +1185,7 @@ function ReportView({
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 p-6 premium-shadow">
-        <h3 className="font-display text-xl font-bold text-[var(--ink)]">
+        <h3 className="font-display text-xl font-bold text-ink">
           {locale === "pt" ? "Pontuação por skill" : "Score by skill"}
         </h3>
         <div className="mt-4 space-y-3">
@@ -1197,13 +1197,13 @@ function ReportView({
               <div key={k}>
                 <div className="mb-1 flex items-center justify-between text-sm">
                   <span className="flex items-center gap-2 font-semibold text-gray-700">
-                    <Icon className="h-4 w-4 text-[var(--violet)]" /> {meta[locale]}
+                    <Icon className="h-4 w-4 text-violet" /> {meta[locale]}
                   </span>
                   <span className="font-mono text-muted-foreground">{v}%</span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
                   <div
-                    className="h-full bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] transition-all"
+                    className="h-full bg-gradient-to-r from-violet to-magenta transition-all"
                     style={{ width: `${v}%` }}
                   />
                 </div>
@@ -1215,7 +1215,7 @@ function ReportView({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="bg-white rounded-2xl border border-gray-100 p-6 premium-shadow">
-          <h3 className="flex items-center gap-2 font-display text-lg font-bold text-[var(--ink)]">
+          <h3 className="flex items-center gap-2 font-display text-lg font-bold text-ink">
             <Trophy className="h-5 w-5 text-emerald-500" />{" "}
             {locale === "pt" ? "Pontos fortes" : "Strengths"}
           </h3>
@@ -1233,7 +1233,7 @@ function ReportView({
           </ul>
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 p-6 premium-shadow">
-          <h3 className="flex items-center gap-2 font-display text-lg font-bold text-[var(--ink)]">
+          <h3 className="flex items-center gap-2 font-display text-lg font-bold text-ink">
             <Target className="h-5 w-5 text-amber" />{" "}
             {locale === "pt" ? "Pontos a melhorar" : "Areas to improve"}
           </h3>
@@ -1253,7 +1253,7 @@ function ReportView({
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 p-6 premium-shadow">
-        <h3 className="font-display text-xl font-bold text-[var(--ink)]">
+        <h3 className="font-display text-xl font-bold text-ink">
           {locale === "pt" ? "Plano de aprendizagem personalizado" : "Personalized learning plan"}
         </h3>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -1263,18 +1263,18 @@ function ReportView({
             return (
               <div key={w.week} className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4">
                 <div className="flex items-center justify-between">
-                  <div className="text-xs font-bold uppercase tracking-wider text-[var(--violet)]">
+                  <div className="text-xs font-bold uppercase tracking-wider text-violet">
                     {locale === "pt" ? `Semana ${w.week}` : `Week ${w.week}`}
                   </div>
                   <span className="text-xs text-muted-foreground">{w.estimated_minutes} min</span>
                 </div>
-                <div className="mt-1 flex items-center gap-2 font-display text-lg font-bold text-[var(--ink)]">
-                  <Icon className="h-4 w-4 text-[var(--violet)]" /> {w.title}
+                <div className="mt-1 flex items-center gap-2 font-display text-lg font-bold text-ink">
+                  <Icon className="h-4 w-4 text-violet" /> {w.title}
                 </div>
                 <ul className="mt-2 space-y-1.5 text-sm">
                   {w.goals.map((g, gi) => (
                     <li key={gi} className="flex items-start gap-2 text-muted-foreground">
-                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--violet)]" /> {g}
+                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-violet" /> {g}
                     </li>
                   ))}
                 </ul>
@@ -1288,7 +1288,7 @@ function ReportView({
         <Button
           size="lg"
           onClick={onContinue}
-          className="bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] text-white shadow-md hover:opacity-90"
+          className="bg-gradient-to-r from-violet to-magenta text-white shadow-md hover:opacity-90"
         >
           {locale === "pt" ? "Ir para o painel" : "Go to dashboard"}{" "}
           <ArrowRight className="ml-1.5 h-4 w-4" />

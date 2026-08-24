@@ -125,7 +125,7 @@ function GamesPage() {
     .slice(0, 5);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Left Sidebar */}
       <VideosSidebar />
 
@@ -134,7 +134,7 @@ function GamesPage() {
         {/* Top Header Bar */}
         <AppHeader
           title={locale === "pt" ? "Jogos" : "Games"}
-          titleClassName="font-display text-xl font-bold text-[var(--ink)] shrink-0"
+          titleClassName="font-display text-xl font-bold text-ink shrink-0"
           titleExtra={
             <div className="hidden md:block">
               <AgeThemeSwitcher />
@@ -347,7 +347,7 @@ function GameCard({
         <span className="self-start text-2xs font-bold uppercase tracking-wider text-muted-foreground bg-gray-50 px-2 py-1 rounded-full">
           {locale === "pt" ? catLabel.pt : catLabel.en}
         </span>
-        <h3 className="font-display text-lg font-bold text-[var(--ink)]">{title}</h3>
+        <h3 className="font-display text-lg font-bold text-ink">{title}</h3>
         <div className="text-xs text-muted-foreground font-semibold flex items-center gap-3">
           <span>{game.dur}</span>
           <span>{game.level}</span>

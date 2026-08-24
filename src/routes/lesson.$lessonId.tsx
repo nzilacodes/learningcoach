@@ -316,7 +316,7 @@ function QuizSection({ exercises, locale }: { exercises: ExerciseRow[]; locale: 
                           : show && chosen && exerciseHasKey
                             ? "border-destructive bg-destructive/10"
                             : show && chosen
-                              ? "border-[var(--violet)] bg-[var(--violet)]/10"
+                              ? "border-violet bg-violet/10"
                               : "border-border bg-background/60 hover:border-magenta/50"
                       }`}
                     >
@@ -472,7 +472,7 @@ function LessonBody({ lesson, locale }: { lesson: LessonDetail; locale: "pt" | "
 // the marketing SiteHeader (NAV-2).
 function LessonShell({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         <AppHeader

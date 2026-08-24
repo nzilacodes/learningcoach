@@ -107,7 +107,7 @@ function SettingsPage() {
   });
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         <AppHeader title={locale === "pt" ? "Definições" : "Settings"} />
@@ -115,8 +115,8 @@ function SettingsPage() {
           <div className="mx-auto max-w-2xl space-y-6">
             {/* Language */}
             <section className="rounded-2xl border border-gray-100 bg-white p-6 premium-shadow">
-              <h2 className="flex items-center gap-2 font-display text-lg font-bold text-[var(--ink)]">
-                <Languages className="h-5 w-5 text-[var(--violet)]" />
+              <h2 className="flex items-center gap-2 font-display text-lg font-bold text-ink">
+                <Languages className="h-5 w-5 text-violet" />
                 {locale === "pt" ? "Idioma" : "Language"}
               </h2>
               <div className="mt-4 flex gap-2">
@@ -127,8 +127,8 @@ function SettingsPage() {
                     onClick={() => setLocale(l)}
                     className={`rounded-xl border-2 px-4 py-2 text-sm font-semibold transition ${
                       locale === l
-                        ? "border-[var(--violet)] bg-[var(--violet)] text-white"
-                        : "border-gray-100 hover:border-[var(--violet)]/50"
+                        ? "border-violet bg-violet text-white"
+                        : "border-gray-100 hover:border-violet/50"
                     }`}
                   >
                     {l === "pt" ? "Português" : "English"}
@@ -139,13 +139,13 @@ function SettingsPage() {
 
             {/* Subscription */}
             <section className="rounded-2xl border border-gray-100 bg-white p-6 premium-shadow">
-              <h2 className="flex items-center gap-2 font-display text-lg font-bold text-[var(--ink)]">
-                <CreditCard className="h-5 w-5 text-[var(--violet)]" />
+              <h2 className="flex items-center gap-2 font-display text-lg font-bold text-ink">
+                <CreditCard className="h-5 w-5 text-violet" />
                 {locale === "pt" ? "Assinatura" : "Subscription"}
               </h2>
               <Link
                 to="/subscription"
-                className="mt-4 flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--violet)]/50"
+                className="mt-4 flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3 text-sm font-semibold text-ink transition hover:border-violet/50"
               >
                 {locale === "pt" ? "Gerir plano e faturação" : "Manage plan & billing"}
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -154,8 +154,8 @@ function SettingsPage() {
 
             {/* Change password */}
             <section className="rounded-2xl border border-gray-100 bg-white p-6 premium-shadow">
-              <h2 className="flex items-center gap-2 font-display text-lg font-bold text-[var(--ink)]">
-                <KeyRound className="h-5 w-5 text-[var(--violet)]" />
+              <h2 className="flex items-center gap-2 font-display text-lg font-bold text-ink">
+                <KeyRound className="h-5 w-5 text-violet" />
                 {locale === "pt" ? "Alterar palavra-passe" : "Change password"}
               </h2>
               <Form {...form}>
@@ -215,7 +215,7 @@ function SettingsPage() {
                   <Button
                     type="submit"
                     disabled={saving}
-                    className="bg-[var(--violet)] text-white hover:opacity-90"
+                    className="bg-violet text-white hover:opacity-90"
                   >
                     {saving ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

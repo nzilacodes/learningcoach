@@ -48,7 +48,7 @@ export function TeensDashboard(data: DashboardData) {
   const todayXpPct = Math.min(1, todayXp / DAILY_XP_GOAL);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-panel-bg">
         {/* ====== TopBar ====== */}
@@ -81,7 +81,7 @@ export function TeensDashboard(data: DashboardData) {
                 <p className="text-sm font-medium text-muted-foreground">
                   {locale === "pt" ? "E aí," : "Hey,"}
                 </p>
-                <h2 className="font-display text-2xl font-bold text-[var(--ink)]">
+                <h2 className="font-display text-2xl font-bold text-ink">
                   {displayName}! {locale === "pt" ? "Bora treinar?" : "Ready to level up?"}
                 </h2>
               </div>
@@ -109,7 +109,7 @@ export function TeensDashboard(data: DashboardData) {
                   <Link
                     to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
                     params={nextLessonId ? { lessonId: nextLessonId } : undefined}
-                    className="inline-flex items-center gap-2 bg-white text-[var(--ink)] px-6 py-3 rounded-2xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                    className="inline-flex items-center gap-2 bg-white text-ink px-6 py-3 rounded-2xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform"
                   >
                     <Play className="w-4 h-4 fill-current" />
                     {locale === "pt" ? "Continuar" : "Keep going"}
@@ -120,14 +120,11 @@ export function TeensDashboard(data: DashboardData) {
               {/* Games teaser */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-display text-lg font-bold text-[var(--ink)] flex items-center gap-2">
-                    <Gamepad2 className="w-5 h-5 text-[var(--violet)]" />
+                  <h3 className="font-display text-lg font-bold text-ink flex items-center gap-2">
+                    <Gamepad2 className="w-5 h-5 text-violet" />
                     {locale === "pt" ? "Jogos para você" : "Games for you"}
                   </h3>
-                  <Link
-                    to="/games"
-                    className="text-sm font-bold text-[var(--violet)] hover:opacity-80"
-                  >
+                  <Link to="/games" className="text-sm font-bold text-violet hover:opacity-80">
                     {locale === "pt" ? "Ver todos" : "See all"}
                   </Link>
                 </div>
@@ -151,13 +148,10 @@ export function TeensDashboard(data: DashboardData) {
               {/* Learning Track — horizontal scroll strip */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-display text-lg font-bold text-[var(--ink)]">
+                  <h3 className="font-display text-lg font-bold text-ink">
                     {locale === "pt" ? "Trilha" : "Track"}
                   </h3>
-                  <Link
-                    to="/curriculum"
-                    className="text-sm font-bold text-[var(--violet)] hover:opacity-80"
-                  >
+                  <Link to="/curriculum" className="text-sm font-bold text-violet hover:opacity-80">
                     {locale === "pt" ? "Ver tudo" : "View all"}
                   </Link>
                 </div>
@@ -167,7 +161,7 @@ export function TeensDashboard(data: DashboardData) {
                       key={u.id}
                       className={`shrink-0 w-32 rounded-2xl overflow-hidden border relative ${
                         u.current
-                          ? "ring-2 ring-[var(--violet)] border-[var(--violet)]/20"
+                          ? "ring-2 ring-violet border-violet/20"
                           : u.locked
                             ? "opacity-50 border-gray-100"
                             : "border-gray-100"
@@ -197,9 +191,7 @@ export function TeensDashboard(data: DashboardData) {
                       <p className="text-2xs font-bold text-muted-foreground px-2 pt-1.5">
                         {locale === "pt" ? "UNIDADE" : "UNIT"} {u.index}
                       </p>
-                      <p className="text-xs font-bold text-[var(--ink)] px-2 pb-2 truncate">
-                        {u.title}
-                      </p>
+                      <p className="text-xs font-bold text-ink px-2 pb-2 truncate">{u.title}</p>
                     </div>
                   ))}
                 </div>
@@ -211,11 +203,11 @@ export function TeensDashboard(data: DashboardData) {
                 className="flex items-center justify-between bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-[var(--violet)]/10 flex items-center justify-center text-[var(--violet)]">
+                  <div className="w-11 h-11 rounded-xl bg-violet/10 flex items-center justify-center text-violet">
                     <MessagesSquare className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="font-display font-bold text-[var(--ink)]">
+                    <p className="font-display font-bold text-ink">
                       {locale === "pt" ? "Sala de conversa" : "Chat room"}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -235,16 +227,16 @@ export function TeensDashboard(data: DashboardData) {
             <aside className="space-y-6">
               <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-bold text-[var(--ink)]">
+                  <h4 className="text-sm font-bold text-ink">
                     {locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
                   </h4>
-                  <span className="text-xs font-bold text-[var(--violet)]">
+                  <span className="text-xs font-bold text-violet">
                     {week.days}/{week.goalDays}
                   </span>
                 </div>
                 <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[var(--violet)] rounded-full transition-all duration-700"
+                    className="h-full bg-violet rounded-full transition-all duration-700"
                     style={{ width: `${week.pct * 100}%` }}
                   />
                 </div>
@@ -257,7 +249,7 @@ export function TeensDashboard(data: DashboardData) {
 
               <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-bold text-[var(--ink)]">
+                  <h4 className="text-sm font-bold text-ink">
                     {locale === "pt" ? "Meta Diária" : "Daily Goal"}
                   </h4>
                   <span className="text-xs font-bold text-sunset">
@@ -289,7 +281,7 @@ export function TeensDashboard(data: DashboardData) {
               <div className="rounded-3xl border border-gray-100/80 bg-white/70 backdrop-blur-md p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-1">
                   <Users className="w-4 h-4 text-muted-foreground" />
-                  <h4 className="text-sm font-bold text-[var(--ink)]">
+                  <h4 className="text-sm font-bold text-ink">
                     {locale === "pt" ? "Seu acesso" : "Your access"}
                   </h4>
                 </div>

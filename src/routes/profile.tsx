@@ -144,7 +144,7 @@ function ProfilePage() {
   });
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         <AppHeader title={locale === "pt" ? "O meu perfil" : "My profile"} />
@@ -258,8 +258,8 @@ function ProfilePage() {
                               onClick={() => field.onChange(g.id)}
                               className={`rounded-xl border-2 p-3 text-left text-sm font-medium transition ${
                                 active
-                                  ? "border-[var(--violet)] bg-[var(--violet)]/10"
-                                  : "border-gray-100 hover:border-[var(--violet)]/50"
+                                  ? "border-violet bg-violet/10"
+                                  : "border-gray-100 hover:border-violet/50"
                               }`}
                             >
                               {locale === "pt" ? g.pt : g.en}
@@ -295,8 +295,8 @@ function ProfilePage() {
                               onClick={toggle}
                               className={`flex items-center gap-1 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition ${
                                 active
-                                  ? "border-[var(--violet)] bg-[var(--violet)] text-white"
-                                  : "border-gray-100 hover:border-[var(--violet)]/50"
+                                  ? "border-violet bg-violet text-white"
+                                  : "border-gray-100 hover:border-violet/50"
                               }`}
                             >
                               {active && <Check className="h-3 w-3" />}
@@ -313,7 +313,7 @@ function ProfilePage() {
                   type="submit"
                   size="lg"
                   disabled={saving}
-                  className="w-full bg-[var(--violet)] text-white hover:opacity-90"
+                  className="w-full bg-violet text-white hover:opacity-90"
                 >
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

@@ -151,7 +151,7 @@ function LevelExamPage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         <AppHeader
@@ -257,7 +257,7 @@ function LevelExamPage() {
 // Same app-shell wrapper placement.tsx (the other test flow) already uses.
 function FullBleed({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         <AppHeader

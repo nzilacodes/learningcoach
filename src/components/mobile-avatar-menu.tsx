@@ -33,7 +33,7 @@ export function HeaderActionLinks() {
     <>
       <Link
         to="/pricing"
-        className="bg-[var(--ink)] text-white px-3 md:px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity"
+        className="bg-ink text-white px-3 md:px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity"
       >
         <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
         <span className="hidden sm:inline">Upgrade</span>
@@ -87,7 +87,7 @@ export function MobileAvatarMenu() {
             onClick={() => navigate({ to: "/profile" })}
             className="gap-3 rounded-lg px-3 py-2.5 text-xs font-bold text-muted-foreground"
           >
-            <User className="h-4 w-4 text-[var(--violet)]" />
+            <User className="h-4 w-4 text-violet" />
             {locale === "pt" ? "Ver perfil" : "View profile"}
           </DropdownMenuItem>
           <DropdownMenuItem

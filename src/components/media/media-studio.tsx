@@ -337,7 +337,7 @@ export function MediaStudio({
           <div className="flex flex-col items-center gap-4 py-8 text-center">
             <CheckCircle2 className="w-12 h-12 text-green-500" />
             <div>
-              <p className="font-display text-lg font-bold text-[var(--ink)]">Gravação guardada</p>
+              <p className="font-display text-lg font-bold text-ink">Gravação guardada</p>
               <p className="text-sm text-muted-foreground">
                 {savedAsset.title || savedAsset.original_filename} ·{" "}
                 {formatBytes(savedAsset.size_bytes)}
@@ -452,7 +452,7 @@ function DeviceErrorCard({
     return (
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center space-y-3">
         <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto" />
-        <p className="font-bold text-[var(--ink)]">Gravação não suportada</p>
+        <p className="font-bold text-ink">Gravação não suportada</p>
         <p className="text-sm text-muted-foreground">
           Este navegador não suporta gravação de áudio/vídeo. Tente o Chrome, Firefox ou Safari
           atualizados.
@@ -469,7 +469,7 @@ function DeviceErrorCard({
   return (
     <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center space-y-3">
       <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto" />
-      <p className="font-bold text-[var(--ink)]">{title}</p>
+      <p className="font-bold text-ink">{title}</p>
       <p className="text-sm text-muted-foreground">A câmara/microfone não pôde ser acedido.</p>
       <ul className="text-xs text-muted-foreground text-left max-w-xs mx-auto list-disc pl-4 space-y-0.5">
         <li>Permissão bloqueada no navegador</li>
@@ -493,7 +493,7 @@ function LevelMeterBars({ level }: { level: number }) {
         return (
           <div
             key={i}
-            className={`w-1.5 rounded-full transition-colors ${active ? "bg-[var(--primary)]" : "bg-gray-200"}`}
+            className={`w-1.5 rounded-full transition-colors ${active ? "bg-primary" : "bg-gray-200"}`}
             style={{ height: `${20 + i * 4}%` }}
           />
         );
@@ -690,7 +690,7 @@ function RecordingPanel(props: {
 
 function ImportPanel({ onSelect }: { onSelect: (file: File) => void }) {
   return (
-    <label className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-200 py-16 cursor-pointer hover:border-[var(--primary)]/40 transition-colors">
+    <label className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-200 py-16 cursor-pointer hover:border-primary/40 transition-colors">
       <UploadIcon className="w-8 h-8 text-muted-foreground" />
       <p className="text-sm text-muted-foreground">Vídeo, áudio, imagem ou documento (PDF)</p>
       <input
@@ -702,7 +702,7 @@ function ImportPanel({ onSelect }: { onSelect: (file: File) => void }) {
           if (file) onSelect(file);
         }}
       />
-      <span className="text-xs font-bold text-[var(--primary)] uppercase tracking-widest">
+      <span className="text-xs font-bold text-primary uppercase tracking-widest">
         Escolher ficheiro
       </span>
     </label>
@@ -836,7 +836,7 @@ function ReviewPanel(props: {
                 onClick={() => props.setVisibility(v)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                   props.visibility === v
-                    ? "bg-[var(--primary)] text-white"
+                    ? "bg-primary text-white"
                     : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >

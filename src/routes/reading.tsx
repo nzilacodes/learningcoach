@@ -180,10 +180,7 @@ function highlightVocab(text: string, vocabWords: string[]) {
   const re = new RegExp(`\\b(${escaped.join("|")})\\b`, "gi");
   return text.split(re).map((part, i) =>
     i % 2 === 1 ? (
-      <mark
-        key={i}
-        className="rounded bg-[var(--primary)]/15 px-0.5 font-semibold text-[var(--primary)]"
-      >
+      <mark key={i} className="rounded bg-primary/15 px-0.5 font-semibold text-primary">
         {part}
       </mark>
     ) : (
@@ -326,7 +323,7 @@ function ReadingPage() {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Left Sidebar */}
       <VideosSidebar />
 
@@ -351,8 +348,8 @@ function ReadingPage() {
             {/* 1. Pronunciation Section — full width on both */}
             <section className="bg-white rounded-2xl p-5 md:p-6 shadow-flat-md border border-gray-100 mb-6 md:mb-8">
               <div className="flex items-center gap-2 mb-4">
-                <Mic className="w-5 h-5 text-[var(--primary)]" />
-                <h2 className="font-display text-lg font-bold text-[var(--ink)]">Pronúncia</h2>
+                <Mic className="w-5 h-5 text-primary" />
+                <h2 className="font-display text-lg font-bold text-ink">Pronúncia</h2>
               </div>
               <p className="text-muted-foreground mb-6 text-sm md:text-base">
                 {locale === "pt"
@@ -360,7 +357,7 @@ function ReadingPage() {
                   : "Repeat the sentence below to practice your fluency:"}
               </p>
               <div className="bg-gray-50 rounded-xl p-5 md:p-6 mb-6 md:mb-8 text-center">
-                <p className="text-lg md:text-xl font-bold text-[var(--ink)] leading-relaxed mb-2">
+                <p className="text-lg md:text-xl font-bold text-ink leading-relaxed mb-2">
                   "O aprendizado contínuo é a chave para o domínio de qualquer idioma."
                 </p>
                 <p className="text-xs md:text-sm text-muted-foreground italic">
@@ -376,7 +373,7 @@ function ReadingPage() {
                       ? "bg-red-500 animate-pulse scale-110"
                       : processing
                         ? "bg-gray-400"
-                        : "bg-[var(--primary)] hover:scale-105"
+                        : "bg-primary hover:scale-105"
                   }`}
                 >
                   {processing ? (
@@ -387,7 +384,7 @@ function ReadingPage() {
                     <Mic className="w-7 h-7 md:w-8 md:h-8" />
                   )}
                 </button>
-                <span className="text-2xs md:text-xs font-bold text-[var(--primary)] tracking-widest uppercase">
+                <span className="text-2xs md:text-xs font-bold text-primary tracking-widest uppercase">
                   {processing ? "Analisando..." : recording ? "Gravando..." : "Toque para falar"}
                 </span>
               </div>
@@ -404,7 +401,7 @@ function ReadingPage() {
                       className="rounded-xl border border-gray-100 bg-gray-50 p-3 text-center"
                     >
                       <div className="text-2xs md:text-xs text-muted-foreground">{m.label}</div>
-                      <div className="mt-1 font-display text-xl md:text-2xl font-bold text-[var(--ink)]">
+                      <div className="mt-1 font-display text-xl md:text-2xl font-bold text-ink">
                         {Math.round(m.v)}
                       </div>
                     </div>
@@ -426,8 +423,8 @@ function ReadingPage() {
                 {/* 2. Reading Section */}
                 <section className="flex flex-col gap-3 md:gap-4">
                   <div className="flex items-center gap-2 px-1">
-                    <BookOpen className="w-5 h-5 text-[var(--primary)]" />
-                    <h2 className="font-display text-lg font-bold text-[var(--ink)]">Leitura</h2>
+                    <BookOpen className="w-5 h-5 text-primary" />
+                    <h2 className="font-display text-lg font-bold text-ink">Leitura</h2>
                     <div className="ml-auto flex gap-1.5">
                       {PASSAGES.map((p, i) => (
                         <button
@@ -435,7 +432,7 @@ function ReadingPage() {
                           onClick={() => selectPassage(i)}
                           className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${
                             idx === i
-                              ? "bg-[var(--primary)] text-white"
+                              ? "bg-primary text-white"
                               : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                           }`}
                         >
@@ -445,7 +442,7 @@ function ReadingPage() {
                     </div>
                   </div>
                   <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-100">
-                    <h3 className="font-display text-xl font-bold mb-4 text-[var(--ink)]">
+                    <h3 className="font-display text-xl font-bold mb-4 text-ink">
                       {passage.title.pt}
                     </h3>
                     <div className="space-y-4 text-muted-foreground text-sm md:text-base leading-relaxed">
@@ -454,7 +451,7 @@ function ReadingPage() {
                     <button
                       onClick={handlePlay}
                       disabled={playing}
-                      className="mt-4 flex items-center gap-2 text-sm font-semibold text-[var(--primary)] hover:underline"
+                      className="mt-4 flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
                     >
                       <Volume2 className="w-4 h-4" />
                       {playing ? "A reproduzir..." : "Ouvir áudio"}
@@ -465,32 +462,30 @@ function ReadingPage() {
                 {/* 3. Vocabulary Section */}
                 <section className="flex flex-col gap-3 md:gap-4">
                   <div className="flex items-center gap-2 px-1">
-                    <BookOpen className="w-5 h-5 text-[var(--primary)]" />
-                    <h2 className="font-display text-lg font-bold text-[var(--ink)]">
-                      Vocabulário
-                    </h2>
+                    <BookOpen className="w-5 h-5 text-primary" />
+                    <h2 className="font-display text-lg font-bold text-ink">Vocabulário</h2>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     {passage.vocab.map((v) => (
                       <div
                         key={v.word}
-                        className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 hover:border-[var(--primary)]/30 transition-colors"
+                        className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 hover:border-primary/30 transition-colors"
                       >
-                        <span className="text-2xs md:text-xs font-bold text-[var(--primary)] mb-1 md:mb-2 block">
+                        <span className="text-2xs md:text-xs font-bold text-primary mb-1 md:mb-2 block">
                           Palavra
                         </span>
                         <h4 className="font-bold text-base md:text-lg mb-0.5 md:mb-1">{v.word}</h4>
                         <p className="text-xs md:text-sm text-muted-foreground">{v.pt}</p>
                         <button
                           onClick={() => speak(v.word, { accent: "uk" }).catch(() => {})}
-                          className="mt-2 text-[var(--primary)]"
+                          className="mt-2 text-primary"
                         >
                           <Volume2 className="w-4 h-4" />
                         </button>
                       </div>
                     ))}
                     {/* Idiom card */}
-                    <div className="col-span-2 bg-[var(--primary)] p-4 md:p-5 rounded-xl text-white">
+                    <div className="col-span-2 bg-primary p-4 md:p-5 rounded-xl text-white">
                       <span className="text-2xs md:text-xs font-bold text-white/80 mb-1 md:mb-2 block">
                         Expressão Idiomática
                       </span>
@@ -507,10 +502,8 @@ function ReadingPage() {
               <div className="w-full lg:w-[380px] shrink-0">
                 <section className="flex flex-col gap-3 md:gap-4">
                   <div className="flex items-center gap-2 px-1">
-                    <Sparkles className="w-5 h-5 text-[var(--primary)]" />
-                    <h2 className="font-display text-lg font-bold text-[var(--ink)]">
-                      Compreensão
-                    </h2>
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    <h2 className="font-display text-lg font-bold text-ink">Compreensão</h2>
                   </div>
                   <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-100">
                     <p className="text-xs text-muted-foreground mb-4">
@@ -520,7 +513,7 @@ function ReadingPage() {
                     <div className="space-y-6">
                       {passage.quiz.map((q, qi) => (
                         <div key={qi}>
-                          <p className="font-bold text-[var(--ink)] mb-3 text-sm md:text-base">
+                          <p className="font-bold text-ink mb-3 text-sm md:text-base">
                             {qi + 1}. {q.q}
                           </p>
                           <div className="flex flex-col gap-2">
@@ -537,7 +530,7 @@ function ReadingPage() {
                                       : correct
                                         ? "border-green-500 bg-green-50"
                                         : chosen
-                                          ? "border-[var(--primary)] bg-[var(--primary)]/5"
+                                          ? "border-primary bg-primary/5"
                                           : "border-gray-200 hover:bg-gray-50"
                                   }`}
                                 >
@@ -549,7 +542,7 @@ function ReadingPage() {
                                       setQuizAnswers((s) => ({ ...s, [qi]: oi }));
                                       setQuizChecked(false);
                                     }}
-                                    className="w-4 h-4 text-[var(--primary)]"
+                                    className="w-4 h-4 text-primary"
                                   />
                                   {wrongPick && <XCircle className="w-4 h-4 text-red-500 ml-2" />}
                                   {correct && (
@@ -582,7 +575,7 @@ function ReadingPage() {
                       className={`w-full mt-5 py-3 rounded-xl text-sm font-semibold transition-all ${
                         Object.keys(quizAnswers).length < passage.quiz.length
                           ? "bg-gray-100 text-muted-foreground cursor-not-allowed"
-                          : "bg-[var(--primary)] text-white hover:opacity-90"
+                          : "bg-primary text-white hover:opacity-90"
                       }`}
                     >
                       Verificar Resposta

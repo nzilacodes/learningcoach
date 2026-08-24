@@ -44,9 +44,7 @@ export function AppHeader({
     >
       <div className="flex items-center gap-2 min-w-0">
         {leftExtra}
-        <Title
-          className={titleClassName ?? "font-display text-xl font-bold text-[var(--ink)] truncate"}
-        >
+        <Title className={titleClassName ?? "font-display text-xl font-bold text-ink truncate"}>
           {title}
         </Title>
         {titleExtra}

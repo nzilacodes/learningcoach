@@ -44,13 +44,13 @@ const QUICK_PRACTICE = (locale: "pt" | "en") => [
     icon: Mic,
     label: locale === "pt" ? "Falar" : "Speak",
     to: "/pronunciation" as const,
-    accent: "hover:bg-[var(--violet)]/5",
+    accent: "hover:bg-violet/5",
   },
   {
     icon: BookOpen,
     label: locale === "pt" ? "Ler" : "Read",
     to: "/reading" as const,
-    accent: "hover:bg-[var(--magenta)]/5",
+    accent: "hover:bg-magenta/5",
   },
   {
     icon: Gamepad2,
@@ -110,21 +110,21 @@ export function AdultsDashboard(data: DashboardData) {
       label: locale === "pt" ? "Concluídas" : "Completed",
       value: String(completedLessonCount),
       unit: locale === "pt" ? "lições" : "lessons",
-      color: "text-[var(--magenta)] bg-[var(--magenta)]/10",
+      color: "text-magenta bg-magenta/10",
     },
     {
       icon: Clock,
       label: locale === "pt" ? "Estudou" : "Studied",
       value: week.label,
       unit: locale === "pt" ? "semana" : "this week",
-      color: "text-[var(--violet)] bg-[var(--violet)]/10",
+      color: "text-violet bg-violet/10",
     },
   ];
 
   const displayName = data.firstName ?? (locale === "pt" ? "Aluno" : "Learner");
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-panel-bg">
         {/* ====== TopBar ====== */}
@@ -156,7 +156,7 @@ export function AdultsDashboard(data: DashboardData) {
                       <p className="text-sm font-medium text-muted-foreground">
                         {locale === "pt" ? "Bons estudos," : "Good studies,"}
                       </p>
-                      <h1 className="font-display text-2xl md:text-3xl font-bold text-[var(--ink)]">
+                      <h1 className="font-display text-2xl md:text-3xl font-bold text-ink">
                         {locale === "pt"
                           ? `Bom dia, ${displayName}!`
                           : `Good morning, ${displayName}!`}{" "}
@@ -164,7 +164,7 @@ export function AdultsDashboard(data: DashboardData) {
                       </h1>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="bg-[var(--violet)]/10 text-[var(--violet)] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="bg-violet/10 text-violet px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5" />
                         {user?.cefrLevel ?? "A1"}
                       </span>
@@ -196,7 +196,7 @@ export function AdultsDashboard(data: DashboardData) {
                           </span>
                         </div>
                         <div className="flex items-baseline gap-1">
-                          <span className="font-display text-3xl font-bold text-[var(--ink)]">
+                          <span className="font-display text-3xl font-bold text-ink">
                             {s.value}
                           </span>
                           {s.unit && (
@@ -208,7 +208,7 @@ export function AdultsDashboard(data: DashboardData) {
                   </div>
 
                   {/* Hero: Continue Card */}
-                  <div className="bg-gradient-to-br from-[var(--violet)] via-[var(--magenta)] to-[var(--violet)] rounded-3xl p-6 md:p-8 text-white flex items-center gap-8 shadow-xl relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-violet via-magenta to-violet rounded-3xl p-6 md:p-8 text-white flex items-center gap-8 shadow-xl relative overflow-hidden">
                     {/* Blobs */}
                     <div className="absolute -top-10 -right-10 w-64 h-64 bg-white/10 blur-3xl rounded-full" />
                     <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-black/10 blur-2xl rounded-full" />
@@ -235,7 +235,7 @@ export function AdultsDashboard(data: DashboardData) {
                       <Link
                         to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
                         params={nextLessonId ? { lessonId: nextLessonId } : undefined}
-                        className="inline-flex items-center gap-2 bg-white text-[var(--violet)] px-8 py-4 rounded-2xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                        className="inline-flex items-center gap-2 bg-white text-violet px-8 py-4 rounded-2xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform"
                       >
                         <Play className="w-4 h-4 fill-current" />
                         {locale === "pt" ? "Retomar Lição" : "Resume Lesson"}
@@ -253,7 +253,7 @@ export function AdultsDashboard(data: DashboardData) {
 
                   {/* Quick Practice */}
                   <div>
-                    <h3 className="font-display text-lg font-bold text-[var(--ink)] mb-4">
+                    <h3 className="font-display text-lg font-bold text-ink mb-4">
                       {locale === "pt" ? "Prática Rápida" : "Quick Practice"}
                     </h3>
                     <div className="grid grid-cols-4 gap-4">
@@ -263,7 +263,7 @@ export function AdultsDashboard(data: DashboardData) {
                           to={a.to}
                           className={`flex flex-col items-center gap-3 bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-2xl p-5 shadow-sm transition-all ${a.accent} hover:shadow-md active:scale-95`}
                         >
-                          <a.icon className="w-7 h-7 text-[var(--violet)]" />
+                          <a.icon className="w-7 h-7 text-violet" />
                           <span className="text-xs font-bold text-gray-700">{a.label}</span>
                         </Link>
                       ))}
@@ -273,12 +273,12 @@ export function AdultsDashboard(data: DashboardData) {
                   {/* Learning Track — Bento Grid */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-display text-lg font-bold text-[var(--ink)]">
+                      <h3 className="font-display text-lg font-bold text-ink">
                         {locale === "pt" ? "Trilha de Aprendizado" : "Learning Track"}
                       </h3>
                       <Link
                         to="/curriculum"
-                        className="text-sm font-bold text-[var(--violet)] hover:opacity-80"
+                        className="text-sm font-bold text-violet hover:opacity-80"
                       >
                         {locale === "pt" ? "Ver tudo" : "View all"}
                       </Link>
@@ -292,7 +292,7 @@ export function AdultsDashboard(data: DashboardData) {
                           <div
                             className={`aspect-square rounded-2xl overflow-hidden mb-2 border ${
                               u.current
-                                ? "ring-2 ring-[var(--violet)] ring-offset-2 border-[var(--violet)]/20"
+                                ? "ring-2 ring-violet ring-offset-2 border-violet/20"
                                 : u.locked
                                   ? "border-gray-100 grayscale opacity-50 bg-gray-50"
                                   : u.done
@@ -333,7 +333,7 @@ export function AdultsDashboard(data: DashboardData) {
                           <p
                             className={`text-2xs font-bold uppercase tracking-wider ${
                               u.current
-                                ? "text-[var(--violet)]"
+                                ? "text-violet"
                                 : u.locked
                                   ? "text-gray-300"
                                   : "text-muted-foreground"
@@ -344,7 +344,7 @@ export function AdultsDashboard(data: DashboardData) {
                               : `${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`}
                           </p>
                           <p
-                            className={`text-xs font-bold truncate ${u.locked ? "text-gray-300" : "text-[var(--ink)]"}`}
+                            className={`text-xs font-bold truncate ${u.locked ? "text-gray-300" : "text-ink"}`}
                           >
                             {u.title}
                           </p>
@@ -372,7 +372,7 @@ export function AdultsDashboard(data: DashboardData) {
             <aside className="hidden lg:flex flex-col fixed right-0 top-16 bottom-0 w-[380px] border-l border-gray-100 bg-panel-bg p-6 gap-6 overflow-y-auto">
               {/* Weekly Goal */}
               <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm flex flex-col items-center">
-                <h4 className="text-sm font-bold text-[var(--ink)] self-start mb-4">
+                <h4 className="text-sm font-bold text-ink self-start mb-4">
                   {locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
                 </h4>
                 <div className="relative w-32 h-32 mb-4">
@@ -392,12 +392,12 @@ export function AdultsDashboard(data: DashboardData) {
                       fill="transparent"
                       strokeWidth="10"
                       strokeLinecap="round"
-                      className="stroke-[var(--violet)] transition-all duration-1000"
+                      className="stroke-violet transition-all duration-1000"
                       strokeDasharray={`${(week.pct * 2 * Math.PI * 42).toFixed(1)} 999`}
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="font-display text-2xl font-bold text-[var(--ink)]">
+                    <span className="font-display text-2xl font-bold text-ink">
                       {week.days}/{goalDays}
                     </span>
                     <span className="text-2xs uppercase font-bold text-muted-foreground">
@@ -418,7 +418,7 @@ export function AdultsDashboard(data: DashboardData) {
                   {Array.from({ length: goalDays }).map((_, i) => (
                     <div
                       key={i}
-                      className={`w-6 h-1.5 rounded-full ${i < week.days ? "bg-[var(--violet)]" : "bg-gray-200"}`}
+                      className={`w-6 h-1.5 rounded-full ${i < week.days ? "bg-violet" : "bg-gray-200"}`}
                     />
                   ))}
                 </div>
@@ -426,7 +426,7 @@ export function AdultsDashboard(data: DashboardData) {
 
               {/* Daily XP Goal */}
               <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm flex flex-col items-center">
-                <h4 className="text-sm font-bold text-[var(--ink)] self-start mb-4">
+                <h4 className="text-sm font-bold text-ink self-start mb-4">
                   {locale === "pt" ? "Meta Diária" : "Daily Goal"}
                 </h4>
                 <div className="relative w-32 h-32 mb-4">
@@ -451,7 +451,7 @@ export function AdultsDashboard(data: DashboardData) {
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="font-display text-2xl font-bold text-[var(--ink)]">
+                    <span className="font-display text-2xl font-bold text-ink">
                       {todayXp}/{DAILY_XP_GOAL}
                     </span>
                     <span className="text-2xs uppercase font-bold text-muted-foreground">XP</span>
@@ -495,12 +495,12 @@ export function AdultsDashboard(data: DashboardData) {
                   <p className="text-xs font-medium text-muted-foreground">
                     {locale === "pt" ? "Bons estudos," : "Good studies,"}
                   </p>
-                  <h1 className="font-display text-xl font-bold text-[var(--ink)]">
+                  <h1 className="font-display text-xl font-bold text-ink">
                     {locale === "pt" ? `Bom dia, ${displayName}!` : `Good morning, ${displayName}!`}{" "}
                     👋
                   </h1>
                 </div>
-                <span className="bg-[var(--violet)]/10 text-[var(--violet)] px-2.5 py-0.5 rounded-full text-2xs font-bold flex items-center gap-1">
+                <span className="bg-violet/10 text-violet px-2.5 py-0.5 rounded-full text-2xs font-bold flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
                   {user?.cefrLevel ?? "A1"}
                 </span>
@@ -522,9 +522,7 @@ export function AdultsDashboard(data: DashboardData) {
                       <p className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                         {s.label}
                       </p>
-                      <p className="font-display text-base font-bold text-[var(--ink)]">
-                        {s.value}
-                      </p>
+                      <p className="font-display text-base font-bold text-ink">{s.value}</p>
                     </div>
                   </div>
                 ))}
@@ -538,7 +536,7 @@ export function AdultsDashboard(data: DashboardData) {
                   className="absolute inset-0 w-full h-full object-cover"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[var(--violet)]/90 via-[var(--violet)]/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-violet/90 via-violet/40 to-transparent" />
                 <div className="absolute bottom-0 w-full p-5 space-y-2">
                   <div className="flex items-end justify-between">
                     <div>
@@ -552,7 +550,7 @@ export function AdultsDashboard(data: DashboardData) {
                     <Link
                       to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
                       params={nextLessonId ? { lessonId: nextLessonId } : undefined}
-                      className="bg-white text-[var(--violet)] px-4 py-2 rounded-full text-xs font-bold shadow-lg active:scale-90 transition-transform shrink-0"
+                      className="bg-white text-violet px-4 py-2 rounded-full text-xs font-bold shadow-lg active:scale-90 transition-transform shrink-0"
                     >
                       {locale === "pt" ? "Retomar" : "Resume"}
                     </Link>
@@ -569,7 +567,7 @@ export function AdultsDashboard(data: DashboardData) {
 
               {/* Quick Actions — horizontal scroll */}
               <div>
-                <h3 className="font-display text-base font-bold text-[var(--ink)] mb-3">
+                <h3 className="font-display text-base font-bold text-ink mb-3">
                   {locale === "pt" ? "Prática Rápida" : "Quick Practice"}
                 </h3>
                 <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
@@ -579,7 +577,7 @@ export function AdultsDashboard(data: DashboardData) {
                       to={a.to}
                       className="flex-shrink-0 w-20 flex flex-col items-center gap-2 active:scale-90 transition-transform"
                     >
-                      <div className="w-14 h-14 rounded-2xl bg-[var(--violet)]/10 flex items-center justify-center text-[var(--violet)] shadow-sm">
+                      <div className="w-14 h-14 rounded-2xl bg-violet/10 flex items-center justify-center text-violet shadow-sm">
                         <a.icon className="w-6 h-6" />
                       </div>
                       <span className="text-2xs font-semibold text-muted-foreground">
@@ -601,7 +599,7 @@ export function AdultsDashboard(data: DashboardData) {
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     />
                     <path
-                      className="text-[var(--violet)] stroke-current"
+                      className="text-violet stroke-current"
                       fill="none"
                       strokeWidth="3"
                       strokeLinecap="round"
@@ -610,7 +608,7 @@ export function AdultsDashboard(data: DashboardData) {
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="font-display text-sm font-bold text-[var(--violet)]">
+                    <span className="font-display text-sm font-bold text-violet">
                       {week.days}/{goalDays}
                     </span>
                     <span className="text-2xs font-bold text-muted-foreground uppercase">
@@ -619,7 +617,7 @@ export function AdultsDashboard(data: DashboardData) {
                   </div>
                 </div>
                 <div className="flex-1 space-y-1">
-                  <h4 className="font-display text-base font-bold text-[var(--ink)]">
+                  <h4 className="font-display text-base font-bold text-ink">
                     {locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
                   </h4>
                   <p className="text-xs text-muted-foreground">
@@ -635,7 +633,7 @@ export function AdultsDashboard(data: DashboardData) {
                     {Array.from({ length: goalDays }).map((_, i) => (
                       <div
                         key={i}
-                        className={`w-6 h-1.5 rounded-full ${i < week.days ? "bg-[var(--violet)]" : "bg-gray-200"}`}
+                        className={`w-6 h-1.5 rounded-full ${i < week.days ? "bg-violet" : "bg-gray-200"}`}
                       />
                     ))}
                   </div>
@@ -669,7 +667,7 @@ export function AdultsDashboard(data: DashboardData) {
                   </div>
                 </div>
                 <div className="flex-1 space-y-1">
-                  <h4 className="font-display text-base font-bold text-[var(--ink)]">
+                  <h4 className="font-display text-base font-bold text-ink">
                     {locale === "pt" ? "Meta Diária" : "Daily Goal"}
                   </h4>
                   <p className="text-xs text-muted-foreground">
@@ -686,7 +684,7 @@ export function AdultsDashboard(data: DashboardData) {
 
               {/* Learning Track — Vertical Timeline */}
               <div>
-                <h3 className="font-display text-base font-bold text-[var(--ink)] mb-4">
+                <h3 className="font-display text-base font-bold text-ink mb-4">
                   {locale === "pt" ? "Trilha de Aprendizado" : "Learning Track"}
                 </h3>
                 <div className="relative space-y-4">
@@ -698,7 +696,7 @@ export function AdultsDashboard(data: DashboardData) {
                           u.done
                             ? "bg-emerald-500 text-white shadow-lg shadow-emerald-100"
                             : u.current
-                              ? "bg-[var(--violet)]/10 text-[var(--violet)] ring-2 ring-[var(--violet)]/30 shadow-lg"
+                              ? "bg-violet/10 text-violet ring-2 ring-violet/30 shadow-lg"
                               : "bg-gray-100 text-muted-foreground"
                         }`}
                       >
@@ -715,20 +713,18 @@ export function AdultsDashboard(data: DashboardData) {
                       >
                         <p
                           className={`text-2xs font-bold uppercase tracking-wider ${
-                            u.current ? "text-[var(--violet)]" : "text-muted-foreground"
+                            u.current ? "text-violet" : "text-muted-foreground"
                           }`}
                         >
                           {u.current
                             ? `${locale === "pt" ? "ATUAL" : "CURRENT"} • ${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`
                             : `${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`}
                         </p>
-                        <h4 className="font-display text-sm font-bold text-[var(--ink)]">
-                          {u.title}
-                        </h4>
+                        <h4 className="font-display text-sm font-bold text-ink">{u.title}</h4>
                         {u.current && !u.done && (
                           <div className="mt-2 h-1 bg-gray-100 rounded-full overflow-hidden w-24">
                             <div
-                              className="h-full bg-[var(--violet)] rounded-full"
+                              className="h-full bg-violet rounded-full"
                               style={{ width: `${u.progress}%` }}
                             />
                           </div>
@@ -738,7 +734,7 @@ export function AdultsDashboard(data: DashboardData) {
                         <Link
                           to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
                           params={nextLessonId ? { lessonId: nextLessonId } : undefined}
-                          className="shrink-0 text-[var(--violet)] text-xs font-bold flex items-center gap-1 mt-1"
+                          className="shrink-0 text-violet text-xs font-bold flex items-center gap-1 mt-1"
                         >
                           {locale === "pt" ? "Continuar" : "Continue"}{" "}
                           <ChevronRight className="w-3 h-3" />
@@ -795,7 +791,7 @@ function SubscriptionCard({
   if (sub?.status === "active") {
     const activationCode = sub.activation_code;
     return (
-      <div className="bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] premium-shadow rounded-3xl p-6 text-white">
+      <div className="bg-gradient-to-r from-violet to-magenta premium-shadow rounded-3xl p-6 text-white">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
             <Zap className="w-5 h-5" />
@@ -833,7 +829,7 @@ function SubscriptionCard({
         </div>
         <Link
           to="/pricing"
-          className="block w-full text-center py-2.5 bg-white text-[var(--violet)] rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
+          className="block w-full text-center py-2.5 bg-white text-violet rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
         >
           {locale === "pt" ? "Renovar Plano" : "Renew Plan"}
         </Link>
@@ -847,7 +843,7 @@ function SubscriptionCard({
         <div className="text-2xs font-bold uppercase tracking-widest text-amber mb-1">
           {locale === "pt" ? "Aguardando ativação" : "Awaiting activation"}
         </div>
-        <p className="font-display text-base font-bold text-[var(--ink)]">
+        <p className="font-display text-base font-bold text-ink">
           {locale === "pt" ? "Pagamento em verificação" : "Payment under review"}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -866,7 +862,7 @@ function SubscriptionCard({
           <Zap className="w-5 h-5 text-muted-foreground" />
         </div>
         <div>
-          <p className="text-xs font-bold text-[var(--ink)]">
+          <p className="text-xs font-bold text-ink">
             {locale === "pt" ? "Sem assinatura" : "No subscription"}
           </p>
           <p className="text-2xs text-muted-foreground">

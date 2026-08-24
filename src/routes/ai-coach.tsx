@@ -252,7 +252,7 @@ function AICoachPage() {
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Left Sidebar */}
       <VideosSidebar />
 
@@ -278,7 +278,7 @@ function AICoachPage() {
               <div className="w-full max-w-[800px]">
                 {/* Welcome Header */}
                 <div className="text-center mb-12">
-                  <h2 className="font-display text-4xl md:text-5xl font-bold text-[var(--ink)] mb-4 leading-tight">
+                  <h2 className="font-display text-4xl md:text-5xl font-bold text-ink mb-4 leading-tight">
                     {locale === "pt" ? "O que vamos aprender hoje?" : "What shall we learn today?"}
                   </h2>
                 </div>
@@ -289,12 +289,12 @@ function AICoachPage() {
                     <button
                       key={s.text}
                       onClick={() => setInput(s.text)}
-                      className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-2xl hover:border-[var(--primary)]/40 cursor-pointer transition-all shadow-sm text-left group"
+                      className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-2xl hover:border-primary/40 cursor-pointer transition-all shadow-sm text-left group"
                     >
-                      <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center shrink-0 group-hover:bg-[var(--primary)]/5 transition-colors">
-                        <s.icon className="w-5 h-5 text-[var(--primary)]" />
+                      <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center shrink-0 group-hover:bg-primary/5 transition-colors">
+                        <s.icon className="w-5 h-5 text-primary" />
                       </div>
-                      <span className="text-sm font-semibold text-[var(--ink)]">{s.text}</span>
+                      <span className="text-sm font-semibold text-ink">{s.text}</span>
                     </button>
                   ))}
                 </div>
@@ -317,8 +317,8 @@ function AICoachPage() {
                       <div
                         className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
                           m.role === "user"
-                            ? "bg-[var(--primary)] text-white"
-                            : "bg-gray-50 border border-gray-100 text-[var(--ink)]"
+                            ? "bg-primary text-white"
+                            : "bg-gray-50 border border-gray-100 text-ink"
                         }`}
                       >
                         {m.content}
@@ -361,7 +361,7 @@ function AICoachPage() {
 
             {/* Chat Input */}
             <div className="w-full max-w-[800px] mx-auto">
-              <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm focus-within:shadow-md focus-within:ring-1 focus-within:ring-[var(--primary)]/20 transition-all overflow-hidden">
+              <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm focus-within:shadow-md focus-within:ring-1 focus-within:ring-primary/20 transition-all overflow-hidden">
                 <div className="flex items-start px-4 pt-4 pb-2">
                   <textarea
                     ref={textareaRef}
@@ -389,12 +389,12 @@ function AICoachPage() {
                     }
                     disabled={transcribing}
                     rows={1}
-                    className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm text-[var(--ink)] placeholder:text-muted-foreground max-h-40 outline-none"
+                    className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm text-ink placeholder:text-muted-foreground max-h-40 outline-none"
                   />
                   <button
                     onClick={send}
                     disabled={sending || !input.trim()}
-                    className="ml-2 p-2 text-muted-foreground hover:text-[var(--primary)] transition-colors shrink-0 disabled:opacity-40"
+                    className="ml-2 p-2 text-muted-foreground hover:text-primary transition-colors shrink-0 disabled:opacity-40"
                   >
                     {sending ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -455,7 +455,7 @@ function AICoachPage() {
                   <ChevronRight className="w-5 h-5" />
                 </button>
                 <div className="flex items-center gap-2 flex-1">
-                  <span className="font-display text-lg font-semibold text-[var(--ink)]">
+                  <span className="font-display text-lg font-semibold text-ink">
                     {locale === "pt" ? "Conversas" : "Conversations"}
                   </span>
                   <span className="text-muted-foreground text-sm">({conversations.length})</span>
@@ -467,10 +467,10 @@ function AICoachPage() {
                 {/* New Conversation Button */}
                 <button
                   onClick={() => setActiveId(null)}
-                  className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all text-left"
+                  className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-primary hover:bg-primary/5 transition-all text-left"
                 >
-                  <Plus className="w-5 h-5 text-[var(--primary)]" />
-                  <div className="text-sm font-bold text-[var(--ink)]">
+                  <Plus className="w-5 h-5 text-primary" />
+                  <div className="text-sm font-bold text-ink">
                     {locale === "pt" ? "Nova conversa" : "New conversation"}
                   </div>
                 </button>
@@ -482,17 +482,17 @@ function AICoachPage() {
                     <button
                       key={conversation.id}
                       onClick={() => setActiveId(conversation.id)}
-                      className={`w-full text-left p-4 rounded-xl bg-white border hover:border-[var(--primary)]/40 cursor-pointer transition-all shadow-sm ${
-                        active ? "border-[var(--primary)]" : "border-gray-200"
+                      className={`w-full text-left p-4 rounded-xl bg-white border hover:border-primary/40 cursor-pointer transition-all shadow-sm ${
+                        active ? "border-primary" : "border-gray-200"
                       }`}
                     >
                       <div className="flex justify-between items-start mb-1">
-                        <h4 className="text-sm font-bold text-[var(--ink)] truncate pr-4">
+                        <h4 className="text-sm font-bold text-ink truncate pr-4">
                           {conversation.title ||
                             (locale === "pt" ? "Nova conversa" : "New conversation")}
                         </h4>
                         <div
-                          className={`w-2 h-2 rounded-full shrink-0 mt-1 ${active ? "bg-[var(--primary)]" : "bg-gray-200"}`}
+                          className={`w-2 h-2 rounded-full shrink-0 mt-1 ${active ? "bg-primary" : "bg-gray-200"}`}
                         />
                       </div>
                       <p className="text-[12px] text-muted-foreground">

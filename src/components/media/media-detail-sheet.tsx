@@ -329,7 +329,7 @@ export function MediaDetailSheet({
                         onClick={() => setVisibility(v)}
                         className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                           visibility === v
-                            ? "bg-[var(--primary)] text-white"
+                            ? "bg-primary text-white"
                             : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                         }`}
                       >

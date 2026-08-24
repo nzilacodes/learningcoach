@@ -105,7 +105,7 @@ function PronunciationPage() {
   }, [history]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
 
       <div className="flex-1 flex flex-col min-w-0 bg-white">

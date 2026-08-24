@@ -19,13 +19,13 @@ export function KidsDashboard(data: DashboardData) {
   const displayName = data.firstName ?? (locale === "pt" ? "Amigo" : "Friend");
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-panel-bg">
         {/* ====== TopBar ====== */}
         <AppHeader
           title={locale === "pt" ? `Oi, ${displayName}!` : `Hi, ${displayName}!`}
-          titleClassName="font-display text-lg font-bold text-[var(--ink)] truncate"
+          titleClassName="font-display text-lg font-bold text-ink truncate"
           leftExtra={<span className="text-2xl">🌟</span>}
           borderClassName="border-amber-100"
           blur
@@ -87,7 +87,7 @@ export function KidsDashboard(data: DashboardData) {
                 <Link
                   to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
                   params={nextLessonId ? { lessonId: nextLessonId } : undefined}
-                  className="inline-flex items-center gap-2 bg-white text-[var(--ink)] px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                  className="inline-flex items-center gap-2 bg-white text-ink px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:scale-105 active:scale-95 transition-transform"
                 >
                   <Play className="w-5 h-5 fill-current" />
                   {locale === "pt" ? "Jogar!" : "Play!"}
@@ -97,7 +97,7 @@ export function KidsDashboard(data: DashboardData) {
 
             {/* Simple path */}
             <div>
-              <h3 className="font-display text-lg font-bold text-[var(--ink)] mb-3 text-center">
+              <h3 className="font-display text-lg font-bold text-ink mb-3 text-center">
                 {locale === "pt" ? "Meu caminho" : "My path"}
               </h3>
               <div className="flex flex-col items-center gap-3">
@@ -138,7 +138,7 @@ export function KidsDashboard(data: DashboardData) {
             </div>
 
             {/* Achievements — prominent */}
-            <div className="flex items-center gap-2 justify-center text-[var(--ink)]">
+            <div className="flex items-center gap-2 justify-center text-ink">
               <PartyPopper className="w-5 h-5 text-amber-500" />
               <h3 className="font-display text-lg font-bold">
                 {locale === "pt" ? "Minhas Conquistas" : "My Achievements"}

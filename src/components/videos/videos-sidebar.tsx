@@ -34,19 +34,19 @@ const NAV_SECTIONS = [
       {
         to: "/",
         Icon: Home,
-        hoverColor: "group-hover:text-[var(--violet)]",
+        hoverColor: "group-hover:text-violet",
         label: { pt: "Home", en: "Home" },
       },
       {
         to: "/dashboard",
         Icon: LayoutDashboard,
-        hoverColor: "group-hover:text-[var(--amber)]",
+        hoverColor: "group-hover:text-amber",
         label: { pt: "Dashboard", en: "Dashboard" },
       },
       {
         to: "/games",
         Icon: Gamepad2,
-        hoverColor: "group-hover:text-[var(--magenta)]",
+        hoverColor: "group-hover:text-magenta",
         label: { pt: "Jogos", en: "Games" },
       },
     ],
@@ -122,7 +122,7 @@ export function VideosSidebar() {
               className="w-10 h-10 rounded-xl object-contain shadow-lg ring-1 ring-gray-100"
             />
             <div className="leading-tight">
-              <div className="font-display font-bold text-lg text-[var(--ink)]">Learning</div>
+              <div className="font-display font-bold text-lg text-ink">Learning</div>
               <div className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">
                 Coach
               </div>
@@ -176,7 +176,7 @@ export function VideosSidebar() {
                   to={item.to}
                   className={`nav-item flex items-center gap-3 px-4 py-3 rounded-2xl font-medium group transition-all ${
                     isActive
-                      ? "bg-[var(--violet)]/5 text-[var(--violet)] font-bold"
+                      ? "bg-violet/5 text-violet font-bold"
                       : "text-muted-foreground hover:bg-gray-50 hover:text-black"
                   } ${collapsed ? "justify-center px-3" : ""}`}
                   title={collapsed ? (locale === "pt" ? item.label.pt : item.label.en) : undefined}
@@ -215,7 +215,7 @@ export function VideosSidebar() {
                 }}
                 className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-muted-foreground transition-colors w-full text-left"
               >
-                <User className="w-4 h-4 text-[var(--violet)]" />
+                <User className="w-4 h-4 text-violet" />
                 {locale === "pt" ? "Ver perfil" : "View profile"}
               </button>
               <button
@@ -246,7 +246,7 @@ export function VideosSidebar() {
           className={`cursor-pointer group w-full text-left ${collapsed ? "" : "flex items-center gap-3 px-2"}`}
         >
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-white text-sm font-bold border-2 border-white shadow-md overflow-hidden">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet to-magenta flex items-center justify-center text-white text-sm font-bold border-2 border-white shadow-md overflow-hidden">
               {user?.email ? (
                 <span>{user.email.charAt(0).toUpperCase()}</span>
               ) : (
@@ -258,7 +258,7 @@ export function VideosSidebar() {
           {!collapsed && (
             <>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate text-[var(--ink)]">
+                <p className="text-sm font-bold truncate text-ink">
                   {user?.email?.split("@")[0] || "Utilizador"}
                 </p>
                 <p className="text-2xs text-muted-foreground font-medium truncate">
@@ -335,7 +335,7 @@ export function VideosMobileNav() {
               onClick={() => setMoreOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${
                 isActive(item.to)
-                  ? "text-[var(--violet)] bg-[var(--violet)]/5"
+                  ? "text-violet bg-violet/5"
                   : "text-muted-foreground hover:bg-gray-50"
               }`}
             >
@@ -354,7 +354,7 @@ export function VideosMobileNav() {
               key={item.to}
               to={item.to}
               className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors ${
-                isActive(item.to) ? "text-[var(--violet)]" : "text-muted-foreground"
+                isActive(item.to) ? "text-violet" : "text-muted-foreground"
               }`}
             >
               <item.Icon className="w-5 h-5" />
@@ -367,7 +367,7 @@ export function VideosMobileNav() {
           <button
             onClick={() => setMoreOpen(!moreOpen)}
             className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors ${
-              moreOpen ? "text-[var(--violet)]" : "text-muted-foreground"
+              moreOpen ? "text-violet" : "text-muted-foreground"
             }`}
           >
             <Grid3X3 className="w-5 h-5" />

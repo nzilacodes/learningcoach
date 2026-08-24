@@ -194,7 +194,11 @@ function WatchPage() {
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
         <main className="flex-1 container mx-auto px-4 py-16 max-w-lg text-center">
-          <img src={youtubeThumb(videoId)} alt="" className="w-full rounded-xl mb-6" />
+          <img
+            src={youtubeThumb(videoId)}
+            alt="Pré-visualização do vídeo"
+            className="w-full rounded-xl mb-6"
+          />
           <h1 className="text-2xl font-bold mb-2">Entre para assistir</h1>
           <p className="text-muted-foreground mb-4">
             Guardamos o seu progresso e geramos automaticamente transcrição, quiz e atividades para
@@ -212,7 +216,7 @@ function WatchPage() {
   // Reached from /videos (VideosSidebar) — keeps the same shell instead of
   // dropping to the marketing SiteHeader (NAV-2).
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         <AppHeader

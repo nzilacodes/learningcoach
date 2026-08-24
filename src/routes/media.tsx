@@ -138,13 +138,13 @@ function MediaPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
 
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         <AppHeader
           title="Media"
-          leftExtra={<FolderOpen className="w-5 h-5 text-[var(--primary)]" />}
+          leftExtra={<FolderOpen className="w-5 h-5 text-primary" />}
           actions={
             <>
               <HeaderActionLinks />
@@ -158,7 +158,7 @@ function MediaPage() {
           <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="font-display text-2xl font-bold text-[var(--ink)]">Biblioteca</h2>
+                <h2 className="font-display text-2xl font-bold text-ink">Biblioteca</h2>
                 <p className="text-sm text-muted-foreground">
                   Gerencie vídeos, áudios, imagens e gravações.
                 </p>
@@ -198,21 +198,19 @@ function MediaPage() {
                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                   Armazenamento
                 </p>
-                <p className="font-display text-xl font-bold text-[var(--ink)]">
-                  {formatBytes(totalBytes)}
-                </p>
+                <p className="font-display text-xl font-bold text-ink">{formatBytes(totalBytes)}</p>
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                   Vídeos
                 </p>
-                <p className="font-display text-xl font-bold text-[var(--ink)]">{videoCount}</p>
+                <p className="font-display text-xl font-bold text-ink">{videoCount}</p>
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                   Áudios
                 </p>
-                <p className="font-display text-xl font-bold text-[var(--ink)]">{audioCount}</p>
+                <p className="font-display text-xl font-bold text-ink">{audioCount}</p>
               </div>
             </div>
 
@@ -234,7 +232,7 @@ function MediaPage() {
                     onClick={() => setTypeFilter(f.key)}
                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                       typeFilter === f.key
-                        ? "bg-[var(--primary)] text-white shadow-md"
+                        ? "bg-primary text-white shadow-md"
                         : "bg-white border border-gray-200 text-muted-foreground"
                     }`}
                   >
@@ -246,7 +244,7 @@ function MediaPage() {
                 onClick={() => setTrashed((t) => !t)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                   trashed
-                    ? "bg-[var(--ink)] text-white"
+                    ? "bg-ink text-white"
                     : "bg-white border border-gray-200 text-muted-foreground"
                 }`}
               >
@@ -315,7 +313,7 @@ function MediaPage() {
                                 )}
                               </div>
                             </TableCell>
-                            <TableCell className="font-medium text-[var(--ink)]">
+                            <TableCell className="font-medium text-ink">
                               {item.title || item.original_filename}
                             </TableCell>
                             <TableCell className="text-muted-foreground capitalize">

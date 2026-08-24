@@ -105,7 +105,7 @@ type Message = {
 // one of the un-reclassified SiteHeader pages the NAV-1 audit flagged.
 function CommunityShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         <AppHeader

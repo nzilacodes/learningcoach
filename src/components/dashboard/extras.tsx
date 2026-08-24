@@ -474,9 +474,9 @@ export function ReminderCard({
   return (
     <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display text-sm font-bold text-[var(--ink)] flex items-center gap-2">
+        <h3 className="font-display text-sm font-bold text-ink flex items-center gap-2">
           {r.enabled ? (
-            <Bell className="w-4 h-4 text-[var(--violet)]" />
+            <Bell className="w-4 h-4 text-violet" />
           ) : (
             <BellOff className="w-4 h-4 text-muted-foreground" />
           )}
@@ -512,7 +512,7 @@ export function ReminderCard({
             }
             reminder.save.mutate({ interval_minutes: r.interval_minutes, enabled: turningOn });
           }}
-          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${r.enabled ? "bg-[var(--violet)] text-white" : "border border-gray-200 text-muted-foreground"}`}
+          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${r.enabled ? "bg-violet text-white" : "border border-gray-200 text-muted-foreground"}`}
         >
           {r.enabled ? (locale === "pt" ? "Ativo" : "On") : locale === "pt" ? "Desativado" : "Off"}
         </button>
@@ -524,7 +524,7 @@ export function ReminderCard({
             onClick={() => reminder.save.mutate({ interval_minutes: m, enabled: r.enabled })}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${
               r.interval_minutes === m
-                ? "bg-[var(--violet)] text-white"
+                ? "bg-violet text-white"
                 : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
             }`}
           >
