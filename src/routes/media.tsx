@@ -268,6 +268,7 @@ function MediaPage() {
                   </p>
                 </div>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -286,13 +287,22 @@ function MediaPage() {
                           key={item.id}
                           className="cursor-pointer"
                           onClick={() => setDetailId(item.id)}
+                          role="button"
+                          tabIndex={0}
+                          aria-label={item.title || item.original_filename}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setDetailId(item.id);
+                            }
+                          }}
                         >
                           <TableCell>
                             <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
                               {item.status === "ready" && item.thumbnail_storage_key ? (
                                 <img
                                   src={mediaThumbnailUrl(item.id)}
-                                  alt=""
+                                  alt={item.title || item.original_filename}
                                   className="w-full h-full object-cover"
                                 />
                               ) : item.status === "failed" ? (
@@ -331,6 +341,7 @@ function MediaPage() {
                     })}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </div>
 

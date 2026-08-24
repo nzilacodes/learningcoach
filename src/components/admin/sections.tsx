@@ -14,6 +14,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,7 +86,6 @@ export function SubscriptionsSection() {
   const [cancelingId, setCancelingId] = useState<string | null>(null);
 
   const cancelSub = async (id: string) => {
-    if (!window.confirm("Cancelar esta assinatura? O aluno perde o acesso ao plano pago.")) return;
     setCancelingId(id);
     try {
       await apiFetch(`/v1/admin/subscriptions/${id}/cancel`, { method: "POST" });
@@ -164,14 +174,31 @@ export function SubscriptionsSection() {
                 </TableCell>
                 <TableCell>
                   {s.status === "active" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={cancelingId === s.id}
-                      onClick={() => cancelSub(s.id)}
-                    >
-                      {cancelingId === s.id ? "A cancelar…" : "Cancelar"}
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="outline" disabled={cancelingId === s.id}>
+                          {cancelingId === s.id ? "A cancelar…" : "Cancelar"}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Cancelar esta assinatura?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {s.profiles?.full_name ?? "Este aluno"} perde o acesso ao plano pago
+                            imediatamente. Esta ação não pode ser desfeita a partir daqui.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Voltar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => cancelSub(s.id)}
+                            className="bg-red-500 hover:bg-red-600"
+                          >
+                            Cancelar assinatura
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   )}
                 </TableCell>
               </TableRow>

@@ -30,6 +30,7 @@ import {
   transcribe,
   scorePronunciation,
   feedbackFor,
+  describeTranscriptionRejection,
   type Recorder,
 } from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
@@ -212,11 +213,16 @@ function SpeakingPractice({
     try {
       const blob = await recorderRef.current!.stop();
       recorderRef.current = null;
-      const text = await transcribe(blob);
+      const text = await transcribe(blob, { language: "en" });
       setTranscript(text);
       setScore(scorePronunciation(target, text));
     } catch (e) {
-      notify.fromError(e, { dedupeKey: "lesson:transcribe" });
+      const rejection = describeTranscriptionRejection(e, locale);
+      if (rejection) {
+        notify.warning(rejection.title, { description: rejection.description, dedupeKey: "lesson:no-speech" });
+      } else {
+        notify.fromError(e, { dedupeKey: "lesson:transcribe" });
+      }
     } finally {
       setProcessing(false);
     }

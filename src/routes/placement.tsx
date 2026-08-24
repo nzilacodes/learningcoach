@@ -34,6 +34,7 @@ import { normalizeApiError, type NormalizedError } from "@/lib/errors/normalize-
 import { InlineStatusFromError } from "@/components/feedback/inline-status";
 import { StagedLoader } from "@/components/feedback/staged-loader";
 import { describeGetUserMediaError } from "@/lib/media-devices";
+import { describeTranscriptionRejection } from "@/lib/voice";
 import {
   GRAMMAR,
   VOCABULARY,
@@ -938,20 +939,11 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
     try {
       const blob = await recorderRef.current.stop();
       recorderRef.current = null;
-      if (blob.size < 4096) {
-        notify.warning(
-          locale === "pt" ? "Áudio muito curto ou silencioso" : "Audio too short or silent",
-          {
-            description:
-              locale === "pt"
-                ? "Fale mais alto e tente novamente."
-                : "Please speak louder and try again.",
-          },
-        );
-        setState("idle");
-        return;
-      }
       const fd = new FormData();
+      // "language" must come before "file": @fastify/multipart parses parts
+      // in stream order, so a field appended after the file isn't guaranteed
+      // to be readable by the backend when it reads the file part.
+      fd.append("language", "en");
       fd.append("file", blob, "recording.wav");
       const data = await apiFetchFormData<{ text: string }>("/v1/audio/transcriptions", fd);
       const text = (data.text ?? "").trim();
@@ -969,7 +961,12 @@ function MicRecorder({ onTranscript }: { onTranscript: (t: string) => void }) {
         onTranscript(text);
       }
     } catch (e) {
-      notify.fromError(e, { dedupeKey: "placement:transcribe" });
+      const rejection = describeTranscriptionRejection(e, locale);
+      if (rejection) {
+        notify.warning(rejection.title, { description: rejection.description, dedupeKey: "placement:no-speech" });
+      } else {
+        notify.fromError(e, { dedupeKey: "placement:transcribe" });
+      }
     } finally {
       setState("idle");
     }

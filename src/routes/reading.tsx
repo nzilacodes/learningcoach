@@ -11,7 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
-import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
+import { speak, startRecording, transcribe, describeTranscriptionRejection, type Recorder } from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
 import { uploadMedia } from "@/lib/media";
 import { apiFetch } from "@/lib/api/client";
@@ -279,7 +279,7 @@ function ReadingPage() {
       // Uploading the recording is best-effort and never blocks assessment —
       // see the identical comment in components/word-card.tsx.
       const [text, mediaAsset] = await Promise.all([
-        transcribe(blob),
+        transcribe(blob, { language: "en" }),
         uploadMedia(blob, { filename: "leitura.webm" }).catch(() => null),
       ]);
       setTranscript(text);
@@ -299,7 +299,12 @@ function ReadingPage() {
       // null rather than rejecting) — no .catch() needed here.
       awardActivity("reading", { meta: { overall: r.overall ?? 0 } });
     } catch (e) {
-      notify.fromError(e, { dedupeKey: "reading:assess" });
+      const rejection = describeTranscriptionRejection(e, locale);
+      if (rejection) {
+        notify.warning(rejection.title, { description: rejection.description, dedupeKey: "reading:no-speech" });
+      } else {
+        notify.fromError(e, { dedupeKey: "reading:assess" });
+      }
     } finally {
       setProcessing(false);
     }

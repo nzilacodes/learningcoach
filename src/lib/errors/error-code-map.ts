@@ -128,6 +128,16 @@ export const ErrorCodeMap: Record<ErrorCode, CopyEntry> = {
     action: "retry",
     severity: "warning",
   },
+  AUDIO_NO_SPEECH_DETECTED: {
+    title: { pt: "Não conseguimos ouvir claramente", en: "We couldn't hear you clearly" },
+    description: {
+      pt: "Fale mais alto, mais perto do microfone, e tente novamente.",
+      en: "Speak louder, closer to the mic, and try again.",
+    },
+    retryable: true,
+    action: "none",
+    severity: "warning",
+  },
   NETWORK_ERROR: {
     title: { pt: "Sem ligação à internet", en: "No internet connection" },
     description: {

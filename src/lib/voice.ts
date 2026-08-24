@@ -1,5 +1,8 @@
 /** Client helpers for TTS playback and STT recording. */
-import { apiFetch, apiFetchFormData } from "@/lib/api/client";
+import { apiFetch, apiFetchFormData, ApiError } from "@/lib/api/client";
+import { createLevelMeter } from "@/lib/audio-level-meter";
+import { assertRecordingIsUsable, RecordingRejectedError } from "@/lib/recording-guard";
+export { RecordingRejectedError } from "@/lib/recording-guard";
 
 let currentAudio: HTMLAudioElement | null = null;
 let currentUrl: string | null = null;
@@ -84,12 +87,26 @@ export async function startRecording(): Promise<Recorder> {
   rec.ondataavailable = (e) => {
     if (e.data.size > 0) chunks.push(e.data);
   };
+  const startedAt = Date.now();
+  const meter = createLevelMeter(stream);
+  let peakLevel = 0;
+  const levelTimer = window.setInterval(() => {
+    peakLevel = Math.max(peakLevel, meter.getLevel());
+  }, 100);
   rec.start();
   return {
     stop: () =>
-      new Promise<Blob>((resolve) => {
+      new Promise<Blob>((resolve, reject) => {
         rec.onstop = () => {
           stream.getTracks().forEach((t) => t.stop());
+          window.clearInterval(levelTimer);
+          meter.stop();
+          try {
+            assertRecordingIsUsable(Date.now() - startedAt, peakLevel);
+          } catch (e) {
+            reject(e);
+            return;
+          }
           resolve(new Blob(chunks, { type: rec.mimeType || "audio/webm" }));
         };
         rec.stop();
@@ -97,8 +114,12 @@ export async function startRecording(): Promise<Recorder> {
   };
 }
 
-export async function transcribe(blob: Blob): Promise<string> {
+export async function transcribe(blob: Blob, opts: { language?: "en" | "pt" } = {}): Promise<string> {
   const form = new FormData();
+  // "language" must come before "file": @fastify/multipart parses parts in
+  // stream order, so a field appended after the file part isn't guaranteed
+  // to be readable by the backend when it reads the file part.
+  if (opts.language) form.append("language", opts.language);
   form.append("file", blob, "recording.webm");
   const data = await apiFetchFormData<{ text: string }>("/v1/audio/transcriptions", form);
   return data.text ?? "";
@@ -133,6 +154,42 @@ export function scorePronunciation(expected: string, actual: string): number {
   }
   const dist = dp[m][n];
   return Math.max(0, 1 - dist / Math.max(m, n));
+}
+
+/** Shared copy for every recording entry point when no usable speech was
+ * captured — either rejected client-side before upload (too short/silent) or
+ * server-side after a low-confidence/no-speech STT result. Returns null for
+ * any other error so callers fall back to their normal error handling
+ * (notify.fromError). Never surfaces a hallucinated transcript like "you". */
+export function describeTranscriptionRejection(
+  e: unknown,
+  locale: "pt" | "en",
+): { title: string; description: string } | null {
+  if (e instanceof RecordingRejectedError) {
+    return e.reason === "too_short"
+      ? {
+          title: locale === "pt" ? "Gravação muito curta" : "Recording too short",
+          description:
+            locale === "pt"
+              ? "Grave por pelo menos meio segundo e tente novamente."
+              : "Record for at least half a second and try again.",
+        }
+      : {
+          title: locale === "pt" ? "Não detetámos voz" : "We didn't detect any speech",
+          description:
+            locale === "pt"
+              ? "Fale mais perto do microfone e tente novamente."
+              : "Speak closer to the mic and try again.",
+        };
+  }
+  if (e instanceof ApiError && e.code === "AUDIO_NO_SPEECH_DETECTED") {
+    return {
+      title: locale === "pt" ? "Não conseguimos ouvir claramente" : "We couldn't hear you clearly",
+      description:
+        locale === "pt" ? "Fale mais alto e tente novamente." : "Please speak louder and try again.",
+    };
+  }
+  return null;
 }
 
 export function feedbackFor(score: number, locale: "pt" | "en"): string {

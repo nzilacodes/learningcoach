@@ -21,7 +21,7 @@ import {
   MobileAvatarMenu,
   DesktopAvatarLink,
 } from "@/components/mobile-avatar-menu";
-import { startRecording, transcribe, type Recorder } from "@/lib/voice";
+import { startRecording, transcribe, describeTranscriptionRejection, type Recorder } from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
 import { SITE_URL } from "@/lib/site-url";
 import { useNotification } from "@/lib/notifications/notification-provider";
@@ -204,10 +204,15 @@ function AICoachPage() {
       try {
         const blob = await recorder.stop();
         setRecorder(null);
-        const text = await transcribe(blob);
+        const text = await transcribe(blob, { language: locale });
         if (text.trim()) setInput((prev) => (prev ? `${prev} ${text}` : text));
       } catch (e) {
-        notify.fromError(e, { dedupeKey: "ai-coach:transcribe" });
+        const rejection = describeTranscriptionRejection(e, locale);
+        if (rejection) {
+          notify.warning(rejection.title, { description: rejection.description, dedupeKey: "ai-coach:no-speech" });
+        } else {
+          notify.fromError(e, { dedupeKey: "ai-coach:transcribe" });
+        }
       } finally {
         setTranscribing(false);
       }

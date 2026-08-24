@@ -40,8 +40,10 @@ function profileSchema(locale: "pt" | "en") {
       .int()
       .min(4, locale === "pt" ? "Idade inválida (4–120)" : "Invalid age (4–120)")
       .max(120, locale === "pt" ? "Idade inválida (4–120)" : "Invalid age (4–120)"),
-    country: z.string(),
-    nativeLang: z.string(),
+    country: z.string().min(1, locale === "pt" ? "País obrigatório" : "Country required"),
+    nativeLang: z
+      .string()
+      .min(1, locale === "pt" ? "Língua materna obrigatória" : "Native language required"),
     goal: z.string(),
     interests: z.array(z.string()),
   });

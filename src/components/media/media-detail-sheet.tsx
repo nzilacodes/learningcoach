@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import { Loader2, Trash2, RotateCcw, XCircle, FileText } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -120,7 +131,6 @@ export function MediaDetailSheet({
 
   const handlePurge = async () => {
     if (!asset) return;
-    if (!window.confirm("Apagar definitivamente? Esta ação não pode ser revertida.")) return;
     try {
       await purgeMedia.mutateAsync(asset.id);
       notify.success("Apagado definitivamente");
@@ -211,13 +221,31 @@ export function MediaDetailSheet({
                   >
                     <RotateCcw className="w-4 h-4 mr-1" /> Restaurar
                   </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => void handlePurge()}
-                    disabled={purgeMedia.isPending}
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" /> Apagar definitivamente
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" disabled={purgeMedia.isPending}>
+                        <Trash2 className="w-4 h-4 mr-1" /> Apagar definitivamente
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Apagar definitivamente?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta ação não pode ser revertida — o ficheiro e os seus metadados são
+                          removidos para sempre.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => void handlePurge()}
+                          className="bg-red-500 hover:bg-red-600"
+                        >
+                          Apagar definitivamente
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             ) : (
