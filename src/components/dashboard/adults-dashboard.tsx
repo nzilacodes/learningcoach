@@ -94,7 +94,7 @@ export function AdultsDashboard(data: DashboardData) {
     {
       icon: Flame,
       label: locale === "pt" ? "Sequência" : "Streak",
-      value: String(data.userStats?.streak_days ?? 0),
+      value: (data.userStats?.streak_days ?? 0).toLocaleString(),
       unit: locale === "pt" ? "dias" : "days",
       color: "text-orange-500 bg-orange-100",
     },
@@ -108,7 +108,7 @@ export function AdultsDashboard(data: DashboardData) {
     {
       icon: Trophy,
       label: locale === "pt" ? "Concluídas" : "Completed",
-      value: String(completedLessonCount),
+      value: completedLessonCount.toLocaleString(),
       unit: locale === "pt" ? "lições" : "lessons",
       color: "text-magenta bg-magenta/10",
     },
