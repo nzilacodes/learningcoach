@@ -269,78 +269,78 @@ function MediaPage() {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-16">Miniatura</TableHead>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className="text-right">Tamanho</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {items.map((item) => {
-                      const Icon = TYPE_ICON[item.media_type];
-                      return (
-                        <TableRow
-                          key={item.id}
-                          className="cursor-pointer"
-                          onClick={() => setDetailId(item.id)}
-                          role="button"
-                          tabIndex={0}
-                          aria-label={item.title || item.original_filename}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              setDetailId(item.id);
-                            }
-                          }}
-                        >
-                          <TableCell>
-                            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
-                              {item.status === "ready" && item.thumbnail_storage_key ? (
-                                <img
-                                  src={mediaThumbnailUrl(item.id)}
-                                  alt={item.title || item.original_filename}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : item.status === "failed" ? (
-                                <XCircle className="w-4 h-4 text-red-400" />
-                              ) : item.media_type === "video" ? (
-                                <Play className="w-4 h-4 text-muted-foreground" />
-                              ) : (
-                                <Icon className="w-4 h-4 text-muted-foreground" />
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-medium text-[var(--ink)]">
-                            {item.title || item.original_filename}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground capitalize">
-                            {item.media_type}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                item.status === "failed"
-                                  ? "destructive"
-                                  : item.status === "ready"
-                                    ? "secondary"
-                                    : "outline"
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-16">Miniatura</TableHead>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Tamanho</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {items.map((item) => {
+                        const Icon = TYPE_ICON[item.media_type];
+                        return (
+                          <TableRow
+                            key={item.id}
+                            className="cursor-pointer"
+                            onClick={() => setDetailId(item.id)}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={item.title || item.original_filename}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                setDetailId(item.id);
                               }
-                            >
-                              {STATUS_LABEL[item.status]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right text-muted-foreground">
-                            {formatBytes(item.size_bytes)}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                            }}
+                          >
+                            <TableCell>
+                              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+                                {item.status === "ready" && item.thumbnail_storage_key ? (
+                                  <img
+                                    src={mediaThumbnailUrl(item.id)}
+                                    alt={item.title || item.original_filename}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : item.status === "failed" ? (
+                                  <XCircle className="w-4 h-4 text-red-400" />
+                                ) : item.media_type === "video" ? (
+                                  <Play className="w-4 h-4 text-muted-foreground" />
+                                ) : (
+                                  <Icon className="w-4 h-4 text-muted-foreground" />
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium text-[var(--ink)]">
+                              {item.title || item.original_filename}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground capitalize">
+                              {item.media_type}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  item.status === "failed"
+                                    ? "destructive"
+                                    : item.status === "ready"
+                                      ? "secondary"
+                                      : "outline"
+                                }
+                              >
+                                {STATUS_LABEL[item.status]}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right text-muted-foreground">
+                              {formatBytes(item.size_bytes)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </div>
