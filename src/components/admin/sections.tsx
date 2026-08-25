@@ -713,7 +713,8 @@ function ExerciseEditor({
   // the pipeline never generates a second batch on top of an existing one
   // (see generate-lesson-content.ts's idempotency check).
   const generateExercises = useMutation({
-    mutationFn: () => apiFetch(`/v1/admin/lessons/${lessonId}/generate-exercises`, { method: "POST" }),
+    mutationFn: () =>
+      apiFetch(`/v1/admin/lessons/${lessonId}/generate-exercises`, { method: "POST" }),
     onSuccess: (result: unknown) => {
       const r = result as { status: string; count?: number; reason?: string };
       if (r.status === "generated") {
@@ -736,7 +737,10 @@ function ExerciseEditor({
 
   const updateStatus = useMutation({
     mutationFn: ({ id, contentStatus }: { id: string; contentStatus: ContentStatus }) =>
-      apiFetch(`/v1/admin/exercises/${id}`, { method: "PATCH", body: JSON.stringify({ contentStatus }) }),
+      apiFetch(`/v1/admin/exercises/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ contentStatus }),
+      }),
     onSuccess: onChanged,
     onError: (e) => notify.fromError(e, { dedupeKey: "admin:update-exercise-status" }),
   });
@@ -775,23 +779,40 @@ function ExerciseEditor({
           </Button>
         </div>
       </div>
-      {exercises.map((ex) => (
-        <ExerciseRow
-          key={ex.id}
-          exercise={ex}
-          onDeleted={() => {
-            if (
-              !window.confirm(
-                "Apagar este exercício definitivamente? Esta ação não pode ser revertida.",
-              )
+      {exercises.map((ex) => {
+        const onDeleted = () => {
+          if (
+            !window.confirm(
+              "Apagar este exercício definitivamente? Esta ação não pode ser revertida.",
             )
-              return;
-            deleteExercise.mutate(ex.id);
-          }}
-          onStatusChange={(contentStatus) => updateStatus.mutate({ id: ex.id, contentStatus })}
-          onSaved={onChanged}
-        />
-      ))}
+          )
+            return;
+          deleteExercise.mutate(ex.id);
+        };
+        const onStatusChange = (contentStatus: ContentStatus) =>
+          updateStatus.mutate({ id: ex.id, contentStatus });
+
+        // Two genuinely different components (not a conditional return inside
+        // one) — ExerciseRow's form hooks (useForm/useEffect/useMutation) must
+        // never be reachable behind a branch, or React's hooks rules break
+        // the moment two exercises of different types render side by side.
+        return ex.type === "mcq" ? (
+          <ExerciseRow
+            key={ex.id}
+            exercise={ex}
+            onDeleted={onDeleted}
+            onStatusChange={onStatusChange}
+            onSaved={onChanged}
+          />
+        ) : (
+          <NonMcqExercisePreview
+            key={ex.id}
+            exercise={ex}
+            onDeleted={onDeleted}
+            onStatusChange={onStatusChange}
+          />
+        );
+      })}
       {exercises.length === 0 && (
         <p className="text-xs text-muted-foreground">Sem exercícios nesta lição.</p>
       )}
@@ -907,10 +928,6 @@ function ExerciseRow({
   onSaved: () => void;
 }) {
   const notify = useNotification();
-
-  if (exercise.type !== "mcq") {
-    return <NonMcqExercisePreview exercise={exercise} onDeleted={onDeleted} onStatusChange={onStatusChange} />;
-  }
   const form = useForm<ExerciseRowValues>({
     resolver: zodResolver(exerciseRowSchema()),
     defaultValues: {

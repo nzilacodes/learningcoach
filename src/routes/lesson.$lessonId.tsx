@@ -102,7 +102,12 @@ type OrderingResponse = { order: number[] };
 type MatchingResponse = { pairs: { left: number; right: number }[] };
 type ExerciseResponse = McqResponse | FillBlankResponse | OrderingResponse | MatchingResponse;
 
-type PerQuestionFeedback = { exerciseId: string; isCorrect: boolean | null; score: number; feedback?: string };
+type PerQuestionFeedback = {
+  exerciseId: string;
+  isCorrect: boolean | null;
+  score: number;
+  feedback?: string;
+};
 type SubmitLessonAttemptResult = LessonAttemptResult & {
   level?: number;
   levelUp?: boolean;
@@ -375,15 +380,13 @@ function FillBlankInput({
         disabled={locked}
         placeholder={locale === "pt" ? "A tua resposta..." : "Your answer..."}
         className={
-          feedback
-            ? feedback.isCorrect
-              ? "border-emerald-500"
-              : "border-destructive"
-            : undefined
+          feedback ? (feedback.isCorrect ? "border-emerald-500" : "border-destructive") : undefined
         }
       />
       {feedback && (
-        <div className={`flex items-center gap-1.5 text-xs ${feedback.isCorrect ? "text-emerald-600" : "text-destructive"}`}>
+        <div
+          className={`flex items-center gap-1.5 text-xs ${feedback.isCorrect ? "text-emerald-600" : "text-destructive"}`}
+        >
           {feedback.isCorrect ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
           {feedback.isCorrect
             ? locale === "pt"
@@ -456,7 +459,9 @@ function OrderingInput({
         </div>
       ))}
       {feedback && (
-        <div className={`flex items-center gap-1.5 text-xs ${feedback.isCorrect ? "text-emerald-600" : "text-destructive"}`}>
+        <div
+          className={`flex items-center gap-1.5 text-xs ${feedback.isCorrect ? "text-emerald-600" : "text-destructive"}`}
+        >
           {feedback.isCorrect ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
         </div>
       )}
@@ -493,7 +498,10 @@ function MatchingInput({
   return (
     <div className="mt-3 space-y-2">
       {leftItems.map((left, i) => (
-        <div key={i} className="flex items-center gap-3 rounded-xl border-2 border-border bg-background/60 p-3 text-sm">
+        <div
+          key={i}
+          className="flex items-center gap-3 rounded-xl border-2 border-border bg-background/60 p-3 text-sm"
+        >
           <span className="flex-1">{left}</span>
           <select
             value={rightFor(i) ?? ""}
@@ -513,7 +521,9 @@ function MatchingInput({
         </div>
       ))}
       {feedback && (
-        <div className={`flex items-center gap-1.5 text-xs ${feedback.isCorrect ? "text-emerald-600" : "text-destructive"}`}>
+        <div
+          className={`flex items-center gap-1.5 text-xs ${feedback.isCorrect ? "text-emerald-600" : "text-destructive"}`}
+        >
           {feedback.isCorrect ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
         </div>
       )}
@@ -889,10 +899,14 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
 
   const hasGradedExercises = (lesson?.exercises.length ?? 0) > 0;
   const feedbackByExercise = useMemo(
-    () => (attemptResult ? new Map(attemptResult.perQuestionFeedback.map((f) => [f.exerciseId, f])) : null),
+    () =>
+      attemptResult
+        ? new Map(attemptResult.perQuestionFeedback.map((f) => [f.exerciseId, f]))
+        : null,
     [attemptResult],
   );
-  const allAnswered = hasGradedExercises && Object.keys(answers).length >= (lesson?.exercises.length ?? 0);
+  const allAnswered =
+    hasGradedExercises && Object.keys(answers).length >= (lesson?.exercises.length ?? 0);
 
   // Auto-advance only off a completion from *this* session (justCompleted),
   // never off revisiting an already-completed lesson (alreadyDone) — someone
@@ -922,7 +936,10 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
     try {
       if (hasGradedExercises) {
         const payload = {
-          answers: Object.entries(answers).map(([exerciseId, response]) => ({ exerciseId, response })),
+          answers: Object.entries(answers).map(([exerciseId, response]) => ({
+            exerciseId,
+            response,
+          })),
         };
         const result = await apiFetch<SubmitLessonAttemptResult>(`/v1/lessons/${lessonId}/submit`, {
           method: "POST",

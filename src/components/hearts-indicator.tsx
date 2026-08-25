@@ -34,7 +34,9 @@ export function HeartsIndicator({ locale }: { locale: "pt" | "en" }) {
       className="flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600"
       title={title}
     >
-      <Heart className={`h-4 w-4 ${hearts > 0 ? "fill-rose-500 text-rose-500" : "text-rose-200"}`} />
+      <Heart
+        className={`h-4 w-4 ${hearts > 0 ? "fill-rose-500 text-rose-500" : "text-rose-200"}`}
+      />
       {hearts}/{max}
     </div>
   );

@@ -43,7 +43,10 @@ type XpResult = {
 async function awardGameXp(gameId: string, score?: number, total?: number): Promise<XpResult> {
   return apiFetch<XpResult>("/v1/xp/events", {
     method: "POST",
-    body: JSON.stringify({ source: "game", meta: { gameId, ...(score !== undefined ? { score, total } : {}) } }),
+    body: JSON.stringify({
+      source: "game",
+      meta: { gameId, ...(score !== undefined ? { score, total } : {}) },
+    }),
   });
 }
 

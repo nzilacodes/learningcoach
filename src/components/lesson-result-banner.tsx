@@ -32,7 +32,9 @@ export function LessonResultBanner({
         <Trophy className="h-6 w-6 shrink-0" />
         <div>
           <div className="font-bold">
-            {locale === "pt" ? `Lição aprovada — ${result.score}%` : `Lesson passed — ${result.score}%`}
+            {locale === "pt"
+              ? `Lição aprovada — ${result.score}%`
+              : `Lesson passed — ${result.score}%`}
           </div>
           <div className="text-sm text-white/80">
             {result.alreadyCompleted
