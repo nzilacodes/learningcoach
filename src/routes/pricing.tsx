@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Sparkles, CheckCircle2, Crown, Zap, Star } from "lucide-react";
+import { Sparkles, CheckCircle2, Crown, Zap, Star, Loader2, AlertTriangle } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -134,7 +134,12 @@ function PricingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const { data: plans = [] } = useQuery({
+  const {
+    data: plans = [],
+    isLoading: plansLoading,
+    isError: plansError,
+    refetch: refetchPlans,
+  } = useQuery({
     queryKey: ["subscription_plans"],
     queryFn: async () => {
       const data = await apiFetch<Plan[]>("/v1/plans");
@@ -193,6 +198,23 @@ function PricingPage() {
 
           <div className="mt-20 relative px-4">
             <div className="mx-auto max-w-[1440px]">
+              {plansLoading ? (
+                <div className="flex justify-center py-16">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : plansError ? (
+                <div className="flex flex-col items-center gap-3 py-16 text-center">
+                  <AlertTriangle className="h-6 w-6 text-destructive" />
+                  <p className="text-sm text-muted-foreground">
+                    {locale === "pt"
+                      ? "Não foi possível carregar os planos. Tente novamente."
+                      : "Couldn't load the plans. Please try again."}
+                  </p>
+                  <Button variant="outline" size="sm" onClick={() => refetchPlans()}>
+                    {locale === "pt" ? "Tentar novamente" : "Try again"}
+                  </Button>
+                </div>
+              ) : (
               <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 justify-items-center items-stretch overflow-visible">
                 {filtered.map((plan) => {
                   const meta = TIER_META[plan.tier];
@@ -304,6 +326,7 @@ function PricingPage() {
                   );
                 })}
               </div>
+              )}
             </div>
           </div>
 

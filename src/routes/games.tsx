@@ -72,7 +72,7 @@ function GamesPage() {
     setSearch("");
   }, [group]);
 
-  const { data: profileStats } = useQuery({
+  const { data: profileStats, isError: profileStatsError } = useQuery({
     queryKey: ["games-profile-stats", user?.id],
     enabled: !!user,
     queryFn: () =>
@@ -81,6 +81,9 @@ function GamesPage() {
       ),
     staleTime: 30_000,
   });
+  // "0" reads as "you genuinely have 0 XP" — on a failed fetch that's not
+  // true, it's just unknown, so these fall back to an explicit "—" instead.
+  const statFallback = profileStatsError ? "—" : null;
 
   const { data: playCounts = {} } = useQuery({
     queryKey: ["games_plays"],

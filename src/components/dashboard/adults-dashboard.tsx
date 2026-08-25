@@ -109,7 +109,7 @@ export function AdultsDashboard(data: DashboardData) {
       icon: Trophy,
       label: locale === "pt" ? "Concluídas" : "Completed",
       value: completedLessonCount.toLocaleString(),
-      unit: locale === "pt" ? "lições" : "lessons",
+      unit: locale === "pt" ? "lições no total" : "lessons total",
       color: "text-magenta bg-magenta/10",
     },
     {

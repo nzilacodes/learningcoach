@@ -164,10 +164,10 @@ export function SubscriptionsSection() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-xs">
-                  {s.starts_at ? new Date(s.starts_at).toLocaleDateString() : "—"}
+                  {s.starts_at ? new Date(s.starts_at).toLocaleDateString("pt-AO") : "—"}
                 </TableCell>
                 <TableCell className="text-xs">
-                  {s.expires_at ? new Date(s.expires_at).toLocaleDateString() : "—"}
+                  {s.expires_at ? new Date(s.expires_at).toLocaleDateString("pt-AO") : "—"}
                 </TableCell>
                 <TableCell>
                   <code className="text-xs">{s.activation_code ?? "—"}</code>

@@ -66,7 +66,16 @@ export function celebrate() {
   container.style.cssText =
     "position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden";
   document.body.appendChild(container);
-  const colors = ["#f97316", "#ec4899", "#8b5cf6", "#22c55e", "#eab308"];
+  // Reference the app's own brand tokens instead of a hardcoded palette —
+  // keeps the confetti in sync with whatever the active age-theme resolves
+  // these to (kids/teens/adults each remap them, see .theme-* in styles.css).
+  const colors = [
+    "var(--sunset)",
+    "var(--amber)",
+    "var(--magenta)",
+    "var(--violet)",
+    "var(--chart-6)",
+  ];
   for (let i = 0; i < 60; i++) {
     const p = document.createElement("div");
     const size = 6 + Math.random() * 8;
