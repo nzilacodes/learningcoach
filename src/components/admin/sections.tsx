@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -370,12 +370,34 @@ type AdminExercise = {
   id: string;
   type: string;
   prompt: string;
-  data: { options?: string[] } | null;
-  correct_answer: { index?: number } | null;
+  data: {
+    options?: string[];
+    items?: string[];
+    leftItems?: string[];
+    rightItems?: string[];
+  } | null;
+  correct_answer: {
+    index?: number;
+    answers?: string[];
+    order?: number[];
+    pairs?: { left: number; right: number }[];
+  } | null;
   xp_reward: number;
   content_status: ContentStatus;
   generated_by: string | null;
 };
+type ReviewSummaryRow = { lesson_id: string; draft: number; in_review: number; published: number };
+/** Draft + in_review — anything not yet published, i.e. still needs eyes on it. */
+const pendingCount = (r: ReviewSummaryRow | undefined) => (r ? r.draft + r.in_review : 0);
+
+function ReviewCountBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <span className="ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-2xs font-bold text-amber-700">
+      {count}
+    </span>
+  );
+}
 type AdminLessonDetail = {
   id: string;
   title: string;
