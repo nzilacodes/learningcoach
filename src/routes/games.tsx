@@ -101,13 +101,19 @@ function GamesPage() {
   const stats = [
     {
       label: locale === "pt" ? "XP total" : "Total XP",
-      value: (profileStats?.xp ?? 0).toLocaleString(),
+      value: statFallback ?? (profileStats?.xp ?? 0).toLocaleString(),
     },
-    { label: locale === "pt" ? "Moedas" : "Coins", value: String(profileStats?.coins ?? 0) },
-    { label: locale === "pt" ? "Nível" : "Level", value: String(profileStats?.level ?? 1) },
+    {
+      label: locale === "pt" ? "Moedas" : "Coins",
+      value: statFallback ?? String(profileStats?.coins ?? 0),
+    },
+    {
+      label: locale === "pt" ? "Nível" : "Level",
+      value: statFallback ?? String(profileStats?.level ?? 1),
+    },
     {
       label: locale === "pt" ? "Dias seguidos" : "Day streak",
-      value: String(profileStats?.streak ?? 0),
+      value: statFallback ?? String(profileStats?.streak ?? 0),
     },
   ];
 

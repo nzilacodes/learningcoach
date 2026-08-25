@@ -215,117 +215,117 @@ function PricingPage() {
                   </Button>
                 </div>
               ) : (
-              <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 justify-items-center items-stretch overflow-visible">
-                {filtered.map((plan) => {
-                  const meta = TIER_META[plan.tier];
-                  const Icon = meta.icon;
-                  const featured = plan.tier === "premium";
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 justify-items-center items-stretch overflow-visible">
+                  {filtered.map((plan) => {
+                    const meta = TIER_META[plan.tier];
+                    const Icon = meta.icon;
+                    const featured = plan.tier === "premium";
 
-                  const orbColor =
-                    plan.tier === "essential"
-                      ? "bg-teal-400"
-                      : plan.tier === "premium"
-                        ? "bg-pink-400"
-                        : "bg-indigo-400";
-                  const ringColor =
-                    plan.tier === "premium" ? "ring-pink-400/20" : "ring-slate-200/20";
+                    const orbColor =
+                      plan.tier === "essential"
+                        ? "bg-teal-400"
+                        : plan.tier === "premium"
+                          ? "bg-pink-400"
+                          : "bg-indigo-400";
+                    const ringColor =
+                      plan.tier === "premium" ? "ring-pink-400/20" : "ring-slate-200/20";
 
-                  return (
-                    <div
-                      key={plan.id}
-                      className={`relative h-full w-full flex justify-center transition-all duration-300 ${
-                        featured ? "z-[5]" : "z-[1]"
-                      }`}
-                    >
-                      {/* Glassmorphic Orb Backdrop - Absolute positioned but pointer-events-none */}
+                    return (
                       <div
-                        className={`orb absolute -inset-6 ${orbColor} rounded-full z-0 opacity-15 blur-[100px] pointer-events-none transition-opacity duration-700`}
-                      />
-
-                      {/* Glass Card - Unified elegant styles for all, elevation for featured */}
-                      <div
-                        className={`glass-card relative z-10 flex h-full flex-col p-8 w-full md:max-w-[420px] rounded-4xl bg-white/80 backdrop-blur-2xl border border-white/40 shadow-flat-md transition-all duration-500 lg:min-h-[600px] ${
-                          featured ? `lg:-translate-y-10 ring-2 ${ringColor} shadow-flat-lg` : ""
+                        key={plan.id}
+                        className={`relative h-full w-full flex justify-center transition-all duration-300 ${
+                          featured ? "z-[5]" : "z-[1]"
                         }`}
                       >
-                        {featured && (
-                          <div className="absolute top-8 right-8 inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-slate-100 shadow-sm z-20">
-                            <Star className="h-3 w-3 fill-pink-500 text-pink-500" />
-                            <span className="text-2xs font-black uppercase tracking-widest text-muted-foreground">
-                              {locale === "pt" ? "MAIS POPULAR" : "MOST POPULAR"}
+                        {/* Glassmorphic Orb Backdrop - Absolute positioned but pointer-events-none */}
+                        <div
+                          className={`orb absolute -inset-6 ${orbColor} rounded-full z-0 opacity-15 blur-[100px] pointer-events-none transition-opacity duration-700`}
+                        />
+
+                        {/* Glass Card - Unified elegant styles for all, elevation for featured */}
+                        <div
+                          className={`glass-card relative z-10 flex h-full flex-col p-8 w-full md:max-w-[420px] rounded-4xl bg-white/80 backdrop-blur-2xl border border-white/40 shadow-flat-md transition-all duration-500 lg:min-h-[600px] ${
+                            featured ? `lg:-translate-y-10 ring-2 ${ringColor} shadow-flat-lg` : ""
+                          }`}
+                        >
+                          {featured && (
+                            <div className="absolute top-8 right-8 inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-slate-100 shadow-sm z-20">
+                              <Star className="h-3 w-3 fill-pink-500 text-pink-500" />
+                              <span className="text-2xs font-black uppercase tracking-widest text-muted-foreground">
+                                {locale === "pt" ? "MAIS POPULAR" : "MOST POPULAR"}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-10 ring-1 ring-slate-100 relative overflow-hidden">
+                            {featured && (
+                              <div className="absolute inset-0 bg-gradient-to-br from-pink-400/20 to-orange-400/20" />
+                            )}
+                            <Icon
+                              className={`h-8 w-8 relative z-10 ${plan.tier === "essential" ? "text-marketing-teal" : plan.tier === "premium" ? "text-pink-500" : "text-indigo-600"}`}
+                            />
+                          </div>
+
+                          <h2 className="font-display text-3xl font-bold mb-2 text-marketing-ink">
+                            {meta.label[locale]}
+                          </h2>
+                          <p className="text-sm text-muted-foreground mb-10 leading-relaxed max-w-[280px]">
+                            {meta.desc[locale]}
+                          </p>
+
+                          <div className="flex items-baseline gap-1 mb-1">
+                            <span className="text-5xl sm:text-6xl font-black tracking-tighter text-marketing-ink">
+                              {plan.price_kz.toLocaleString("pt-AO")}
+                            </span>
+                            <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+                              Kz
                             </span>
                           </div>
-                        )}
+                          <div className="text-2xs font-black uppercase tracking-[0.2em] text-muted-foreground mb-10">
+                            {plan.duration_days} {locale === "pt" ? "DIAS" : "DAYS"}
+                          </div>
 
-                        <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-10 ring-1 ring-slate-100 relative overflow-hidden">
-                          {featured && (
-                            <div className="absolute inset-0 bg-gradient-to-br from-pink-400/20 to-orange-400/20" />
-                          )}
-                          <Icon
-                            className={`h-8 w-8 relative z-10 ${plan.tier === "essential" ? "text-marketing-teal" : plan.tier === "premium" ? "text-pink-500" : "text-indigo-600"}`}
-                          />
+                          <div className="w-full h-px bg-slate-200/80 mb-10" />
+
+                          <div className="flex-grow">
+                            <p className="text-2xs font-black uppercase tracking-[0.2em] text-muted-foreground mb-6">
+                              {locale === "pt" ? "O que está incluído:" : "What's included:"}
+                            </p>
+                            <ul className="space-y-4">
+                              {plan.features.map((f, i) => (
+                                <li
+                                  key={i}
+                                  className="flex items-start gap-4 text-sm font-medium text-muted-foreground"
+                                >
+                                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+                                  <span>{f}</span>
+                                </li>
+                              ))}
+                              {plan.call_minutes > 0 && (
+                                <li className="flex items-start gap-4 text-sm font-bold text-marketing-ink">
+                                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+                                  <span>
+                                    {plan.call_minutes} min{" "}
+                                    {locale === "pt" ? "com o professor" : "with the teacher"}
+                                  </span>
+                                </li>
+                              )}
+                            </ul>
+                          </div>
+
+                          <Button
+                            onClick={() => handleSubscribe(plan)}
+                            className="mt-12 w-full py-8 px-6 bg-marketing-ink text-white text-xs font-bold uppercase tracking-[0.25em] rounded-full shadow-flat-btn transition-all hover:bg-slate-900 active:scale-95 overflow-hidden group/btn"
+                            variant="default"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
+                            {locale === "pt" ? "Assinar Agora" : "Subscribe Now"}
+                          </Button>
                         </div>
-
-                        <h2 className="font-display text-3xl font-bold mb-2 text-marketing-ink">
-                          {meta.label[locale]}
-                        </h2>
-                        <p className="text-sm text-muted-foreground mb-10 leading-relaxed max-w-[280px]">
-                          {meta.desc[locale]}
-                        </p>
-
-                        <div className="flex items-baseline gap-1 mb-1">
-                          <span className="text-5xl sm:text-6xl font-black tracking-tighter text-marketing-ink">
-                            {plan.price_kz.toLocaleString("pt-AO")}
-                          </span>
-                          <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
-                            Kz
-                          </span>
-                        </div>
-                        <div className="text-2xs font-black uppercase tracking-[0.2em] text-muted-foreground mb-10">
-                          {plan.duration_days} {locale === "pt" ? "DIAS" : "DAYS"}
-                        </div>
-
-                        <div className="w-full h-px bg-slate-200/80 mb-10" />
-
-                        <div className="flex-grow">
-                          <p className="text-2xs font-black uppercase tracking-[0.2em] text-muted-foreground mb-6">
-                            {locale === "pt" ? "O que está incluído:" : "What's included:"}
-                          </p>
-                          <ul className="space-y-4">
-                            {plan.features.map((f, i) => (
-                              <li
-                                key={i}
-                                className="flex items-start gap-4 text-sm font-medium text-muted-foreground"
-                              >
-                                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
-                                <span>{f}</span>
-                              </li>
-                            ))}
-                            {plan.call_minutes > 0 && (
-                              <li className="flex items-start gap-4 text-sm font-bold text-marketing-ink">
-                                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
-                                <span>
-                                  {plan.call_minutes} min{" "}
-                                  {locale === "pt" ? "com o professor" : "with the teacher"}
-                                </span>
-                              </li>
-                            )}
-                          </ul>
-                        </div>
-
-                        <Button
-                          onClick={() => handleSubscribe(plan)}
-                          className="mt-12 w-full py-8 px-6 bg-marketing-ink text-white text-xs font-bold uppercase tracking-[0.25em] rounded-full shadow-flat-btn transition-all hover:bg-slate-900 active:scale-95 overflow-hidden group/btn"
-                          variant="default"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
-                          {locale === "pt" ? "Assinar Agora" : "Subscribe Now"}
-                        </Button>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           </div>
