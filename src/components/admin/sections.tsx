@@ -422,6 +422,39 @@ export function CurriculumSection() {
     enabled: !!user && isAdmin,
   });
 
+  // Powers the pending-review badges below — one row per lesson with any
+  // exercises, so an admin can navigate straight to what needs attention
+  // instead of clicking through all ~260 quiz/final_test lessons blind.
+  const { data: reviewSummary = [] } = useQuery({
+    queryKey: ["admin_review_summary"],
+    queryFn: () => apiFetch<ReviewSummaryRow[]>("/v1/admin/exercises/review-summary"),
+    enabled: !!user && isAdmin,
+    staleTime: 30_000,
+  });
+  const summaryByLesson = useMemo(
+    () => new Map(reviewSummary.map((r) => [r.lesson_id, r])),
+    [reviewSummary],
+  );
+  const pendingByUnit = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const l of curriculum?.lessons ?? []) {
+      const n = pendingCount(summaryByLesson.get(l.id));
+      if (n > 0) m.set(l.unit_id, (m.get(l.unit_id) ?? 0) + n);
+    }
+    return m;
+  }, [curriculum, summaryByLesson]);
+  const pendingByLevel = useMemo(() => {
+    const m = new Map<string, number>();
+    const courseById = new Map((curriculum?.courses ?? []).map((c) => [c.id, c]));
+    for (const u of curriculum?.units ?? []) {
+      const n = pendingByUnit.get(u.id) ?? 0;
+      if (n === 0) continue;
+      const lvl = courseById.get(u.course_id)?.level;
+      if (lvl) m.set(lvl, (m.get(lvl) ?? 0) + n);
+    }
+    return m;
+  }, [curriculum, pendingByUnit]);
+
   const course = curriculum?.courses.find((c) => c.level === level);
   const units = (curriculum?.units ?? [])
     .filter((u) => u.course_id === course?.id)
@@ -435,6 +468,11 @@ export function CurriculumSection() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-4">
         <h2 className="font-display text-xl font-bold flex items-center gap-2">
           <BookOpen className="h-5 w-5 text-sunset" /> Currículo — lições e exercícios
+          {reviewSummary.length > 0 && (
+            <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-2xs font-bold text-amber-700">
+              {reviewSummary.reduce((sum, r) => sum + pendingCount(r), 0)} por rever
+            </span>
+          )}
         </h2>
         <div className="flex gap-1">
           {CEFR_LEVELS.map((l) => (
@@ -445,13 +483,14 @@ export function CurriculumSection() {
                 setUnitId(null);
                 setLessonId(null);
               }}
-              className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${
+              className={`flex items-center rounded-full px-3 py-1 text-xs font-bold transition-colors ${
                 level === l
                   ? "bg-sunset text-white"
                   : "bg-muted text-muted-foreground hover:bg-muted/70"
               }`}
             >
               {l}
+              <ReviewCountBadge count={pendingByLevel.get(l) ?? 0} />
             </button>
           ))}
         </div>
@@ -465,11 +504,12 @@ export function CurriculumSection() {
                 setUnitId(u.id);
                 setLessonId(null);
               }}
-              className={`block w-full rounded-lg px-3 py-2 text-left text-sm ${
+              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm ${
                 unitId === u.id ? "bg-sunset/10 font-semibold text-sunset" : "hover:bg-muted"
               }`}
             >
-              {u.title}
+              <span className="truncate">{u.title}</span>
+              <ReviewCountBadge count={pendingByUnit.get(u.id) ?? 0} />
             </button>
           ))}
           {units.length === 0 && <p className="p-2 text-xs text-muted-foreground">Sem unidades.</p>}
@@ -483,7 +523,10 @@ export function CurriculumSection() {
                 lessonId === l.id ? "bg-sunset/10 font-semibold text-sunset" : "hover:bg-muted"
               }`}
             >
-              <div className="truncate">{l.title}</div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate">{l.title}</span>
+                <ReviewCountBadge count={pendingCount(summaryByLesson.get(l.id))} />
+              </div>
               <div className="text-2xs uppercase tracking-wide text-muted-foreground">
                 {l.lesson_type}
               </div>
@@ -562,6 +605,7 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
   const invalidateLesson = () => {
     qc.invalidateQueries({ queryKey: ["admin_lesson", lessonId] });
     qc.invalidateQueries({ queryKey: ["admin_exercises", lessonId] });
+    qc.invalidateQueries({ queryKey: ["admin_review_summary"] });
     qc.invalidateQueries({ queryKey: ["curriculum"] });
     qc.invalidateQueries({ queryKey: ["lesson", lessonId] });
   };
@@ -757,6 +801,21 @@ function ExerciseEditor({
     onError: (e) => notify.fromError(e, { dedupeKey: "admin:delete-exercise" }),
   });
 
+  const publishAll = useMutation({
+    mutationFn: () =>
+      apiFetch<{ published: number }>(`/v1/admin/lessons/${lessonId}/exercises/publish-all`, {
+        method: "POST",
+      }),
+    onSuccess: (r) => {
+      notify.success(
+        r.published > 0 ? `${r.published} exercícios publicados.` : "Nada por publicar.",
+      );
+      onChanged();
+    },
+    onError: (e) => notify.fromError(e, { dedupeKey: "admin:publish-all" }),
+  });
+  const pendingInLesson = exercises.filter((e) => e.content_status !== "published").length;
+
   const updateStatus = useMutation({
     mutationFn: ({ id, contentStatus }: { id: string; contentStatus: ContentStatus }) =>
       apiFetch(`/v1/admin/exercises/${id}`, {
@@ -791,6 +850,24 @@ function ExerciseEditor({
           >
             {generateExercises.isPending ? "A gerar..." : "Gerar com IA"}
           </Button>
+          {pendingInLesson > 0 && (
+            <Button
+              size="sm"
+              onClick={() => {
+                if (
+                  !window.confirm(
+                    `Publicar ${pendingInLesson} exercício(s) desta lição? Ficam visíveis aos alunos imediatamente.`,
+                  )
+                )
+                  return;
+                publishAll.mutate();
+              }}
+              disabled={publishAll.isPending}
+              className="bg-emerald-600 text-white hover:bg-emerald-700"
+            >
+              {publishAll.isPending ? "A publicar..." : `Publicar todos (${pendingInLesson})`}
+            </Button>
+          )}
           <Button
             size="sm"
             variant="outline"
@@ -814,26 +891,37 @@ function ExerciseEditor({
         const onStatusChange = (contentStatus: ContentStatus) =>
           updateStatus.mutate({ id: ex.id, contentStatus });
 
-        // Two genuinely different components (not a conditional return inside
-        // one) — ExerciseRow's form hooks (useForm/useEffect/useMutation) must
-        // never be reachable behind a branch, or React's hooks rules break
-        // the moment two exercises of different types render side by side.
-        return ex.type === "mcq" ? (
-          <ExerciseRow
-            key={ex.id}
-            exercise={ex}
-            onDeleted={onDeleted}
-            onStatusChange={onStatusChange}
-            onSaved={onChanged}
-          />
-        ) : (
-          <NonMcqExercisePreview
-            key={ex.id}
-            exercise={ex}
-            onDeleted={onDeleted}
-            onStatusChange={onStatusChange}
-          />
-        );
+        // Genuinely different components per type (never a conditional
+        // return inside one shared component) — each row's form hooks
+        // (useForm/useEffect/useMutation) must never be reachable behind a
+        // branch, or React's hooks rules break the moment two exercises of
+        // different types render side by side.
+        const rowProps = {
+          key: ex.id,
+          exercise: ex,
+          onDeleted,
+          onStatusChange,
+          onSaved: onChanged,
+        };
+        switch (ex.type) {
+          case "mcq":
+            return <ExerciseRow {...rowProps} />;
+          case "fill_blank":
+            return <FillBlankExerciseRow {...rowProps} />;
+          case "ordering":
+            return <OrderingExerciseRow {...rowProps} />;
+          case "matching":
+            return <MatchingExerciseRow {...rowProps} />;
+          default:
+            return (
+              <NonMcqExercisePreview
+                key={ex.id}
+                exercise={ex}
+                onDeleted={onDeleted}
+                onStatusChange={onStatusChange}
+              />
+            );
+        }
       })}
       {exercises.length === 0 && (
         <p className="text-xs text-muted-foreground">Sem exercícios nesta lição.</p>
@@ -905,11 +993,10 @@ function ExerciseStatusBadge({
   );
 }
 
-// Exercises the AI content-generation pipeline produces (fill_blank/ordering/
-// matching) don't fit this file's mcq-only edit form — its "Salvar" always
-// writes back {data:{options},correctAnswer:{index}}, which would silently
-// corrupt any other shape. Those types get a read-only preview here instead;
-// full structured editing for them is a natural follow-up, not done in this pass.
+// Fallback for exercise types with no structured editor here yet (writing/
+// speaking — the AI pipeline doesn't generate these as standalone exercises
+// today, only mcq/fill_blank/ordering/matching, which all have dedicated
+// forms below). Read-only preview + status/delete, so nothing ships blind.
 function NonMcqExercisePreview({
   exercise,
   onDeleted,
@@ -1056,6 +1143,460 @@ function ExerciseRow({
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="xpReward"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormLabel className="text-xs text-muted-foreground">XP</FormLabel>
+                  <FormControl>
+                    <Input type="number" min={0} className="w-16 text-xs" {...field} />
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button type="submit" size="sm" disabled={save.isPending}>
+            Salvar
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={onDeleted}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
+
+type ExerciseRowProps = {
+  exercise: AdminExercise;
+  onDeleted: () => void;
+  onStatusChange: (status: ContentStatus) => void;
+  onSaved: () => void;
+};
+
+function fillBlankRowSchema() {
+  return z.object({
+    prompt: z.string().min(1, "Pergunta obrigatória"),
+    answers: z.string().min(1, "Pelo menos uma resposta aceite"),
+    xpReward: z.coerce.number().min(0, "XP não pode ser negativo"),
+  });
+}
+type FillBlankRowValues = z.infer<ReturnType<typeof fillBlankRowSchema>>;
+
+function FillBlankExerciseRow({ exercise, onDeleted, onStatusChange, onSaved }: ExerciseRowProps) {
+  const notify = useNotification();
+  const toValues = (ex: AdminExercise): FillBlankRowValues => ({
+    prompt: ex.prompt,
+    answers: (ex.correct_answer?.answers ?? []).join(" | "),
+    xpReward: ex.xp_reward,
+  });
+  const form = useForm<FillBlankRowValues>({
+    resolver: zodResolver(fillBlankRowSchema()),
+    defaultValues: toValues(exercise),
+  });
+  useEffect(() => form.reset(toValues(exercise)), [exercise, form]);
+
+  const save = useMutation({
+    mutationFn: (values: FillBlankRowValues) => {
+      const answers = values.answers
+        .split("|")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      return apiFetch(`/v1/admin/exercises/${exercise.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          prompt: values.prompt,
+          data: {},
+          correctAnswer: { answers },
+          xpReward: values.xpReward,
+        }),
+      });
+    },
+    onSuccess: () => {
+      notify.success("Exercício salvo");
+      onSaved();
+    },
+    onError: (e) => notify.fromError(e, { dedupeKey: "admin:save-exercise" }),
+  });
+
+  const submit = form.handleSubmit((values) => save.mutate(values));
+
+  return (
+    <Form {...form}>
+      <form onSubmit={submit} className="space-y-2 rounded-xl border border-border p-3">
+        <div className="flex justify-end">
+          <ExerciseStatusBadge exercise={exercise} onStatusChange={onStatusChange} />
+        </div>
+        <FormField
+          control={form.control}
+          name="prompt"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input placeholder="Frase com ___ para a lacuna" className="text-sm" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="answers"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs text-muted-foreground">
+                Respostas aceites (separadas por |)
+              </FormLabel>
+              <FormControl>
+                <Input className="text-xs" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="flex items-center gap-2">
+          <FormField
+            control={form.control}
+            name="xpReward"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormLabel className="text-xs text-muted-foreground">XP</FormLabel>
+                  <FormControl>
+                    <Input type="number" min={0} className="w-16 text-xs" {...field} />
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button type="submit" size="sm" disabled={save.isPending}>
+            Salvar
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={onDeleted}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
+
+function orderingRowSchema() {
+  return z
+    .object({
+      prompt: z.string().min(1, "Pergunta obrigatória"),
+      items: z.string().min(1, "Pelo menos um item"),
+      order: z.string().min(1, "Ordem correta obrigatória"),
+      xpReward: z.coerce.number().min(0, "XP não pode ser negativo"),
+    })
+    .refine(
+      (v) => {
+        const items = v.items
+          .split("|")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const order = v.order.split(",").map((s) => Number(s.trim()));
+        if (order.length !== items.length || order.some((n) => Number.isNaN(n))) return false;
+        const sorted = [...order].sort((a, b) => a - b);
+        return sorted.every((n, i) => n === i);
+      },
+      {
+        message:
+          'A ordem tem de listar cada índice dos itens exatamente uma vez (ex: para 3 itens, "2,0,1")',
+        path: ["order"],
+      },
+    );
+}
+type OrderingRowValues = z.infer<ReturnType<typeof orderingRowSchema>>;
+
+function OrderingExerciseRow({ exercise, onDeleted, onStatusChange, onSaved }: ExerciseRowProps) {
+  const notify = useNotification();
+  const toValues = (ex: AdminExercise): OrderingRowValues => ({
+    prompt: ex.prompt,
+    items: (ex.data?.items ?? []).join(" | "),
+    order: (ex.correct_answer?.order ?? []).join(","),
+    xpReward: ex.xp_reward,
+  });
+  const form = useForm<OrderingRowValues>({
+    resolver: zodResolver(orderingRowSchema()),
+    defaultValues: toValues(exercise),
+  });
+  useEffect(() => form.reset(toValues(exercise)), [exercise, form]);
+
+  const save = useMutation({
+    mutationFn: (values: OrderingRowValues) => {
+      const items = values.items
+        .split("|")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const order = values.order.split(",").map((s) => Number(s.trim()));
+      return apiFetch(`/v1/admin/exercises/${exercise.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          prompt: values.prompt,
+          data: { items },
+          correctAnswer: { order },
+          xpReward: values.xpReward,
+        }),
+      });
+    },
+    onSuccess: () => {
+      notify.success("Exercício salvo");
+      onSaved();
+    },
+    onError: (e) => notify.fromError(e, { dedupeKey: "admin:save-exercise" }),
+  });
+
+  const submit = form.handleSubmit((values) => save.mutate(values));
+
+  return (
+    <Form {...form}>
+      <form onSubmit={submit} className="space-y-2 rounded-xl border border-border p-3">
+        <div className="flex justify-end">
+          <ExerciseStatusBadge exercise={exercise} onStatusChange={onStatusChange} />
+        </div>
+        <FormField
+          control={form.control}
+          name="prompt"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input placeholder="Pergunta" className="text-sm" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="items"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs text-muted-foreground">
+                Itens na ordem apresentada (separados por |)
+              </FormLabel>
+              <FormControl>
+                <Input className="text-xs" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="order"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs text-muted-foreground">
+                Ordem correta — índices dos itens acima, separados por vírgula (0 = primeiro item)
+              </FormLabel>
+              <FormControl>
+                <Input className="text-xs" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="flex items-center gap-2">
+          <FormField
+            control={form.control}
+            name="xpReward"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center gap-2">
+                  <FormLabel className="text-xs text-muted-foreground">XP</FormLabel>
+                  <FormControl>
+                    <Input type="number" min={0} className="w-16 text-xs" {...field} />
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button type="submit" size="sm" disabled={save.isPending}>
+            Salvar
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={onDeleted}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
+
+function matchingRowSchema() {
+  return z
+    .object({
+      prompt: z.string().min(1, "Pergunta obrigatória"),
+      leftItems: z.string().min(1, "Pelo menos um item à esquerda"),
+      rightItems: z.string().min(1, "Pelo menos um item à direita"),
+      pairs: z.string().min(1, "Pares corretos obrigatórios"),
+      xpReward: z.coerce.number().min(0, "XP não pode ser negativo"),
+    })
+    .refine(
+      (v) => {
+        const left = v.leftItems
+          .split("|")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const right = v.rightItems
+          .split("|")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const pairs = v.pairs
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (pairs.length !== left.length) return false;
+        return pairs.every((p) => {
+          const [l, r] = p.split(":").map((s) => Number(s.trim()));
+          return (
+            Number.isInteger(l) &&
+            Number.isInteger(r) &&
+            l! >= 0 &&
+            l! < left.length &&
+            r! >= 0 &&
+            r! < right.length
+          );
+        });
+      },
+      {
+        message:
+          'Pares inválidos — um par "esquerda:direita" por item à esquerda, separados por vírgula (ex: "0:2,1:0,2:1")',
+        path: ["pairs"],
+      },
+    );
+}
+type MatchingRowValues = z.infer<ReturnType<typeof matchingRowSchema>>;
+
+function MatchingExerciseRow({ exercise, onDeleted, onStatusChange, onSaved }: ExerciseRowProps) {
+  const notify = useNotification();
+  const toValues = (ex: AdminExercise): MatchingRowValues => ({
+    prompt: ex.prompt,
+    leftItems: (ex.data?.leftItems ?? []).join(" | "),
+    rightItems: (ex.data?.rightItems ?? []).join(" | "),
+    pairs: (ex.correct_answer?.pairs ?? []).map((p) => `${p.left}:${p.right}`).join(","),
+    xpReward: ex.xp_reward,
+  });
+  const form = useForm<MatchingRowValues>({
+    resolver: zodResolver(matchingRowSchema()),
+    defaultValues: toValues(exercise),
+  });
+  useEffect(() => form.reset(toValues(exercise)), [exercise, form]);
+
+  const save = useMutation({
+    mutationFn: (values: MatchingRowValues) => {
+      const leftItems = values.leftItems
+        .split("|")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const rightItems = values.rightItems
+        .split("|")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const pairs = values.pairs
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((p) => {
+          const [left, right] = p.split(":").map((s) => Number(s.trim()));
+          return { left, right };
+        });
+      return apiFetch(`/v1/admin/exercises/${exercise.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          prompt: values.prompt,
+          data: { leftItems, rightItems },
+          correctAnswer: { pairs },
+          xpReward: values.xpReward,
+        }),
+      });
+    },
+    onSuccess: () => {
+      notify.success("Exercício salvo");
+      onSaved();
+    },
+    onError: (e) => notify.fromError(e, { dedupeKey: "admin:save-exercise" }),
+  });
+
+  const submit = form.handleSubmit((values) => save.mutate(values));
+
+  return (
+    <Form {...form}>
+      <form onSubmit={submit} className="space-y-2 rounded-xl border border-border p-3">
+        <div className="flex justify-end">
+          <ExerciseStatusBadge exercise={exercise} onStatusChange={onStatusChange} />
+        </div>
+        <FormField
+          control={form.control}
+          name="prompt"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input placeholder="Pergunta" className="text-sm" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="leftItems"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs text-muted-foreground">
+                Itens à esquerda (separados por |)
+              </FormLabel>
+              <FormControl>
+                <Input className="text-xs" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="rightItems"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs text-muted-foreground">
+                Itens à direita (separados por |)
+              </FormLabel>
+              <FormControl>
+                <Input className="text-xs" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="pairs"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs text-muted-foreground">
+                Pares corretos — esquerda:direita por índice, separados por vírgula (ex:
+                0:2,1:0,2:1)
+              </FormLabel>
+              <FormControl>
+                <Input className="text-xs" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="flex items-center gap-2">
           <FormField
             control={form.control}
             name="xpReward"
