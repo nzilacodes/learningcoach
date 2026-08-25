@@ -365,12 +365,16 @@ export function ReportsSection() {
 /* -------- Curriculum content editor (lessons + exercises) -------- */
 const CEFR_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
+type ContentStatus = "draft" | "in_review" | "published";
 type AdminExercise = {
   id: string;
+  type: string;
   prompt: string;
   data: { options?: string[] } | null;
   correct_answer: { index?: number } | null;
   xp_reward: number;
+  content_status: ContentStatus;
+  generated_by: string | null;
 };
 type AdminLessonDetail = {
   id: string;
@@ -380,7 +384,6 @@ type AdminLessonDetail = {
   xp_reward: number;
   is_published: boolean;
   lesson_type: string;
-  exercises: AdminExercise[];
 };
 
 export function CurriculumSection() {
@@ -504,6 +507,19 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
     queryKey: ["admin_lesson", lessonId],
     queryFn: () => apiFetch<AdminLessonDetail>(`/v1/lessons/${lessonId}`),
   });
+  // Exercises come from the admin-only endpoint, not the embedded ones on the
+  // public /v1/lessons/:id payload above — that payload now withholds
+  // correct_answer for every caller on quiz/final_test lessons (grading is
+  // server-side now), which would otherwise blind this editor to the very
+  // data it needs to author/review.
+  const [statusFilter, setStatusFilter] = useState<ContentStatus | "">("");
+  const { data: exercises = [] } = useQuery({
+    queryKey: ["admin_exercises", lessonId, statusFilter],
+    queryFn: () =>
+      apiFetch<AdminExercise[]>(
+        `/v1/admin/lessons/${lessonId}/exercises${statusFilter ? `?status=${statusFilter}` : ""}`,
+      ),
+  });
 
   const form = useForm<LessonEditorValues>({
     resolver: zodResolver(lessonEditorSchema),
@@ -523,6 +539,7 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
 
   const invalidateLesson = () => {
     qc.invalidateQueries({ queryKey: ["admin_lesson", lessonId] });
+    qc.invalidateQueries({ queryKey: ["admin_exercises", lessonId] });
     qc.invalidateQueries({ queryKey: ["curriculum"] });
     qc.invalidateQueries({ queryKey: ["lesson", lessonId] });
   };
@@ -644,7 +661,9 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
         <div className="mt-6 border-t border-border pt-4">
           <ExerciseEditor
             lessonId={lessonId}
-            exercises={lesson.exercises}
+            exercises={exercises}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
             onChanged={invalidateLesson}
           />
         </div>
@@ -653,13 +672,23 @@ function LessonEditor({ lessonId }: { lessonId: string }) {
   );
 }
 
+const STATUS_LABEL: Record<ContentStatus, string> = {
+  draft: "Rascunho",
+  in_review: "Em revisão",
+  published: "Publicado",
+};
+
 function ExerciseEditor({
   lessonId,
   exercises,
+  statusFilter,
+  onStatusFilterChange,
   onChanged,
 }: {
   lessonId: string;
   exercises: AdminExercise[];
+  statusFilter: ContentStatus | "";
+  onStatusFilterChange: (v: ContentStatus | "") => void;
   onChanged: () => void;
 }) {
   const notify = useNotification();
@@ -680,24 +709,71 @@ function ExerciseEditor({
     onError: (e) => notify.fromError(e, { dedupeKey: "admin:add-exercise" }),
   });
 
+  // Only meaningful when the lesson has zero exercises of any status yet —
+  // the pipeline never generates a second batch on top of an existing one
+  // (see generate-lesson-content.ts's idempotency check).
+  const generateExercises = useMutation({
+    mutationFn: () => apiFetch(`/v1/admin/lessons/${lessonId}/generate-exercises`, { method: "POST" }),
+    onSuccess: (result: unknown) => {
+      const r = result as { status: string; count?: number; reason?: string };
+      if (r.status === "generated") {
+        notify.success(`${r.count ?? 0} exercícios gerados como rascunho — revê e publica abaixo.`);
+      } else if (r.status === "skipped") {
+        notify.info("Esta lição já tem exercícios — geração ignorada.");
+      } else {
+        notify.error(`Geração falhou: ${r.reason ?? "erro desconhecido"}`);
+      }
+      onChanged();
+    },
+    onError: (e) => notify.fromError(e, { dedupeKey: "admin:generate-exercises" }),
+  });
+
   const deleteExercise = useMutation({
     mutationFn: (id: string) => apiFetch(`/v1/admin/exercises/${id}`, { method: "DELETE" }),
     onSuccess: onChanged,
     onError: (e) => notify.fromError(e, { dedupeKey: "admin:delete-exercise" }),
   });
 
+  const updateStatus = useMutation({
+    mutationFn: ({ id, contentStatus }: { id: string; contentStatus: ContentStatus }) =>
+      apiFetch(`/v1/admin/exercises/${id}`, { method: "PATCH", body: JSON.stringify({ contentStatus }) }),
+    onSuccess: onChanged,
+    onError: (e) => notify.fromError(e, { dedupeKey: "admin:update-exercise-status" }),
+  });
+
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h4 className="text-sm font-bold">Exercícios (quiz) — {exercises.length}</h4>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => addExercise.mutate()}
-          disabled={addExercise.isPending}
-        >
-          <Plus className="mr-1 h-3.5 w-3.5" /> Adicionar
-        </Button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h4 className="text-sm font-bold">Exercícios — {exercises.length}</h4>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={statusFilter}
+            onChange={(e) => onStatusFilterChange(e.target.value as ContentStatus | "")}
+            className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
+          >
+            <option value="">Todos os estados</option>
+            <option value="draft">Rascunho</option>
+            <option value="in_review">Em revisão</option>
+            <option value="published">Publicado</option>
+          </select>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => generateExercises.mutate()}
+            disabled={generateExercises.isPending}
+            title="Gera exercícios com IA (rascunho — precisa de revisão antes de publicar)"
+          >
+            {generateExercises.isPending ? "A gerar..." : "Gerar com IA"}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => addExercise.mutate()}
+            disabled={addExercise.isPending}
+          >
+            <Plus className="mr-1 h-3.5 w-3.5" /> Adicionar
+          </Button>
+        </div>
       </div>
       {exercises.map((ex) => (
         <ExerciseRow
@@ -712,6 +788,7 @@ function ExerciseEditor({
               return;
             deleteExercise.mutate(ex.id);
           }}
+          onStatusChange={(contentStatus) => updateStatus.mutate({ id: ex.id, contentStatus })}
           onSaved={onChanged}
         />
       ))}
@@ -752,16 +829,88 @@ function exerciseRowSchema() {
 }
 type ExerciseRowValues = z.infer<ReturnType<typeof exerciseRowSchema>>;
 
+function ExerciseStatusBadge({
+  exercise,
+  onStatusChange,
+}: {
+  exercise: AdminExercise;
+  onStatusChange: (status: ContentStatus) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      {exercise.generated_by && (
+        <span className="rounded-full bg-violet/10 px-2 py-0.5 text-2xs font-semibold text-violet">
+          IA
+        </span>
+      )}
+      <select
+        value={exercise.content_status}
+        onChange={(e) => onStatusChange(e.target.value as ContentStatus)}
+        className={`rounded-full border px-2 py-0.5 text-2xs font-semibold ${
+          exercise.content_status === "published"
+            ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+            : exercise.content_status === "in_review"
+              ? "border-amber-300 bg-amber-50 text-amber-700"
+              : "border-border bg-muted text-muted-foreground"
+        }`}
+      >
+        <option value="draft">{STATUS_LABEL.draft}</option>
+        <option value="in_review">{STATUS_LABEL.in_review}</option>
+        <option value="published">{STATUS_LABEL.published}</option>
+      </select>
+    </div>
+  );
+}
+
+// Exercises the AI content-generation pipeline produces (fill_blank/ordering/
+// matching) don't fit this file's mcq-only edit form — its "Salvar" always
+// writes back {data:{options},correctAnswer:{index}}, which would silently
+// corrupt any other shape. Those types get a read-only preview here instead;
+// full structured editing for them is a natural follow-up, not done in this pass.
+function NonMcqExercisePreview({
+  exercise,
+  onDeleted,
+  onStatusChange,
+}: {
+  exercise: AdminExercise;
+  onDeleted: () => void;
+  onStatusChange: (status: ContentStatus) => void;
+}) {
+  return (
+    <div className="space-y-2 rounded-xl border border-border p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="rounded-full bg-muted px-2 py-0.5 text-2xs font-semibold uppercase text-muted-foreground">
+          {exercise.type}
+        </span>
+        <ExerciseStatusBadge exercise={exercise} onStatusChange={onStatusChange} />
+      </div>
+      <p className="text-sm font-medium">{exercise.prompt}</p>
+      <pre className="max-h-40 overflow-auto rounded-lg bg-muted p-2 text-2xs">
+        {JSON.stringify({ data: exercise.data, correct_answer: exercise.correct_answer }, null, 2)}
+      </pre>
+      <Button type="button" size="sm" variant="outline" onClick={onDeleted}>
+        <Trash2 className="h-3.5 w-3.5" />
+      </Button>
+    </div>
+  );
+}
+
 function ExerciseRow({
   exercise,
   onDeleted,
+  onStatusChange,
   onSaved,
 }: {
   exercise: AdminExercise;
   onDeleted: () => void;
+  onStatusChange: (status: ContentStatus) => void;
   onSaved: () => void;
 }) {
   const notify = useNotification();
+
+  if (exercise.type !== "mcq") {
+    return <NonMcqExercisePreview exercise={exercise} onDeleted={onDeleted} onStatusChange={onStatusChange} />;
+  }
   const form = useForm<ExerciseRowValues>({
     resolver: zodResolver(exerciseRowSchema()),
     defaultValues: {
@@ -825,6 +974,9 @@ function ExerciseRow({
   return (
     <Form {...form}>
       <form onSubmit={submit} className="space-y-2 rounded-xl border border-border p-3">
+        <div className="flex justify-end">
+          <ExerciseStatusBadge exercise={exercise} onStatusChange={onStatusChange} />
+        </div>
         <FormField
           control={form.control}
           name="prompt"

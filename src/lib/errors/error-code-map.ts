@@ -138,6 +138,16 @@ export const ErrorCodeMap: Record<ErrorCode, CopyEntry> = {
     action: "none",
     severity: "warning",
   },
+  HEARTS_DEPLETED: {
+    title: { pt: "Sem corações", en: "Out of hearts" },
+    description: {
+      pt: "Ficaste sem corações. Espera que regenerem ou torna-te Premium para corações ilimitados.",
+      en: "You're out of hearts. Wait for them to regenerate, or go Premium for unlimited hearts.",
+    },
+    retryable: true,
+    action: "upgrade",
+    severity: "warning",
+  },
   NETWORK_ERROR: {
     title: { pt: "Sem ligação à internet", en: "No internet connection" },
     description: {

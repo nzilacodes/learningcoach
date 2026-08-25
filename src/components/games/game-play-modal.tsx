@@ -36,10 +36,14 @@ type XpResult = {
   coins_gained: number;
 };
 
-async function awardGameXp(gameId: string): Promise<XpResult> {
+// score/total are optional: when given, the backend scales the game's XP
+// down from its registered max by score/total (see gamification/service.ts's
+// resolveReward) — omitted entirely for games with no meaningful score
+// (WritingGame, gated only by a minimum length).
+async function awardGameXp(gameId: string, score?: number, total?: number): Promise<XpResult> {
   return apiFetch<XpResult>("/v1/xp/events", {
     method: "POST",
-    body: JSON.stringify({ source: "game", meta: { gameId } }),
+    body: JSON.stringify({ source: "game", meta: { gameId, ...(score !== undefined ? { score, total } : {}) } }),
   });
 }
 
@@ -112,7 +116,7 @@ function MultipleChoiceGame({
     }
     setFinishing(true);
     try {
-      onFinish(await awardGameXp(game.id));
+      onFinish(await awardGameXp(game.id, score, rounds.length));
     } catch (e) {
       notify.fromError(e, { dedupeKey: "game:xp" });
       setFinishing(false);
@@ -233,7 +237,7 @@ function ListeningGame({
     }
     setFinishing(true);
     try {
-      onFinish(await awardGameXp(game.id));
+      onFinish(await awardGameXp(game.id, score, rounds.length));
     } catch (e) {
       notify.fromError(e, { dedupeKey: "game:xp" });
       setFinishing(false);
@@ -369,7 +373,7 @@ function SpeakingGame({
   const finish = async () => {
     setFinishing(true);
     try {
-      onFinish(await awardGameXp(game.id));
+      onFinish(await awardGameXp(game.id, score ?? 0, 100));
     } catch (e) {
       notify.fromError(e, { dedupeKey: "game:xp" });
       setFinishing(false);
