@@ -14,6 +14,7 @@ import {
 import { useCurriculum, type LessonRow } from "@/lib/learning";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { AppHeader } from "@/components/app-header";
+import { Card } from "@/components/ui/card";
 import {
   ArrowRight,
   BookOpen,
@@ -409,7 +410,7 @@ function CurriculumPage() {
 
             {/* Locked level */}
             {user && activeLevelLocked && (
-              <div className="rounded-2xl border border-gray-100 bg-white p-5 md:p-6 flex items-start gap-3">
+              <Card className="rounded-2xl border-gray-100 bg-white p-5 md:p-6 flex items-start gap-3 shadow-none">
                 <div className="rounded-xl bg-gray-50 p-3 shrink-0">
                   <Lock className="w-5 h-5 text-muted-foreground" />
                 </div>
@@ -431,12 +432,12 @@ function CurriculumPage() {
                     {locale === "pt" ? "Ver progresso de níveis" : "View level progress"}
                   </Link>
                 </div>
-              </div>
+              </Card>
             )}
 
             {/* Guest CTA */}
             {!user && (
-              <div className="rounded-2xl border border-gray-100 bg-white p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:justify-between">
+              <Card className="rounded-2xl border-gray-100 bg-white p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:justify-between shadow-none">
                 <div>
                   <div className="font-display font-bold text-ink">
                     {locale === "pt"
@@ -463,7 +464,7 @@ function CurriculumPage() {
                     {locale === "pt" ? "Fazer nivelamento" : "Take placement"}
                   </Link>
                 </div>
-              </div>
+              </Card>
             )}
 
             {/* Units list */}
@@ -510,14 +511,14 @@ function CurriculumPage() {
                   const locked = activeLevelLocked;
                   const open = openUnitId === u.id;
                   return (
-                    <div
+                    <Card
                       key={u.id}
-                      className={`rounded-2xl border bg-white overflow-hidden transition-all ${
+                      className={`rounded-2xl bg-white overflow-hidden transition-all ${
                         locked
-                          ? "border-gray-100 opacity-70"
+                          ? "border-gray-100 opacity-70 shadow-none"
                           : open
                             ? "border-violet/25 shadow-md"
-                            : "border-gray-100 hover:shadow-sm"
+                            : "border-gray-100 hover:shadow-sm shadow-none"
                       }`}
                     >
                       <button
@@ -667,7 +668,7 @@ function CurriculumPage() {
                           )}
                         </div>
                       )}
-                    </div>
+                    </Card>
                   );
                 })}
               </div>

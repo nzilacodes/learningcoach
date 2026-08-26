@@ -24,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -291,7 +292,7 @@ function ClassesPage() {
               </AlertDialog>
             </div>
 
-            <div className="mt-8 rounded-2xl border border-border bg-card shadow-card">
+            <Card className="mt-8 rounded-2xl border-border bg-card shadow-card">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -376,7 +377,7 @@ function ClassesPage() {
                   </TableBody>
                 </Table>
               </div>
-            </div>
+            </Card>
           </div>
         ) : (
           <>
@@ -398,7 +399,7 @@ function ClassesPage() {
             </div>
 
             <div className="mt-8 grid gap-6 lg:grid-cols-2">
-              <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+              <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
                 <h2 className="font-display text-lg font-bold">
                   {locale === "pt" ? "Minhas turmas" : "My classes"}
                 </h2>
@@ -461,10 +462,10 @@ function ClassesPage() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </Card>
 
               <div className="space-y-6">
-                <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+                <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
                   <h2 className="font-display text-lg font-bold">
                     {locale === "pt" ? "Entrar numa turma" : "Join a class"}
                   </h2>
@@ -498,9 +499,9 @@ function ClassesPage() {
                       </Button>
                     </form>
                   </Form>
-                </div>
+                </Card>
 
-                <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+                <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
                   <h2 className="font-display text-lg font-bold">
                     {locale === "pt" ? "Turmas que participo" : "Classes I'm in"}
                   </h2>
@@ -534,7 +535,7 @@ function ClassesPage() {
                       </div>
                     ))}
                   </div>
-                </div>
+                </Card>
               </div>
             </div>
           </>
