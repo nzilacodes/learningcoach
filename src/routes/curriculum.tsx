@@ -320,7 +320,14 @@ function CurriculumPage() {
                       <span>{locale === "pt" ? "Progresso" : "Progress"}</span>
                       <span>{levelPct}%</span>
                     </div>
-                    <div className="h-2 bg-white/80 rounded-full overflow-hidden border border-gray-100">
+                    <div
+                      className="h-2 bg-white/80 rounded-full overflow-hidden border border-gray-100"
+                      role="progressbar"
+                      aria-valuenow={levelPct}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={locale === "pt" ? "Progresso" : "Progress"}
+                    >
                       <div
                         className={`h-full rounded-full transition-all ${levelMeta.bar}`}
                         style={{ width: `${levelPct}%` }}
@@ -539,7 +546,14 @@ function CurriculumPage() {
                             </div>
                           )}
                           <div className="mt-2 flex items-center gap-3">
-                            <div className="h-1.5 flex-1 max-w-[200px] bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-1.5 flex-1 max-w-[200px] bg-gray-100 rounded-full overflow-hidden"
+                              role="progressbar"
+                              aria-valuenow={pct}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
+                              aria-label={`${u.title} — ${locale === "pt" ? "progresso" : "progress"}`}
+                            >
                               <div
                                 className={`h-full rounded-full transition-all ${
                                   pct === 100 ? "bg-emerald-500" : "bg-primary"

@@ -58,8 +58,9 @@ export function SiteHeader() {
 
   return (
     <>
-      {/* Scroll Progress Bar */}
-      <div className="fixed left-0 top-0 z-scroll-progress h-[3px] w-full">
+      {/* Scroll Progress Bar — decorative, not exposed as a progressbar
+          (would force screen readers to announce scroll % constantly) */}
+      <div className="fixed left-0 top-0 z-scroll-progress h-[3px] w-full" aria-hidden="true">
         <div
           className="h-full bg-gradient-to-r from-marketing-teal via-marketing-lime to-marketing-teal transition-[width] duration-150 ease-out"
           style={{ width: `${scrollProgress}%` }}

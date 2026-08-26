@@ -1213,7 +1213,14 @@ function ReportView({
                   </span>
                   <span className="font-mono text-muted-foreground">{v}%</span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                <div
+                  className="h-2 w-full overflow-hidden rounded-full bg-gray-100"
+                  role="progressbar"
+                  aria-valuenow={v}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={meta[locale]}
+                >
                   <div
                     className="h-full bg-gradient-to-r from-violet to-magenta transition-all"
                     style={{ width: `${v}%` }}

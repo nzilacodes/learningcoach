@@ -226,7 +226,18 @@ export function AdultsDashboard(data: DashboardData) {
                           ? `Você parou na lição atual. Complete agora para ganhar XP bônus!`
                           : `You stopped at the current lesson. Complete now to earn bonus XP!`}
                       </p>
-                      <div className="w-full bg-white/20 h-3 rounded-full mb-8 overflow-hidden">
+                      <div
+                        className="w-full bg-white/20 h-3 rounded-full mb-8 overflow-hidden"
+                        role="progressbar"
+                        aria-valuenow={Math.round(Math.max(5, currentPct))}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={
+                          locale === "pt"
+                            ? `Unidade ${currentUnit.index}: ${currentUnit.title}`
+                            : `Unit ${currentUnit.index}: ${currentUnit.title}`
+                        }
+                      >
                         <div
                           className="bg-white h-full rounded-full"
                           style={{ width: `${Math.max(5, currentPct)}%` }}
@@ -321,7 +332,14 @@ export function AdultsDashboard(data: DashboardData) {
                             )}
                             {u.current && !u.locked && (
                               <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
-                                <div className="h-1 bg-white/30 rounded-full overflow-hidden">
+                                <div
+                                  className="h-1 bg-white/30 rounded-full overflow-hidden"
+                                  role="progressbar"
+                                  aria-valuenow={u.progress}
+                                  aria-valuemin={0}
+                                  aria-valuemax={100}
+                                  aria-label={u.title}
+                                >
                                   <div
                                     className="h-full bg-white rounded-full"
                                     style={{ width: `${u.progress}%` }}
@@ -555,7 +573,14 @@ export function AdultsDashboard(data: DashboardData) {
                       {locale === "pt" ? "Retomar" : "Resume"}
                     </Link>
                   </div>
-                  <div className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden">
+                  <div
+                    className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={Math.round(Math.max(5, currentPct))}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={currentUnit.title}
+                  >
                     <div
                       className="bg-white h-full rounded-full"
                       style={{ width: `${Math.max(5, currentPct)}%` }}
@@ -722,7 +747,14 @@ export function AdultsDashboard(data: DashboardData) {
                         </p>
                         <h4 className="font-display text-sm font-bold text-ink">{u.title}</h4>
                         {u.current && !u.done && (
-                          <div className="mt-2 h-1 bg-gray-100 rounded-full overflow-hidden w-24">
+                          <div
+                            className="mt-2 h-1 bg-gray-100 rounded-full overflow-hidden w-24"
+                            role="progressbar"
+                            aria-valuenow={u.progress}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label={u.title}
+                          >
                             <div
                               className="h-full bg-violet rounded-full"
                               style={{ width: `${u.progress}%` }}
@@ -824,7 +856,14 @@ function SubscriptionCard({
             {activationCode}
           </button>
         )}
-        <div className="h-1.5 bg-white/20 rounded-full overflow-hidden mb-4">
+        <div
+          className="h-1.5 bg-white/20 rounded-full overflow-hidden mb-4"
+          role="progressbar"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`${locale === "pt" ? "Plano" : "Plan"} ${planLabel ?? ""}`}
+        >
           <div className="h-full bg-white rounded-full" style={{ width: `${pct}%` }} />
         </div>
         <Link

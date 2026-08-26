@@ -100,7 +100,14 @@ export function TeensDashboard(data: DashboardData) {
                       ? `Unidade ${currentUnit.index}: ${currentUnit.title}`
                       : `Unit ${currentUnit.index}: ${currentUnit.title}`}
                   </h3>
-                  <div className="w-full bg-white/20 h-2.5 rounded-full mb-5 overflow-hidden max-w-xs">
+                  <div
+                    className="w-full bg-white/20 h-2.5 rounded-full mb-5 overflow-hidden max-w-xs"
+                    role="progressbar"
+                    aria-valuenow={Math.round(Math.max(5, currentPct))}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={currentUnit.title}
+                  >
                     <div
                       className="bg-white h-full rounded-full"
                       style={{ width: `${Math.max(5, currentPct)}%` }}
@@ -234,7 +241,14 @@ export function TeensDashboard(data: DashboardData) {
                     {week.days}/{week.goalDays}
                   </span>
                 </div>
-                <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                <div
+                  className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={Math.round(week.pct * 100)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
+                >
                   <div
                     className="h-full bg-violet rounded-full transition-all duration-700"
                     style={{ width: `${week.pct * 100}%` }}
@@ -256,7 +270,14 @@ export function TeensDashboard(data: DashboardData) {
                     {todayXp}/{DAILY_XP_GOAL} XP
                   </span>
                 </div>
-                <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                <div
+                  className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={Math.round(todayXpPct * 100)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={locale === "pt" ? "Meta Diária" : "Daily Goal"}
+                >
                   <div
                     className="h-full bg-sunset rounded-full transition-all duration-700"
                     style={{ width: `${todayXpPct * 100}%` }}

@@ -78,7 +78,14 @@ export function KidsDashboard(data: DashboardData) {
                 <p className="text-white/80 text-sm mb-5">
                   {locale === "pt" ? "Vamos aprender juntos!" : "Let's learn together!"}
                 </p>
-                <div className="w-full bg-white/20 h-3 rounded-full mb-5 overflow-hidden max-w-xs mx-auto">
+                <div
+                  className="w-full bg-white/20 h-3 rounded-full mb-5 overflow-hidden max-w-xs mx-auto"
+                  role="progressbar"
+                  aria-valuenow={Math.round(Math.max(8, currentPct))}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={currentUnit.title}
+                >
                   <div
                     className="bg-white h-full rounded-full"
                     style={{ width: `${Math.max(8, currentPct)}%` }}

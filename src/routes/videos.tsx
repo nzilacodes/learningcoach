@@ -315,7 +315,14 @@ function VideosPage() {
                           </div>
                         </div>
                         {pct > 0 && (
-                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30">
+                          <div
+                            className="absolute bottom-0 left-0 right-0 h-1 bg-white/30"
+                            role="progressbar"
+                            aria-valuenow={pct}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label={`${r.title ?? r.video_id} — assistido`}
+                          >
                             <div className="h-full bg-(--violet)" style={{ width: `${pct}%` }} />
                           </div>
                         )}

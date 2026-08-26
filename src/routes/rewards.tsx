@@ -459,7 +459,14 @@ function RewardsPage() {
                 {locale === "pt" ? "Nível" : "Level"} {profile.level + 1}
               </span>
             </div>
-            <div className="h-2.5 bg-white/15 rounded-full overflow-hidden">
+            <div
+              className="h-2.5 bg-white/15 rounded-full overflow-hidden"
+              role="progressbar"
+              aria-valuenow={Math.round(Math.min(100, Math.max(0, lp.pct)))}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={locale === "pt" ? "Progresso de nível" : "Level progress"}
+            >
               <div
                 className="h-full rounded-full bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-400 transition-all duration-700"
                 style={{ width: `${Math.min(100, Math.max(0, lp.pct))}%` }}
@@ -578,7 +585,14 @@ function RewardsPage() {
                           <div className="mt-1 text-xs text-muted-foreground leading-relaxed">
                             {m.description}
                           </div>
-                          <div className="mt-4 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="mt-4 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                            role="progressbar"
+                            aria-valuenow={pct}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label={m.title}
+                          >
                             <div
                               className={`h-full rounded-full transition-all ${
                                 done ? "bg-emerald-500" : "bg-primary"
