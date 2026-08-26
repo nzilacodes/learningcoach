@@ -154,7 +154,7 @@ function PronunciationPage() {
             </Card>
 
             <Card>
-              <CardHeader className="flex-row items-baseline justify-between">
+              <CardHeader className="flex-col sm:flex-row sm:items-baseline justify-between gap-1">
                 <CardTitle>Evolução</CardTitle>
                 <span className="text-sm text-muted-foreground">
                   Média global: <b>{avg}</b> · {history.length} tentativas

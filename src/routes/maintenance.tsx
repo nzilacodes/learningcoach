@@ -15,7 +15,7 @@ export const Route = createFileRoute("/maintenance")({
 function MaintenancePage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-marketing-surface px-6">
-      <div className="max-w-lg rounded-3xl border border-slate-100 bg-white p-12 text-center shadow-xl">
+      <div className="max-w-lg rounded-3xl border border-slate-100 bg-white p-8 sm:p-12 text-center shadow-xl">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-100 text-marketing-teal">
           <Wrench className="h-8 w-8" />
         </div>
