@@ -8,6 +8,7 @@ import {
   DesktopAvatarLink,
 } from "@/components/mobile-avatar-menu";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
 import {
   CEFR_LEVELS,
@@ -181,7 +182,7 @@ function LevelExamPage() {
           </p>
 
           {result ? (
-            <div className="rounded-2xl border p-8 text-center bg-card">
+            <Card className="rounded-2xl p-8 text-center bg-card shadow-none">
               {result.passed ? (
                 <Trophy className="w-14 h-14 mx-auto text-primary mb-4" />
               ) : (
@@ -214,11 +215,11 @@ function LevelExamPage() {
                   </Button>
                 )}
               </div>
-            </div>
+            </Card>
           ) : (
             <div className="space-y-6">
               {questions.map((q, i) => (
-                <div key={i} className="rounded-xl border p-5 bg-card">
+                <Card key={i} className="rounded-xl p-5 bg-card shadow-none">
                   <div className="font-medium mb-3">
                     {i + 1}. {q.q}
                   </div>
@@ -240,7 +241,7 @@ function LevelExamPage() {
                       );
                     })}
                   </div>
-                </div>
+                </Card>
               ))}
               <Button size="lg" className="w-full" onClick={submit} disabled={submitting}>
                 {submitting ? "A submeter…" : "Submeter exame"}

@@ -24,6 +24,7 @@ import {
 import { HeartsIndicator } from "@/components/hearts-indicator";
 import { LessonResultBanner, type LessonAttemptResult } from "@/components/lesson-result-banner";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useLocale } from "@/lib/i18n";
@@ -1103,7 +1104,7 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
           </div>
         )}
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5 sm:flex-row">
+        <Card className="mt-10 flex flex-col items-center justify-between gap-4 rounded-2xl border-border bg-card p-5 sm:flex-row shadow-none">
           {done ? (
             <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
               {justCompleted && nextStep?.type === "lesson" ? (
@@ -1167,7 +1168,7 @@ function LessonPageInner({ lessonId }: { lessonId: string }) {
               </Button>
             )}
           </div>
-        </div>
+        </Card>
 
         {(prevLessonId || nextStep?.type === "lesson") && (
           <div className="mt-4 flex items-center justify-between gap-4">
