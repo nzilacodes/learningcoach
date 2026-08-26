@@ -450,7 +450,8 @@ function AICoachPage() {
               <div className="p-6 flex items-center">
                 <button
                   onClick={() => setProjectsSidebarOpen(false)}
-                  className="p-1 hover:bg-gray-50 rounded-md transition-colors text-muted-foreground mr-2"
+                  aria-label={locale === "pt" ? "Fechar barra lateral" : "Close sidebar"}
+                  className="p-1 hover:bg-gray-50 rounded-md transition-colors text-muted-foreground mr-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -527,7 +528,8 @@ function AICoachPage() {
           {!projectsSidebarOpen && (
             <button
               onClick={() => setProjectsSidebarOpen(true)}
-              className="hidden lg:flex items-center justify-center w-10 shrink-0 border-l border-gray-100 hover:bg-gray-50 transition-colors text-muted-foreground"
+              aria-label={locale === "pt" ? "Abrir barra lateral" : "Open sidebar"}
+              className="hidden lg:flex items-center justify-center w-10 shrink-0 border-l border-gray-100 hover:bg-gray-50 transition-colors text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <ChevronRight className="w-5 h-5 rotate-180" />
             </button>
