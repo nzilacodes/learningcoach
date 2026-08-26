@@ -16,6 +16,7 @@ import {
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { useLocale } from "@/lib/i18n";
+import { Card } from "@/components/ui/card";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminOverview,
@@ -102,7 +103,7 @@ function AdminOverview() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {statCards.map((s) => (
-          <div key={s.label} className="rounded-2xl border border-gray-100 bg-white p-5">
+          <Card key={s.label} className="rounded-2xl border-gray-100 bg-white p-5 shadow-none">
             <div
               className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${s.color}`}
             >
@@ -110,7 +111,7 @@ function AdminOverview() {
             </div>
             <div className="mt-3 text-2xl font-bold text-ink">{s.value}</div>
             <div className="text-xs text-muted-foreground">{s.label}</div>
-          </div>
+          </Card>
         ))}
       </div>
 

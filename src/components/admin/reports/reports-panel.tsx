@@ -5,6 +5,7 @@ import { useLocale } from "@/lib/i18n";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { Button } from "@/components/ui/button";
 import { csvDownload } from "@/components/admin/csv-download";
+import { Card } from "@/components/ui/card";
 
 export function ReportsPanel() {
   const { locale } = useLocale();
@@ -27,7 +28,7 @@ export function ReportsPanel() {
       <h2 className="font-display text-2xl font-bold text-ink">
         {locale === "pt" ? "Relatórios" : "Reports"}
       </h2>
-      <div className="rounded-2xl border border-gray-100 bg-white p-6">
+      <Card className="rounded-2xl border-gray-100 bg-white p-6 shadow-none">
         <p className="text-sm text-muted-foreground mb-4">
           {locale === "pt"
             ? "Exportar dados em CSV para análise externa."
@@ -78,7 +79,7 @@ export function ReportsPanel() {
               : "Diagnósticos"}
           </Button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

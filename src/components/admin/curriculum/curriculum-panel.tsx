@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BookOpen } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
+import { Card } from "@/components/ui/card";
 import type { CourseRow, UnitRow, LessonRow } from "@/lib/learning";
 import { LessonEditor } from "./lesson-editor";
 
@@ -86,7 +87,7 @@ export function CurriculumPanel() {
           </span>
         )}
       </h2>
-      <div className="rounded-2xl border border-gray-100 bg-white">
+      <Card className="rounded-2xl border-gray-100 bg-white shadow-none">
         <div className="flex flex-wrap items-center justify-end gap-1 border-b border-gray-100 px-6 py-4">
           {CEFR_LEVELS.map((l) => (
             <button
@@ -159,7 +160,7 @@ export function CurriculumPanel() {
             )}
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
