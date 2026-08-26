@@ -8,7 +8,14 @@ import { apiFetch } from "@/lib/api/client";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { ExerciseStatusBadge } from "../exercise-shared";
 import type { ExerciseRowProps } from "./types";
 

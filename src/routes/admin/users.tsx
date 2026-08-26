@@ -47,7 +47,11 @@ function AdminUsersPage() {
       sortValue: (u) => u.full_name ?? "",
       render: (u) => <span className="font-medium">{u.full_name || "—"}</span>,
     },
-    { key: "email", header: "Email", render: (u) => <span className="text-xs">{u.email || "—"}</span> },
+    {
+      key: "email",
+      header: "Email",
+      render: (u) => <span className="text-xs">{u.email || "—"}</span>,
+    },
     {
       key: "phone",
       header: locale === "pt" ? "Telefone" : "Phone",
@@ -105,7 +109,9 @@ function AdminUsersPage() {
         data={users}
         getRowId={(u) => u.id}
         getSearchText={(u) => `${u.full_name ?? ""} ${u.email ?? ""}`}
-        searchPlaceholder={locale === "pt" ? "Pesquisar por nome ou email…" : "Search by name or email…"}
+        searchPlaceholder={
+          locale === "pt" ? "Pesquisar por nome ou email…" : "Search by name or email…"
+        }
         emptyLabel={locale === "pt" ? "Sem alunos" : "No learners"}
       />
     </div>

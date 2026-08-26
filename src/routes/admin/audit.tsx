@@ -118,7 +118,9 @@ function AdminAuditPage() {
   const filteredLogs = logs.filter(
     (l) =>
       !query ||
-      `${l.action} ${l.actor_email ?? ""} ${l.entity ?? ""}`.toLowerCase().includes(query.toLowerCase()),
+      `${l.action} ${l.actor_email ?? ""} ${l.entity ?? ""}`
+        .toLowerCase()
+        .includes(query.toLowerCase()),
   );
 
   function sevBadge(s: string) {
@@ -228,7 +230,9 @@ function AdminAuditPage() {
                 <TableBody>
                   {filteredLogs.map((l) => (
                     <TableRow key={l.id}>
-                      <TableCell className="whitespace-nowrap text-xs">{fmtDate(l.created_at)}</TableCell>
+                      <TableCell className="whitespace-nowrap text-xs">
+                        {fmtDate(l.created_at)}
+                      </TableCell>
                       <TableCell className="text-xs">{l.actor_email ?? "—"}</TableCell>
                       <TableCell className="font-medium">{l.action}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">
@@ -271,7 +275,9 @@ function AdminAuditPage() {
                 <TableBody>
                   {attempts.map((a) => (
                     <TableRow key={a.id}>
-                      <TableCell className="whitespace-nowrap text-xs">{fmtDate(a.created_at)}</TableCell>
+                      <TableCell className="whitespace-nowrap text-xs">
+                        {fmtDate(a.created_at)}
+                      </TableCell>
                       <TableCell className="text-xs">{a.email}</TableCell>
                       <TableCell>
                         {a.success ? (
@@ -280,7 +286,9 @@ function AdminAuditPage() {
                           <Badge variant="destructive">Falha</Badge>
                         )}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{a.reason ?? "—"}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {a.reason ?? "—"}
+                      </TableCell>
                       <TableCell className="font-mono text-xs">{a.ip_address ?? "—"}</TableCell>
                     </TableRow>
                   ))}
@@ -318,7 +326,9 @@ function AdminAuditPage() {
                     const active = new Date(l.locked_until) > new Date();
                     return (
                       <TableRow key={l.id}>
-                        <TableCell className="whitespace-nowrap text-xs">{fmtDate(l.created_at)}</TableCell>
+                        <TableCell className="whitespace-nowrap text-xs">
+                          {fmtDate(l.created_at)}
+                        </TableCell>
                         <TableCell className="text-xs">{l.email}</TableCell>
                         <TableCell>{l.reason}</TableCell>
                         <TableCell className="text-xs">
@@ -371,7 +381,8 @@ function AdminAuditPage() {
               ✅ <b>Proteção XSS</b> — escaping automático React + CSP
             </li>
             <li>
-              ✅ <b>Proteção CSRF</b> — token de dupla submissão (cookie + header) + SameSite cookies
+              ✅ <b>Proteção CSRF</b> — token de dupla submissão (cookie + header) + SameSite
+              cookies
             </li>
             <li>
               ✅ <b>Password hashing</b> — bcrypt (custo 12) + regras mínimas de complexidade

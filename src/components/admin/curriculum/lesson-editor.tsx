@@ -10,7 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import type { AdminExercise, ContentStatus } from "./exercise-shared";
 import { ExerciseEditor } from "./exercise-editor";
 import { LessonContentFields } from "./lesson-content-fields";
@@ -174,7 +181,9 @@ export function LessonEditor({ lessonId }: { lessonId: string }) {
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-semibold text-muted-foreground">Título</FormLabel>
+                <FormLabel className="text-xs font-semibold text-muted-foreground">
+                  Título
+                </FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -187,7 +196,9 @@ export function LessonEditor({ lessonId }: { lessonId: string }) {
             name="summary"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-semibold text-muted-foreground">Resumo</FormLabel>
+                <FormLabel className="text-xs font-semibold text-muted-foreground">
+                  Resumo
+                </FormLabel>
                 <FormControl>
                   <Textarea rows={2} {...field} />
                 </FormControl>

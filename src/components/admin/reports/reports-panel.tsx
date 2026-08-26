@@ -71,7 +71,11 @@ export function ReportsPanel() {
             onClick={() => runExport("diagnostics", "/v1/admin/reports/diagnostics")}
           >
             <Download className="h-3.5 w-3.5 mr-1" />{" "}
-            {pending === "diagnostics" ? (locale === "pt" ? "A exportar…" : "Exporting…") : "Diagnósticos"}
+            {pending === "diagnostics"
+              ? locale === "pt"
+                ? "A exportar…"
+                : "Exporting…"
+              : "Diagnósticos"}
           </Button>
         </div>
       </div>

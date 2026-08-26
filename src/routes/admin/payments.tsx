@@ -33,7 +33,9 @@ function StatusBadge({ status }: { status: string }) {
     expired: "bg-destructive/20 text-destructive",
   };
   return (
-    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${map[status] ?? ""}`}>
+    <span
+      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${map[status] ?? ""}`}
+    >
       {status}
     </span>
   );
@@ -117,7 +119,9 @@ function AdminPaymentsPage() {
       header: locale === "pt" ? "Valor" : "Amount",
       sortable: true,
       sortValue: (p) => p.amount_kz,
-      render: (p) => <span className="font-semibold">{p.amount_kz.toLocaleString("pt-AO")} Kz</span>,
+      render: (p) => (
+        <span className="font-semibold">{p.amount_kz.toLocaleString("pt-AO")} Kz</span>
+      ),
     },
     {
       key: "reference",
@@ -163,7 +167,8 @@ function AdminPaymentsPage() {
               disabled={activate.isPending}
               className="bg-emerald-500 text-white hover:bg-emerald-600"
             >
-              <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> {locale === "pt" ? "Ativar" : "Activate"}
+              <CheckCircle2 className="mr-1 h-3.5 w-3.5" />{" "}
+              {locale === "pt" ? "Ativar" : "Activate"}
             </Button>
             <Button
               size="sm"
@@ -171,7 +176,9 @@ function AdminPaymentsPage() {
               onClick={() => {
                 if (
                   !window.confirm(
-                    locale === "pt" ? "Cancelar este pagamento pendente?" : "Cancel this pending payment?",
+                    locale === "pt"
+                      ? "Cancelar este pagamento pendente?"
+                      : "Cancel this pending payment?",
                   )
                 )
                   return;
@@ -194,7 +201,9 @@ function AdminPaymentsPage() {
         columns={columns}
         data={payments}
         getRowId={(p) => p.id}
-        getSearchText={(p) => `${p.profiles?.full_name ?? ""} ${p.profiles?.email ?? ""} ${p.reference}`}
+        getSearchText={(p) =>
+          `${p.profiles?.full_name ?? ""} ${p.profiles?.email ?? ""} ${p.reference}`
+        }
         searchPlaceholder={
           locale === "pt" ? "Pesquisar por aluno ou referência…" : "Search by learner or reference…"
         }

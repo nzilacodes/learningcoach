@@ -33,12 +33,18 @@ const NAV_SECTIONS = [
     items: [
       { to: "/admin/users", Icon: Users, label: { pt: "Alunos", en: "Learners" } },
       { to: "/admin/payments", Icon: CreditCard, label: { pt: "Pagamentos", en: "Payments" } },
-      { to: "/admin/subscriptions", Icon: Wallet, label: { pt: "Assinaturas", en: "Subscriptions" } },
+      {
+        to: "/admin/subscriptions",
+        Icon: Wallet,
+        label: { pt: "Assinaturas", en: "Subscriptions" },
+      },
     ],
   },
   {
     label: { pt: "Conteúdo", en: "Content" },
-    items: [{ to: "/admin/curriculum", Icon: BookOpen, label: { pt: "Currículo", en: "Curriculum" } }],
+    items: [
+      { to: "/admin/curriculum", Icon: BookOpen, label: { pt: "Currículo", en: "Curriculum" } },
+    ],
   },
   {
     label: { pt: "Insights", en: "Insights" },
@@ -276,7 +282,9 @@ export function AdminMobileNav() {
               to={item.to}
               onClick={() => setMoreOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${
-                isActive(item.to) ? "text-violet bg-violet/5" : "text-muted-foreground hover:bg-gray-50"
+                isActive(item.to)
+                  ? "text-violet bg-violet/5"
+                  : "text-muted-foreground hover:bg-gray-50"
               }`}
             >
               <item.Icon className="w-5 h-5" />

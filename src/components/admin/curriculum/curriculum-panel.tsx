@@ -124,7 +124,9 @@ export function CurriculumPanel() {
                 <ReviewCountBadge count={pendingByUnit.get(u.id) ?? 0} />
               </button>
             ))}
-            {units.length === 0 && <p className="p-2 text-xs text-muted-foreground">Sem unidades.</p>}
+            {units.length === 0 && (
+              <p className="p-2 text-xs text-muted-foreground">Sem unidades.</p>
+            )}
           </div>
           <div className="max-h-[560px] overflow-y-auto p-3">
             {lessons.map((l) => (

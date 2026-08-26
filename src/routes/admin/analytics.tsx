@@ -202,7 +202,9 @@ function AdminAnalyticsPage() {
       {error && !loading ? (
         <div className="flex flex-col items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-10 text-center">
           <AlertTriangle className="h-8 w-8 text-destructive" />
-          <p className="text-sm text-destructive">Não foi possível carregar os dados de analytics.</p>
+          <p className="text-sm text-destructive">
+            Não foi possível carregar os dados de analytics.
+          </p>
           <Button size="sm" variant="outline" onClick={load}>
             Tentar novamente
           </Button>
@@ -282,7 +284,13 @@ function AdminAnalyticsPage() {
                   <XAxis dataKey="month" fontSize={11} />
                   <YAxis fontSize={11} />
                   <Tooltip />
-                  <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </ChartCard>
@@ -332,7 +340,10 @@ function AdminAnalyticsPage() {
             <ChartCard title="Métodos de pagamento">
               <div className="space-y-2">
                 {data.methods.map((m) => (
-                  <div key={m.method} className="flex items-center justify-between rounded-lg border p-3">
+                  <div
+                    key={m.method}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
                     <div>
                       <div className="font-medium capitalize">{m.method.replace("_", " ")}</div>
                       <div className="text-xs text-muted-foreground">{m.count} transações</div>
@@ -346,7 +357,10 @@ function AdminAnalyticsPage() {
             <ChartCard title="Desempenho por plano">
               <div className="space-y-2">
                 {data.plans.map((p) => (
-                  <div key={p.name} className="flex items-center justify-between rounded-lg border p-3">
+                  <div
+                    key={p.name}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
                     <div>
                       <div className="font-medium">{p.name}</div>
                       <div className="text-xs text-muted-foreground uppercase">
