@@ -7,6 +7,7 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useAgeGroup } from "@/lib/use-age-group";
 import { AGE_TRACKS, AGE_GROUP_LABEL, type AgeGroup } from "@/lib/age-tracks";
+import { cn } from "@/lib/utils";
 import {
   Sparkles,
   BookOpen,
@@ -40,6 +41,12 @@ export const Route = createFileRoute("/track")({
 });
 
 const GROUPS: AgeGroup[] = ["kids", "teens", "adults"];
+
+// Shared base for the 6 card-style blocks below (themes/vocab/examples/
+// games/exercises/videos) — each adds its own layout modifiers on top,
+// so a single generic wrapper component would need as much prop surface
+// as just writing the div, hence a class constant instead.
+const TRACK_CARD = "rounded-xl border bg-card p-4";
 
 function TrackPage() {
   const { locale } = useLocale();
@@ -117,7 +124,7 @@ function TrackPage() {
           >
             <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
               {track.themes.map((t) => (
-                <div key={t.en} className="rounded-xl border bg-card p-4 flex items-center gap-3">
+                <div key={t.en} className={cn(TRACK_CARD, "flex items-center gap-3")}>
                   <span className="text-2xl" aria-hidden>
                     {t.emoji}
                   </span>
@@ -136,7 +143,7 @@ function TrackPage() {
           >
             <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
               {track.vocabulary.map((v) => (
-                <div key={v.word} className="rounded-xl border bg-card p-4 text-center">
+                <div key={v.word} className={cn(TRACK_CARD, "text-center")}>
                   <div className="text-3xl mb-1" aria-hidden>
                     {v.emoji}
                   </div>
@@ -154,7 +161,7 @@ function TrackPage() {
           >
             <ul className="space-y-2">
               {track.examples.map((e) => (
-                <li key={e.en} className="rounded-xl border bg-card p-4">
+                <li key={e.en} className={TRACK_CARD}>
                   <div className="font-medium">{e.en}</div>
                   <div className="text-sm text-muted-foreground">{e.pt}</div>
                 </li>
@@ -177,7 +184,7 @@ function TrackPage() {
           >
             <div className="grid gap-3 grid-cols-2 md:grid-cols-3">
               {track.games.map((g) => (
-                <div key={g.id} className="rounded-xl border bg-card p-4 flex items-center gap-3">
+                <div key={g.id} className={cn(TRACK_CARD, "flex items-center gap-3")}>
                   <span className="text-2xl" aria-hidden>
                     {g.emoji}
                   </span>
@@ -201,7 +208,7 @@ function TrackPage() {
           >
             <div className="grid gap-3 md:grid-cols-2">
               {track.exercises.map((ex) => (
-                <div key={ex.en} className="rounded-xl border bg-card p-4 flex items-center gap-3">
+                <div key={ex.en} className={cn(TRACK_CARD, "flex items-center gap-3")}>
                   <span className="text-2xl" aria-hidden>
                     {ex.icon}
                   </span>
@@ -223,7 +230,7 @@ function TrackPage() {
                   href={v.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-xl border bg-card p-4 hover:bg-accent transition block"
+                  className={cn(TRACK_CARD, "hover:bg-accent transition block")}
                 >
                   <div className="text-xs text-muted-foreground mb-1">
                     {v.channel} · {v.level}
