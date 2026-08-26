@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { AppHeader } from "@/components/app-header";
+import { Card } from "@/components/ui/card";
 import { MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
 import { useLocale } from "@/lib/i18n";
 import { AGE_TRACKS } from "@/lib/age-tracks";
@@ -232,7 +233,7 @@ export function TeensDashboard(data: DashboardData) {
 
             {/* --- Sidebar --- */}
             <aside className="space-y-6">
-              <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
+              <Card className="bg-white/70 backdrop-blur-md border-gray-100/80 rounded-3xl p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-bold text-ink">
                     {locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
@@ -259,9 +260,9 @@ export function TeensDashboard(data: DashboardData) {
                   {locale === "pt" ? "lições concluídas" : "lessons completed"} · {week.label}{" "}
                   {locale === "pt" ? "esta semana" : "this week"}
                 </p>
-              </div>
+              </Card>
 
-              <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
+              <Card className="bg-white/70 backdrop-blur-md border-gray-100/80 rounded-3xl p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-bold text-ink">
                     {locale === "pt" ? "Meta Diária" : "Daily Goal"}
@@ -292,14 +293,14 @@ export function TeensDashboard(data: DashboardData) {
                       ? `Falta${DAILY_XP_GOAL - todayXp === 1 ? "" : "m"} ${DAILY_XP_GOAL - todayXp} XP para a meta de hoje.`
                       : `${DAILY_XP_GOAL - todayXp} XP to go today.`}
                 </p>
-              </div>
+              </Card>
 
               <LeaderboardCard />
               <ClassesCard />
               <ReminderCard reminder={reminder} locale={locale} />
 
               {/* Read-only subscription status — teens don't manage billing */}
-              <div className="rounded-3xl border border-gray-100/80 bg-white/70 backdrop-blur-md p-6 shadow-sm">
+              <Card className="rounded-3xl border-gray-100/80 bg-white/70 backdrop-blur-md p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-1">
                   <Users className="w-4 h-4 text-muted-foreground" />
                   <h4 className="text-sm font-bold text-ink">
@@ -319,7 +320,7 @@ export function TeensDashboard(data: DashboardData) {
                         ? "Peça a um responsável para ativar seu plano."
                         : "Ask a guardian to activate your plan."}
                 </p>
-              </div>
+              </Card>
             </aside>
           </div>
         </main>

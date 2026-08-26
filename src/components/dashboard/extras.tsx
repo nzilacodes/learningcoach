@@ -17,6 +17,7 @@ import {
   BellOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import type { useStudyReminder } from "@/lib/learning";
 
@@ -37,7 +38,7 @@ export function ProfileHeader() {
     .toUpperCase();
 
   return (
-    <div className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="mb-8 rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
         <div className="relative">
           {user?.avatarUrl ? (
@@ -73,7 +74,7 @@ export function ProfileHeader() {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -96,7 +97,7 @@ export function LeaderboardCard() {
   });
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display font-bold">Ranking</h3>
         <Trophy className="h-4 w-4 text-amber" />
@@ -131,7 +132,7 @@ export function LeaderboardCard() {
           );
         })}
       </ol>
-    </div>
+    </Card>
   );
 }
 
@@ -153,7 +154,7 @@ export function CertificatesCard() {
   });
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display font-bold">Certificados</h3>
         <div className="flex items-center gap-2">
@@ -198,7 +199,7 @@ export function CertificatesCard() {
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -215,7 +216,7 @@ export function AchievementsCard() {
   });
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display font-bold">Conquistas</h3>
         <Award className="h-4 w-4 text-amber" />
@@ -247,7 +248,7 @@ export function AchievementsCard() {
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -282,7 +283,7 @@ export function ActivityCalendar() {
   };
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display font-bold">Calendário</h3>
         <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -310,7 +311,7 @@ export function ActivityCalendar() {
           {isLoading ? "" : `${Math.floor(total / 3600)}h ${Math.floor((total % 3600) / 60)}m`}
         </span>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -319,7 +320,7 @@ export function GoalsCard() {
   const { user } = useAuth();
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display font-bold">Objetivos</h3>
         <Target className="h-4 w-4 text-sunset" />
@@ -356,7 +357,7 @@ export function GoalsCard() {
       <Button asChild size="sm" variant="outline" className="mt-4 w-full">
         <Link to="/onboarding">Editar objetivos</Link>
       </Button>
-    </div>
+    </Card>
   );
 }
 
@@ -385,19 +386,19 @@ export function ClassesCard({ variant = "full" }: { variant?: "full" | "readonly
     // showing a loading state first.
     if (isLoading) {
       return (
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+        <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
           <div className="mb-2 flex items-center gap-2">
             <Users className="h-4 w-4 text-violet" />
             <h3 className="font-display font-bold">Minha turma</h3>
           </div>
           <p className="text-sm text-muted-foreground">A carregar…</p>
-        </div>
+        </Card>
       );
     }
     const joined = data?.joined ?? [];
     if (joined.length === 0) return null;
     return (
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+      <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
         <div className="mb-2 flex items-center gap-2">
           <Users className="h-4 w-4 text-violet" />
           <h3 className="font-display font-bold">Minha turma</h3>
@@ -406,7 +407,7 @@ export function ClassesCard({ variant = "full" }: { variant?: "full" | "readonly
           Você está na turma:{" "}
           <span className="font-semibold text-foreground">{joined[0].name}</span>
         </p>
-      </div>
+      </Card>
     );
   }
 
@@ -415,7 +416,7 @@ export function ClassesCard({ variant = "full" }: { variant?: "full" | "readonly
   const total = owned.length + joined.length;
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-display font-bold flex items-center gap-2">
           <Users className="h-4 w-4 text-violet" />
@@ -456,7 +457,7 @@ export function ClassesCard({ variant = "full" }: { variant?: "full" | "readonly
       <Button asChild size="sm" variant="outline" className="mt-4 w-full">
         <Link to="/classes">Gerir turmas</Link>
       </Button>
-    </div>
+    </Card>
   );
 }
 
