@@ -68,17 +68,17 @@ export function SiteHeader() {
 
       {/* Navbar */}
       <header
-        className={`fixed left-0 right-0 top-0 z-50 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed left-0 right-0 top-0 z-50 transition-all duration-700 ease-premium ${
           scrolled ? "pt-3" : "pt-5"
         }`}
       >
         <div
-          className={`mx-auto px-4 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`mx-auto px-4 transition-all duration-700 ease-premium ${
             scrolled ? "max-w-7xl" : "max-w-full"
           }`}
         >
           <nav
-            className={`flex items-center justify-between gap-4 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            className={`flex items-center justify-between gap-4 transition-all duration-700 ease-premium ${
               scrolled
                 ? "rounded-2xl border border-slate-200/60 bg-white/80 px-4 sm:px-6 py-3 shadow-xl shadow-slate-900/5 backdrop-blur-xl"
                 : "rounded-none border-transparent bg-transparent px-4 sm:px-6 py-4"

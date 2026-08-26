@@ -170,7 +170,7 @@ function ContactPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{pt ? "Nome" : "Name"} *</FormLabel>
+                      <FormLabel required>{pt ? "Nome" : "Name"}</FormLabel>
                       <FormControl>
                         <Input autoComplete="name" {...field} />
                       </FormControl>
@@ -183,7 +183,7 @@ function ContactPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>E-mail *</FormLabel>
+                      <FormLabel required>E-mail</FormLabel>
                       <FormControl>
                         <Input type="email" autoComplete="email" {...field} />
                       </FormControl>
@@ -210,7 +210,7 @@ function ContactPage() {
                 name="message"
                 render={({ field }) => (
                   <FormItem className="mt-4">
-                    <FormLabel>{pt ? "Mensagem" : "Message"} *</FormLabel>
+                    <FormLabel required>{pt ? "Mensagem" : "Message"}</FormLabel>
                     <FormControl>
                       <Textarea rows={6} {...field} />
                     </FormControl>

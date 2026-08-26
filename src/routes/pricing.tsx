@@ -234,7 +234,7 @@ function PricingPage() {
                       <div
                         key={plan.id}
                         className={`relative h-full w-full flex justify-center transition-all duration-300 ${
-                          featured ? "z-[5]" : "z-[1]"
+                          featured ? "z-20" : "z-10"
                         }`}
                       >
                         {/* Glassmorphic Orb Backdrop - Absolute positioned but pointer-events-none */}

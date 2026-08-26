@@ -74,6 +74,11 @@
   --color-marketing-lime-dark: var(--marketing-lime-dark);
   --color-marketing-ink: var(--marketing-ink);
   --color-marketing-surface: var(--marketing-surface);
+
+  /* Named easing for the "premium" decelerate curve, was a bare
+     cubic-bezier(0.16,1,0.3,1) arbitrary value repeated 3x in
+     site-header.tsx with no token backing it. */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
@@ -299,7 +304,7 @@
 }
 
 @utility pricing-card {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s var(--ease-in-out);
 }
 
 @utility glass {
