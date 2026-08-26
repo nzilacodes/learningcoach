@@ -19,6 +19,7 @@ import { useNotification } from "@/lib/notifications/notification-provider";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -150,7 +151,7 @@ function ProfilePage() {
         <AppHeader title={locale === "pt" ? "O meu perfil" : "My profile"} />
         <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8">
           <div className="mx-auto max-w-2xl space-y-6">
-            <div className="rounded-2xl border border-gray-100 bg-white p-6 premium-shadow">
+            <Card className="rounded-2xl border-gray-100 bg-white p-6 premium-shadow">
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <Mail className="h-4 w-4" /> {user.email}
@@ -161,7 +162,7 @@ function ProfilePage() {
                   </span>
                 )}
               </div>
-            </div>
+            </Card>
 
             <Form {...form}>
               <form

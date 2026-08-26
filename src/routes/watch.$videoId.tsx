@@ -12,6 +12,7 @@ import {
   DesktopAvatarLink,
 } from "@/components/mobile-avatar-menu";
 import { Button } from "@/components/ui/button";
+import { Card as CardPrimitive } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
@@ -314,16 +315,16 @@ function WatchPage() {
               {pack && (
                 <>
                   <TabsContent value="summary">
-                    <Card>
+                    <CardPrimitive className="p-5 shadow-none">
                       <p className="text-sm text-muted-foreground mb-3">
                         Resumo gerado por IA com base no título e tema — pode conter imprecisões.
                       </p>
                       <p className="whitespace-pre-line leading-relaxed">{pack.summary}</p>
-                    </Card>
+                    </CardPrimitive>
                   </TabsContent>
 
                   <TabsContent value="transcript">
-                    <Card>
+                    <CardPrimitive className="p-5 shadow-none">
                       <p className="text-sm text-muted-foreground mb-3">
                         Excerto simulado com base no título e tema. As legendas nativas do YouTube
                         estão ativadas no player (botão CC).
@@ -331,7 +332,7 @@ function WatchPage() {
                       <p className="whitespace-pre-line leading-relaxed">
                         {pack.transcript_excerpt}
                       </p>
-                    </Card>
+                    </CardPrimitive>
                   </TabsContent>
 
                   <TabsContent value="quiz">
@@ -343,7 +344,7 @@ function WatchPage() {
                   </TabsContent>
 
                   <TabsContent value="vocab">
-                    <Card>
+                    <CardPrimitive className="p-5 shadow-none">
                       {pack.key_vocabulary.length === 0 ? (
                         <p className="text-muted-foreground">Sem vocabulário gerado.</p>
                       ) : (
@@ -368,7 +369,7 @@ function WatchPage() {
                           embedded
                         />
                       </div>
-                    </Card>
+                    </CardPrimitive>
                   </TabsContent>
 
                   <TabsContent value="speaking">
@@ -383,10 +384,6 @@ function WatchPage() {
       <VideosMobileNav />
     </div>
   );
-}
-
-function Card({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-xl border bg-card p-5">{children}</div>;
 }
 
 function ChecklistCard({
@@ -421,7 +418,11 @@ function ChecklistCard({
       </ul>
     </>
   );
-  return embedded ? <div>{body}</div> : <Card>{body}</Card>;
+  return embedded ? (
+    <div>{body}</div>
+  ) : (
+    <CardPrimitive className="p-5 shadow-none">{body}</CardPrimitive>
+  );
 }
 
 function QuizBlock({ quiz }: { quiz: StudyPack["quiz"] }) {
@@ -429,14 +430,14 @@ function QuizBlock({ quiz }: { quiz: StudyPack["quiz"] }) {
   const [checked, setChecked] = useState(false);
   if (!quiz || quiz.length === 0) {
     return (
-      <Card>
+      <CardPrimitive className="p-5 shadow-none">
         <p className="text-muted-foreground">Sem quiz gerado ainda.</p>
-      </Card>
+      </CardPrimitive>
     );
   }
   const correct = quiz.reduce((n, q, i) => n + (answers[i] === q.a ? 1 : 0), 0);
   return (
-    <Card>
+    <CardPrimitive className="p-5 shadow-none">
       <div className="space-y-5">
         {quiz.map((q, i) => (
           <div key={i}>
@@ -479,6 +480,6 @@ function QuizBlock({ quiz }: { quiz: StudyPack["quiz"] }) {
           </div>
         )}
       </div>
-    </Card>
+    </CardPrimitive>
   );
 }

@@ -24,6 +24,7 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
 import { AppHeader } from "@/components/app-header";
+import { Card } from "@/components/ui/card";
 import {
   HeaderActionLinks,
   MobileAvatarMenu,
@@ -692,11 +693,11 @@ function RewardsPage() {
               ))}
             </div>
             {rankScope === "national" && !profile.country ? (
-              <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-muted-foreground">
+              <Card className="rounded-2xl border-gray-100 bg-white p-8 text-center text-sm text-muted-foreground shadow-none">
                 {locale === "pt"
                   ? "Define o teu país no perfil para veres o ranking nacional."
                   : "Set your country in your profile to see the national ranking."}
-              </div>
+              </Card>
             ) : (
               <RankList
                 rows={
