@@ -165,7 +165,7 @@ export function SiteHeader() {
               {/* Language Toggle — icon only */}
               <button
                 onClick={() => setLocale(locale === "pt" ? "en" : "pt")}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-muted-foreground transition-all duration-300 hover:border-marketing-teal/30 hover:bg-marketing-teal/5 hover:text-marketing-teal"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-muted-foreground transition-all duration-300 hover:border-marketing-teal/30 hover:bg-marketing-teal/5 hover:text-marketing-teal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 aria-label="Toggle language"
               >
                 <Languages className="h-4 w-4" />
@@ -204,7 +204,7 @@ export function SiteHeader() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-muted-foreground transition-all duration-300 hover:border-marketing-teal/30 hover:bg-marketing-teal/5 hover:text-marketing-teal lg:hidden"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-muted-foreground transition-all duration-300 hover:border-marketing-teal/30 hover:bg-marketing-teal/5 hover:text-marketing-teal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring lg:hidden"
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
               >
                 <div className="relative h-5 w-5">
@@ -252,7 +252,7 @@ export function SiteHeader() {
               <button
                 onClick={closeMenu}
                 aria-label="Close menu"
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-muted-foreground transition-colors hover:bg-slate-200 hover:text-slate-700"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-muted-foreground transition-colors hover:bg-slate-200 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
                 <X className="h-5 w-5" />
               </button>

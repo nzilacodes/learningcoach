@@ -71,7 +71,7 @@ export function NotificationBell() {
           type="button"
           title={locale === "pt" ? "Notificações" : "Notifications"}
           aria-label={locale === "pt" ? "Notificações" : "Notifications"}
-          className="relative p-2 text-muted-foreground hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex"
+          className="relative p-2 text-muted-foreground hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
@@ -90,7 +90,7 @@ export function NotificationBell() {
             <button
               type="button"
               onClick={() => markAllRead.mutate()}
-              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded"
             >
               <CheckCheck className="size-3.5" />
               {locale === "pt" ? "Marcar tudo como lido" : "Mark all read"}
@@ -122,7 +122,7 @@ export function NotificationBell() {
                       type="button"
                       onClick={() => !n.read_at && markRead.mutate(n.id)}
                       className={cn(
-                        "w-full rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-gray-50",
+                        "w-full rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                         !n.read_at && "bg-primary/5",
                       )}
                     >

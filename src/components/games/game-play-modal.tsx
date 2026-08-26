@@ -149,7 +149,7 @@ function MultipleChoiceGame({
               key={o.word}
               onClick={() => choose(o.word)}
               disabled={show}
-              className={`rounded-xl border-2 p-3 text-sm font-semibold transition-all ${
+              className={`rounded-xl border-2 p-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${
                 show && isCorrect
                   ? "border-emerald-500 bg-emerald-50"
                   : show && chosen
@@ -258,7 +258,7 @@ function ListeningGame({
         <button
           onClick={play}
           disabled={playing}
-          className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:opacity-90 disabled:opacity-60"
+          className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:opacity-90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           {playing ? <Loader2 className="h-8 w-8 animate-spin" /> : <Volume2 className="h-8 w-8" />}
         </button>
@@ -273,7 +273,7 @@ function ListeningGame({
               key={o.word}
               onClick={() => choose(o.word)}
               disabled={show}
-              className={`rounded-xl border-2 p-3 text-sm font-semibold transition-all ${
+              className={`rounded-xl border-2 p-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${
                 show && isCorrect
                   ? "border-emerald-500 bg-emerald-50"
                   : show && chosen
@@ -393,7 +393,7 @@ function SpeakingGame({
       <button
         onClick={handleMic}
         disabled={processing}
-        className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-transform disabled:opacity-70 ${
+        className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-transform disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
           recording ? "scale-110 animate-pulse" : ""
         }`}
       >
