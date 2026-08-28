@@ -7,7 +7,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import { apiFetch, ApiError } from "@/lib/api/client";
+import { apiFetch, ApiError, onSessionExpired } from "@/lib/api/client";
 
 type Role = "admin" | "user";
 
@@ -87,6 +87,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     })();
   }, [refresh]);
+
+  // A 401 discovered by any other apiFetch call (e.g. an admin-dashboard
+  // widget's background query) means the session is dead the same way a
+  // failed refresh() here would — without this, OnboardingGate never learns
+  // about it and the page just sits there with queries silently failing.
+  useEffect(() => {
+    onSessionExpired(() => setUser(null));
+    return () => onSessionExpired(null);
+  }, []);
 
   const signOut = async () => {
     try {

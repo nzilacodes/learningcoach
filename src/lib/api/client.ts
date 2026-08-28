@@ -88,21 +88,50 @@ async function parseErrorEnvelope(res: Response): Promise<ApiError> {
   }
 }
 
+// AuthProvider registers itself here so a 401 discovered by *any* apiFetch
+// caller (a background admin-dashboard query, not just the central /v1/me
+// refresh) can flip the shared `user` state to null — otherwise each query
+// independently fails its own refresh attempt forever without OnboardingGate
+// ever finding out the session is actually dead, leaving the page showing
+// stale cached data while requests keep failing in the background.
+let sessionExpiredListener: (() => void) | null = null;
+export function onSessionExpired(listener: (() => void) | null) {
+  sessionExpiredListener = listener;
+}
+
 let refreshInFlight: Promise<boolean> | null = null;
 
-/** Calls the refresh endpoint at most once concurrently; returns whether it succeeded. */
+function doRefreshRequest(): Promise<boolean> {
+  return fetch(`${API_BASE_URL}/v1/auth/refresh`, {
+    method: "POST",
+    credentials: "include",
+    headers: csrfHeaders("POST"),
+  })
+    .then((res) => res.ok)
+    .catch(() => false);
+}
+
+/** Calls the refresh endpoint at most once concurrently *within this tab*
+ * (refreshInFlight) — but refresh_token is single-use and rotated on every
+ * call (see learningcoachbackEnd's auth/service.ts refresh()), so two
+ * *tabs* racing to refresh the same still-shared cookie isn't handled by
+ * that alone: the loser sends a token the winner already revoked and gets
+ * a hard 401, even though the session itself is perfectly valid. Web Locks
+ * serializes across tabs of the same origin — a waiting tab's own refresh
+ * call only runs after the lock holder's has updated the shared cookie, so
+ * it rotates the now-current token instead of a stale one. Falls back to
+ * the plain request on browsers without navigator.locks. */
 function refreshSession(): Promise<boolean> {
   if (!refreshInFlight) {
-    refreshInFlight = fetch(`${API_BASE_URL}/v1/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-      headers: csrfHeaders("POST"),
-    })
-      .then((res) => res.ok)
-      .catch(() => false)
-      .finally(() => {
-        refreshInFlight = null;
-      });
+    const attempt: Promise<boolean> =
+      typeof navigator !== "undefined" && navigator.locks
+        ? navigator.locks.request<boolean>("learningcoach-session-refresh", () =>
+            doRefreshRequest(),
+          )
+        : doRefreshRequest();
+    refreshInFlight = attempt.catch(() => false).finally(() => {
+      refreshInFlight = null;
+    });
   }
   return refreshInFlight;
 }
@@ -146,7 +175,10 @@ export async function apiFetch<T>(
     if (refreshed) return apiFetch<T>(path, init, true);
   }
 
-  if (!res.ok) throw await parseErrorEnvelope(res);
+  if (!res.ok) {
+    if (res.status === 401 && !path.startsWith("/v1/auth/")) sessionExpiredListener?.();
+    throw await parseErrorEnvelope(res);
+  }
   if (res.status === 204) return undefined as T;
   const contentType = res.headers.get("content-type") ?? "";
   return contentType.includes("application/json")
@@ -172,6 +204,9 @@ export async function apiFetchFormData<T>(
     if (refreshed) return apiFetchFormData<T>(path, formData, true);
   }
 
-  if (!res.ok) throw await parseErrorEnvelope(res);
+  if (!res.ok) {
+    if (res.status === 401) sessionExpiredListener?.();
+    throw await parseErrorEnvelope(res);
+  }
   return res.json() as Promise<T>;
 }
