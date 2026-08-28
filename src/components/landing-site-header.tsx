@@ -16,10 +16,8 @@ import coachLogo from "@/assets/coach-logo.png";
 import "../styles/landing-site-header.css";
 export function LandingSiteHeader() {
   const { locale, setLocale } = useLocale();
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
-  const moreRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const hamburgerRef = useRef<HTMLButtonElement | null>(null);
@@ -105,18 +103,9 @@ export function LandingSiteHeader() {
   }, [menuOpen]);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setMenuOpen(false);
-        setMoreOpen(false);
       }
     };
     document.addEventListener("keydown", onKey);
@@ -125,40 +114,15 @@ export function LandingSiteHeader() {
 
   const close = () => {
     setMenuOpen(false);
-    setMoreOpen(false);
   };
   const pt = locale === "pt";
 
-  type HeaderRoute =
-    | "/pricing"
-    | "/about"
-    | "/contact"
-    | "/dashboard"
-    | "/curriculum"
-    | "/videos"
-    | "/pronunciation"
-    | "/reading"
-    | "/ai-coach"
-    | "/games"
-    | "/rewards"
-    | "/community";
+  type HeaderRoute = "/pricing" | "/about" | "/contact";
 
   const navLinks: { to: HeaderRoute; labelPt: string; labelEn: string }[] = [
     { to: "/pricing", labelPt: "Preços", labelEn: "Pricing" },
     { to: "/about", labelPt: "Sobre", labelEn: "About" },
     { to: "/contact", labelPt: "Contacto", labelEn: "Contact" },
-  ];
-
-  const moreLinks: { to: HeaderRoute; labelPt: string; labelEn: string }[] = [
-    { to: "/dashboard", labelPt: "Painel", labelEn: "Dashboard" },
-    { to: "/curriculum", labelPt: "Currículo", labelEn: "Curriculum" },
-    { to: "/videos", labelPt: "Vídeos", labelEn: "Videos" },
-    { to: "/pronunciation", labelPt: "Pronúncia", labelEn: "Pronunciation" },
-    { to: "/reading", labelPt: "Reading", labelEn: "Reading" },
-    { to: "/ai-coach", labelPt: "AI Coach", labelEn: "AI Coach" },
-    { to: "/games", labelPt: "Jogos", labelEn: "Games" },
-    { to: "/rewards", labelPt: "Recompensas", labelEn: "Rewards" },
-    { to: "/community", labelPt: "Comunidade", labelEn: "Community" },
   ];
 
   return (
@@ -185,33 +149,6 @@ export function LandingSiteHeader() {
               {pt ? l.labelPt : l.labelEn}
             </Link>
           ))}
-          <div ref={moreRef} style={{ position: "relative" }}>
-            <button
-              onClick={() => setMoreOpen(!moreOpen)}
-              aria-expanded={moreOpen}
-              className="l-nav-more"
-            >
-              {pt ? "Mais" : "More"}
-              <span
-                style={{
-                  fontSize: 8,
-                  transform: moreOpen ? "rotate(180deg)" : "none",
-                  transition: ".2s",
-                }}
-              >
-                ▼
-              </span>
-            </button>
-            {moreOpen && (
-              <div className="l-dropdown">
-                {moreLinks.map((l) => (
-                  <Link key={l.to} to={l.to} onClick={close} className="l-dropdown-link">
-                    {pt ? l.labelPt : l.labelEn}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
         </nav>
 
         {/* Right actions */}
@@ -226,12 +163,8 @@ export function LandingSiteHeader() {
           >
             {pt ? "EN" : "PT"}
           </button>
-          {user ? (
-            <Link to={isAdmin ? "/admin" : "/dashboard"} className="l-hero-btn">
-              {isAdmin ? "Admin" : pt ? "Painel" : "Dashboard"}
-            </Link>
-          ) : (
-            <Link to="/auth" className="l-hero-btn">
+          {!user && (
+            <Link to="/auth" className="lewc-hero-primary l-header-cta">
               <span className="l-hero-btn-text">{pt ? "Começar agora" : "Start now"}</span>
             </Link>
           )}
@@ -288,16 +221,6 @@ export function LandingSiteHeader() {
               </div>
             ))}
           </nav>
-          <div className="l-mmenu-more">
-            <span className="l-mmenu-more-label">{pt ? "Explorar" : "Explore"}</span>
-            <div className="l-mmenu-more-grid">
-              {moreLinks.map((l) => (
-                <Link key={l.to} to={l.to} onClick={close} className="l-mmenu-more-link">
-                  {pt ? l.labelPt : l.labelEn}
-                </Link>
-              ))}
-            </div>
-          </div>
           <div className="l-mmenu-foot">
             <button
               onClick={() => setLocale(pt ? "en" : "pt")}
@@ -306,21 +229,11 @@ export function LandingSiteHeader() {
             >
               {pt ? "EN" : "PT"}
             </button>
-            {user ? (
-              <Link to={isAdmin ? "/admin" : "/dashboard"} onClick={close} className="l-mmenu-cta">
-                {isAdmin ? "Admin" : pt ? "Painel" : "Dashboard"}
+            {!user && (
+              <Link to="/auth" onClick={close} className="lewc-hero-primary l-mobile-cta">
+                {pt ? "Começar agora" : "Start now"}
                 <ArrowUpRight size={16} />
               </Link>
-            ) : (
-              <>
-                <Link to="/auth" onClick={close} className="l-mmenu-cta">
-                  {pt ? "Começar grátis" : "Start for free"}
-                  <ArrowUpRight size={16} />
-                </Link>
-                <Link to="/auth" onClick={close} className="l-mmenu-cta l-mmenu-cta--ghost">
-                  {pt ? "Entrar" : "Sign in"}
-                </Link>
-              </>
             )}
           </div>
         </div>
