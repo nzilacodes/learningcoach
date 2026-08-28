@@ -3,26 +3,19 @@ import {
   ArrowRight,
   Sparkles,
   Mic,
-  Gamepad2,
-  Award,
   Users,
-  Play,
   BookOpen,
   Headphones,
   PenTool,
-  Trophy,
   Target,
   BarChart3,
-  MessageCircle,
   Brain,
   Volume2,
-  Star,
 } from "lucide-react";
 import { LandingSiteHeader } from "@/components/landing-site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { useLandingAnimations } from "@/hooks/use-landing-animations";
 import { useLocale } from "@/lib/i18n";
-import { useCurriculum } from "@/lib/learning";
 import lewcHeroIllustration from "@/assets/lewc-hero-illustration-friendly-right-with-phrases.png";
 import "../styles/landing-hero.css";
 import "../styles/landing-stats.css";
@@ -61,33 +54,31 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-const features = [
+const stats = [
   {
-    icon: Brain,
-    name: "AI English Coach",
-    desc: "Assistente 24/7 que corrige, sugere e conversa contigo.",
+    icon: Users,
+    value: "20,000+",
+    label: "Active Students",
+    target: 20000,
+    suffix: "+",
+    decimals: 0,
+  },
+  {
+    icon: BarChart3,
+    value: "95%",
+    label: "Course Completion",
+    target: 95,
+    suffix: "%",
+    decimals: 0,
   },
   {
     icon: BookOpen,
-    name: "Interactive Lessons",
-    desc: "Aulas dinâmicas com vídeo, texto e prática.",
+    value: "120+",
+    label: "Interactive Lessons",
+    target: 120,
+    suffix: "+",
+    decimals: 0,
   },
-  { icon: Mic, name: "IPA Pronunciation", desc: "Feedback fonético preciso em cada sílaba." },
-  { icon: MessageCircle, name: "Speaking Practice", desc: "Sala de conversa com IA e nativos." },
-  { icon: Headphones, name: "Listening Practice", desc: "Áudios reais em vários sotaques." },
-  { icon: Sparkles, name: "Vocabulary Builder", desc: "Memorização por repetição espaçada." },
-  { icon: PenTool, name: "Grammar & Writing", desc: "Regras claras, exercícios instantâneos." },
-  { icon: Gamepad2, name: "Games & Quizzes", desc: "Aprenda enquanto joga." },
-  { icon: BarChart3, name: "Progress Tracking", desc: "Métricas por skill, nível e streak." },
-  { icon: Award, name: "Certificates", desc: "Diploma CEFR com QR de validação." },
-  { icon: Trophy, name: "Leaderboard", desc: "Rankings mundial, nacional e amigos." },
-  { icon: Users, name: "Community", desc: "Aprenda com estudantes de todo o mundo." },
-];
-
-const stats = [
-  { icon: Users, value: "20,000+", label: "Active Students", target: 20000, suffix: "+", decimals: 0 },
-  { icon: BarChart3, value: "95%", label: "Course Completion", target: 95, suffix: "%", decimals: 0 },
-  { icon: BookOpen, value: "120+", label: "Interactive Lessons", target: 120, suffix: "+", decimals: 0 },
   { icon: Mic, value: "50+", label: "Speaking Challenges", target: 50, suffix: "+", decimals: 0 },
   { icon: Target, value: "A1–C2", label: "Complete Levels" },
 ];
@@ -106,14 +97,6 @@ const toolkitFeatures = [
 function LandingPage() {
   const root = useLandingAnimations();
   const { locale } = useLocale();
-  const { data: curriculum } = useCurriculum();
-  const demoCourse = curriculum?.courses.slice().sort((a, b) => a.order_index - b.order_index)[0];
-  const demoUnit = curriculum?.units
-    .filter((u) => u.course_id === demoCourse?.id)
-    .sort((a, b) => a.order_index - b.order_index)[0];
-  const demoLesson = curriculum?.lessons
-    .filter((l) => l.unit_id === demoUnit?.id)
-    .sort((a, b) => a.order_index - b.order_index)[0];
   return (
     <div ref={root} className="min-h-screen bg-marketing-surface text-marketing-ink">
       <LandingSiteHeader />
@@ -130,8 +113,12 @@ function LandingPage() {
           <div className="lewc-hero-copy">
             <h1 data-anim="hero-line" className="lewc-hero-title">
               <span>Learn English Faster.</span>
-              <span><em>Speak</em> With Confidence.</span>
-              <span>Learn With <em>Coach</em></span>
+              <span>
+                <em>Speak</em> With Confidence.
+              </span>
+              <span>
+                Learn With <em>Coach</em>
+              </span>
             </h1>
             <p data-anim="hero-copy" className="lewc-hero-description">
               {locale === "pt"
@@ -154,7 +141,9 @@ function LandingPage() {
             const Icon = s.icon;
             return (
               <article key={s.label} className="lewc-stat-card">
-                <div className="lewc-stat-icon" aria-hidden="true"><Icon /></div>
+                <div className="lewc-stat-icon" aria-hidden="true">
+                  <Icon />
+                </div>
                 <div className="lewc-stat-value">{s.value}</div>
                 <div className="lewc-stat-label">{s.label}</div>
               </article>
@@ -164,9 +153,7 @@ function LandingPage() {
       </section>
 
       {/* PINNED CONTAINER — Choose Your Path + Toolkit */}
-      <div
-        className="relative min-h-screen overflow-visible"
-      >
+      <div className="relative min-h-screen overflow-visible">
         {/* SECTION 1: Choose Your Path */}
         <section data-anim="age-panels-section" className="lewc-path-section">
           <div className="lewc-path-decoration lewc-path-decoration-left" aria-hidden="true" />
@@ -175,7 +162,9 @@ function LandingPage() {
             <header className="lewc-path-header">
               <h2>Choose Your Path</h2>
               <p>Personalized English learning for every age and goal.</p>
-              <div className="lewc-path-rule" aria-hidden="true"><span /></div>
+              <div className="lewc-path-rule" aria-hidden="true">
+                <span />
+              </div>
             </header>
 
             <div className="lewc-path-grid">
@@ -209,7 +198,9 @@ function LandingPage() {
           <div className="lewc-toolkit-shell">
             <header className="lewc-toolkit-header">
               <p className="lewc-toolkit-eyebrow">Everything you need</p>
-              <h2 className="lewc-toolkit-heading">The complete toolkit of Learning English with Coach</h2>
+              <h2 className="lewc-toolkit-heading">
+                The complete toolkit of Learning English with Coach
+              </h2>
             </header>
 
             <div className="lewc-toolkit-stage">
@@ -252,10 +243,15 @@ function LandingPage() {
           <header className="lewc-cefr-intro">
             <p className="lewc-cefr-eyebrow">CEFR Aligned</p>
             <h2 className="lewc-cefr-heading">From first words to full fluency.</h2>
-            <p className="lewc-cefr-intro-copy">Cada nível concluído gera um certificado LEWC oficial.</p>
+            <p className="lewc-cefr-intro-copy">
+              Cada nível concluído gera um certificado LEWC oficial.
+            </p>
           </header>
 
-          <div className="lewc-cefr-learning-map" aria-label="Progressão dos níveis CEFR de A1 a C2">
+          <div
+            className="lewc-cefr-learning-map"
+            aria-label="Progressão dos níveis CEFR de A1 a C2"
+          >
             <div className="lewc-cefr-orbit" aria-hidden="true" />
             <div className="lewc-cefr-levels">
               <div className="lewc-cefr-level">
@@ -295,7 +291,9 @@ function LandingPage() {
               <span className="lewc-cefr-book-word lewc-cefr-book-word-left">Learn</span>
               <span className="lewc-cefr-book-word lewc-cefr-book-word-right">Speak</span>
             </div>
-            <div className="lewc-cefr-certificate" aria-label="Certificado LEWC">✓</div>
+            <div className="lewc-cefr-certificate" aria-label="Certificado LEWC">
+              ✓
+            </div>
           </div>
         </div>
       </section>
@@ -340,12 +338,17 @@ function LandingPage() {
                 </div>
               </div>
               <div className="lewc-results-quote">
-                <div className="lewc-results-quote-mark" aria-hidden="true">“</div>
+                <div className="lewc-results-quote-mark" aria-hidden="true">
+                  “
+                </div>
                 <p className="lewc-results-quote-text">
-                  LEWC transformou a minha forma de comunicar. Já não sobrevivo às reuniões em inglês — eu lidero-as.
+                  LEWC transformou a minha forma de comunicar. Já não sobrevivo às reuniões em
+                  inglês — eu lidero-as.
                 </p>
                 <div className="lewc-results-person">
-                  <div className="lewc-results-avatar" aria-hidden="true">SJ</div>
+                  <div className="lewc-results-avatar" aria-hidden="true">
+                    SJ
+                  </div>
                   <div>
                     <div className="lewc-results-person-name">Sarah Jenkins</div>
                     <div className="lewc-results-person-role">Marketing Director</div>
@@ -355,7 +358,9 @@ function LandingPage() {
             </div>
             <div className="lewc-results-proof-foot">
               <span>From learning to leading</span>
-              <span><strong>Verified student story</strong></span>
+              <span>
+                <strong>Verified student story</strong>
+              </span>
             </div>
           </div>
         </div>
@@ -372,24 +377,35 @@ function LandingPage() {
                 <span className="lewc-final-cta-heading-accent">Journey Today</span>
               </h2>
               <p className="lewc-final-cta-description">
-                Junta-te a milhares de estudantes que já falam com confiança. Começa grátis, sem cartão.
+                Junta-te a milhares de estudantes que já falam com confiança. Começa grátis, sem
+                cartão.
               </p>
               <div className="lewc-final-cta-actions">
                 <Link to="/auth" className="lewc-final-cta-button lewc-final-cta-button-primary">
                   {locale === "pt" ? "Começar grátis" : "Start for free"}
                   <ArrowRight aria-hidden="true" />
                 </Link>
-                <Link to="/pricing" className="lewc-final-cta-button lewc-final-cta-button-secondary">
+                <Link
+                  to="/pricing"
+                  className="lewc-final-cta-button lewc-final-cta-button-secondary"
+                >
                   {locale === "pt" ? "Ver planos" : "View plans"}
                   <ArrowRight aria-hidden="true" />
                 </Link>
               </div>
             </div>
 
-            <div className="lewc-final-cta-visual" aria-label="English learning journey from A1 to C2">
+            <div
+              className="lewc-final-cta-visual"
+              aria-label="English learning journey from A1 to C2"
+            >
               <div className="lewc-final-cta-visual-halo" aria-hidden="true" />
-              <div className="lewc-final-cta-float lewc-final-cta-float-start" aria-hidden="true">Keep moving</div>
-              <div className="lewc-final-cta-float lewc-final-cta-float-voice" aria-hidden="true">Find your voice</div>
+              <div className="lewc-final-cta-float lewc-final-cta-float-start" aria-hidden="true">
+                Keep moving
+              </div>
+              <div className="lewc-final-cta-float lewc-final-cta-float-voice" aria-hidden="true">
+                Find your voice
+              </div>
               <div className="lewc-final-cta-ticket">
                 <div className="lewc-final-cta-ticket-main">
                   <div className="lewc-final-cta-ticket-kicker">Your English journey</div>
@@ -398,10 +414,18 @@ function LandingPage() {
                     A little progress becomes a confident voice.
                   </p>
                   <div className="lewc-final-cta-ticket-progress" aria-hidden="true">
-                    <span /><i /><span /><i /><span /><i /><span />
+                    <span />
+                    <i />
+                    <span />
+                    <i />
+                    <span />
+                    <i />
+                    <span />
                   </div>
                   <div className="lewc-final-cta-ticket-steps" aria-hidden="true">
-                    <span>Learn</span><span>Practise</span><span>Speak</span>
+                    <span>Learn</span>
+                    <span>Practise</span>
+                    <span>Speak</span>
                   </div>
                 </div>
                 <div className="lewc-final-cta-ticket-side">
@@ -416,7 +440,9 @@ function LandingPage() {
             </div>
           </div>
           <div className="lewc-final-cta-footer">
-            <span><strong>One step at a time.</strong> · Learn at your pace</span>
+            <span>
+              <strong>One step at a time.</strong> · Learn at your pace
+            </span>
             <span>Your voice is waiting.</span>
           </div>
         </div>
@@ -429,15 +455,13 @@ function LandingPage() {
   );
 }
 
-function ToolkitCard({
-  feature,
-}: {
-  feature: (typeof toolkitFeatures)[number];
-}) {
+function ToolkitCard({ feature }: { feature: (typeof toolkitFeatures)[number] }) {
   const Icon = feature.icon;
   return (
     <article className="lewc-toolkit-card">
-      <div className="lewc-toolkit-card-icon" aria-hidden="true"><Icon /></div>
+      <div className="lewc-toolkit-card-icon" aria-hidden="true">
+        <Icon />
+      </div>
       <div className="lewc-toolkit-card-copy">
         <h3 className="lewc-toolkit-card-title">{feature.name}</h3>
         <p className="lewc-toolkit-card-description">{feature.desc}</p>
@@ -470,24 +494,54 @@ function ToolkitFlows() {
   ];
   return (
     <>
-      <svg className="lewc-toolkit-flows is-desktop" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">
+      <svg
+        className="lewc-toolkit-flows is-desktop"
+        viewBox="0 0 1000 620"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
         {desktopPaths.map((path, index) => (
           <g key={path}>
             <path className="lewc-toolkit-flow-path" d={path} />
-            <circle className="lewc-toolkit-flow-node" cx={index < 4 ? 386 : 614} cy={127 + (index % 4) * 122} r="5" />
+            <circle
+              className="lewc-toolkit-flow-node"
+              cx={index < 4 ? 386 : 614}
+              cy={127 + (index % 4) * 122}
+              r="5"
+            />
             <circle className="lewc-toolkit-flow-pulse" r="4">
-              <animateMotion dur={`${2.4 + (index % 3) * .25}s`} begin={`${index * .17}s`} repeatCount="indefinite" path={path} />
+              <animateMotion
+                dur={`${2.4 + (index % 3) * 0.25}s`}
+                begin={`${index * 0.17}s`}
+                repeatCount="indefinite"
+                path={path}
+              />
             </circle>
           </g>
         ))}
       </svg>
-      <svg className="lewc-toolkit-flows is-mobile" viewBox="0 0 390 740" preserveAspectRatio="none" aria-hidden="true">
+      <svg
+        className="lewc-toolkit-flows is-mobile"
+        viewBox="0 0 390 740"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
         {mobilePaths.map((path, index) => (
           <g key={path}>
             <path className="lewc-toolkit-flow-path" d={path} />
-            <circle className="lewc-toolkit-flow-node" cx={index % 2 === 0 ? 146 : 244} cy={index < 4 ? 216 : 514} r="5" />
+            <circle
+              className="lewc-toolkit-flow-node"
+              cx={index % 2 === 0 ? 146 : 244}
+              cy={index < 4 ? 216 : 514}
+              r="5"
+            />
             <circle className="lewc-toolkit-flow-pulse" r="4">
-              <animateMotion dur={`${2.1 + (index % 3) * .2}s`} begin={`${index * .12}s`} repeatCount="indefinite" path={path} />
+              <animateMotion
+                dur={`${2.1 + (index % 3) * 0.2}s`}
+                begin={`${index * 0.12}s`}
+                repeatCount="indefinite"
+                path={path}
+              />
             </circle>
           </g>
         ))}

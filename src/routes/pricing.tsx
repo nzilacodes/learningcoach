@@ -165,7 +165,10 @@ function PricingPage() {
       <LandingSiteHeader />
       <main className="lewc-pricing-page">
         <div className="lewc-pricing-content">
-          <section className="lewc-pricing-billing" aria-label={locale === "pt" ? "Ciclo de pagamento" : "Payment cycle"}>
+          <section
+            className="lewc-pricing-billing"
+            aria-label={locale === "pt" ? "Ciclo de pagamento" : "Payment cycle"}
+          >
             <div className="lewc-pricing-toggle" role="group">
               {(["monthly", "quarterly", "semiannual"] as Cycle[]).map((option) => {
                 const active = cycle === option;
@@ -207,17 +210,16 @@ function PricingPage() {
                 : "Plans are unavailable right now."}
             </div>
           ) : (
-            <section className="lewc-pricing-grid" aria-label={locale === "pt" ? "Planos disponíveis" : "Available plans"}>
+            <section
+              className="lewc-pricing-grid"
+              aria-label={locale === "pt" ? "Planos disponíveis" : "Available plans"}
+            >
               {filtered.map((plan, index) => {
                 const meta = TIER_META[plan.tier];
                 const Icon = meta.icon;
                 const featured = plan.tier === "premium";
                 const iconClass =
-                  plan.tier === "premium"
-                    ? "is-premium"
-                    : plan.tier === "vip"
-                      ? "is-vip"
-                      : "";
+                  plan.tier === "premium" ? "is-premium" : plan.tier === "vip" ? "is-vip" : "";
 
                 return (
                   <article
@@ -257,7 +259,10 @@ function PricingPage() {
 
                     <ul className="lewc-pricing-card-features">
                       {plan.features.map((feature, featureIndex) => (
-                        <li className="lewc-pricing-card-feature" key={`${plan.id}-feature-${featureIndex}`}>
+                        <li
+                          className="lewc-pricing-card-feature"
+                          key={`${plan.id}-feature-${featureIndex}`}
+                        >
                           <Check size={14} strokeWidth={2.4} aria-hidden="true" />
                           <span>{feature}</span>
                         </li>
@@ -266,7 +271,8 @@ function PricingPage() {
                         <li className="lewc-pricing-card-feature">
                           <Check size={14} strokeWidth={2.4} aria-hidden="true" />
                           <span>
-                            {plan.call_minutes} min {locale === "pt" ? "com o professor" : "with the teacher"}
+                            {plan.call_minutes} min{" "}
+                            {locale === "pt" ? "com o professor" : "with the teacher"}
                           </span>
                         </li>
                       )}
@@ -277,7 +283,8 @@ function PricingPage() {
                       className="lewc-pricing-card-cta"
                       onClick={() => handleSubscribe(plan)}
                     >
-                      {locale === "pt" ? "Assinar agora" : "Subscribe now"} <span aria-hidden="true">→</span>
+                      {locale === "pt" ? "Assinar agora" : "Subscribe now"}{" "}
+                      <span aria-hidden="true">→</span>
                     </button>
                   </article>
                 );

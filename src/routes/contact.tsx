@@ -4,7 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LandingSiteHeader } from "@/components/landing-site-header";
@@ -38,7 +45,8 @@ export const Route = createFileRoute("/contact")({
       { title: "Contacto — Learning English with Coach" },
       {
         name: "description",
-        content: "Fale com a equipa da LEWC. Suporte, parcerias e dúvidas sobre planos de inglês do A1 ao C2.",
+        content:
+          "Fale com a equipa da LEWC. Suporte, parcerias e dúvidas sobre planos de inglês do A1 ao C2.",
       },
       { property: "og:title", content: "Contacto — Learning English with Coach" },
       { property: "og:description", content: "Envie a sua mensagem. Respondemos em menos de 24h." },
@@ -83,7 +91,9 @@ function ContactPage() {
         }),
       });
       form.reset();
-      notify.success(pt ? "Mensagem enviada! Respondemos em breve." : "Message sent! We'll reply soon.");
+      notify.success(
+        pt ? "Mensagem enviada! Respondemos em breve." : "Message sent! We'll reply soon.",
+      );
     } catch (err) {
       const normalized = notify.fromError(err, { dedupeKey: "contact:submit" });
       normalized.fieldPaths?.forEach((path) => {
@@ -185,7 +195,9 @@ function ContactPage() {
                 </a>
               </div>
               <div className="lewc-contact-channel">
-                <div className="lewc-contact-channel-label">{pt ? "Telefone / WhatsApp" : "Phone / WhatsApp"}</div>
+                <div className="lewc-contact-channel-label">
+                  {pt ? "Telefone / WhatsApp" : "Phone / WhatsApp"}
+                </div>
                 <a className="lewc-contact-channel-value" href="https://wa.me/244929193415">
                   +244 929 193 415
                 </a>
@@ -219,7 +231,12 @@ function ContactPage() {
                     <FormItem className="lewc-contact-field">
                       <FormLabel>{pt ? "Nome" : "Name"} *</FormLabel>
                       <FormControl>
-                        <Input className="lewc-contact-input" autoComplete="name" placeholder={pt ? "O seu nome" : "Your name"} {...field} />
+                        <Input
+                          className="lewc-contact-input"
+                          autoComplete="name"
+                          placeholder={pt ? "O seu nome" : "Your name"}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -232,7 +249,13 @@ function ContactPage() {
                     <FormItem className="lewc-contact-field">
                       <FormLabel>E-mail *</FormLabel>
                       <FormControl>
-                        <Input className="lewc-contact-input" type="email" autoComplete="email" placeholder="o.seu@email.com" {...field} />
+                        <Input
+                          className="lewc-contact-input"
+                          type="email"
+                          autoComplete="email"
+                          placeholder="o.seu@email.com"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -245,7 +268,11 @@ function ContactPage() {
                     <FormItem className="lewc-contact-field full">
                       <FormLabel>{pt ? "Assunto" : "Subject"}</FormLabel>
                       <FormControl>
-                        <Input className="lewc-contact-input" placeholder={pt ? "Como podemos ajudar?" : "How can we help?"} {...field} />
+                        <Input
+                          className="lewc-contact-input"
+                          placeholder={pt ? "Como podemos ajudar?" : "How can we help?"}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -258,7 +285,12 @@ function ContactPage() {
                     <FormItem className="lewc-contact-field full">
                       <FormLabel>{pt ? "Mensagem" : "Message"} *</FormLabel>
                       <FormControl>
-                        <Textarea className="lewc-contact-textarea" rows={6} placeholder={pt ? "Escreva a sua mensagem..." : "Write your message..."} {...field} />
+                        <Textarea
+                          className="lewc-contact-textarea"
+                          rows={6}
+                          placeholder={pt ? "Escreva a sua mensagem..." : "Write your message..."}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -270,7 +302,9 @@ function ContactPage() {
                     {pt ? "Enviar mensagem" : "Send message"}
                   </button>
                   <p className="lewc-contact-help">
-                    {pt ? "Os campos com * são obrigatórios. Respondemos em menos de 24 horas." : "Fields marked * are required. We reply within 24 hours."}
+                    {pt
+                      ? "Os campos com * são obrigatórios. Respondemos em menos de 24 horas."
+                      : "Fields marked * are required. We reply within 24 hours."}
                   </p>
                 </div>
               </form>
@@ -290,7 +324,10 @@ function ContactPage() {
             {faqItems.map((item, index) => {
               const isOpen = openFaq === index;
               return (
-                <article className={`lewc-contact-faq-item${isOpen ? " is-open" : ""}`} key={item.question}>
+                <article
+                  className={`lewc-contact-faq-item${isOpen ? " is-open" : ""}`}
+                  key={item.question}
+                >
                   <button
                     type="button"
                     className="lewc-contact-faq-question lewc-contact-focus"

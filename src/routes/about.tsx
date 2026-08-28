@@ -92,14 +92,26 @@ function AboutPage() {
   const principles = pt
     ? [
         ["Método CEFR", "Do A1 ao C2, com progresso mensurável e certificados oficiais."],
-        ["IA que ensina", "AI Coach 24/7 para conversação, correção de pronúncia e feedback imediato."],
-        ["Feito para cada idade", "Ambientes Kids, Teens e Adults com ritmo, cores e conteúdo próprios."],
+        [
+          "IA que ensina",
+          "AI Coach 24/7 para conversação, correção de pronúncia e feedback imediato.",
+        ],
+        [
+          "Feito para cada idade",
+          "Ambientes Kids, Teens e Adults com ritmo, cores e conteúdo próprios.",
+        ],
         ["Acesso global", "Disponível em qualquer dispositivo, com foco mobile-first."],
       ]
     : [
         ["CEFR method", "From A1 to C2, with measurable progress and official certificates."],
-        ["AI that teaches", "24/7 AI Coach for conversation, pronunciation correction and instant feedback."],
-        ["Built for every age", "Kids, Teens and Adults environments with their own pace, colors and content."],
+        [
+          "AI that teaches",
+          "24/7 AI Coach for conversation, pronunciation correction and instant feedback.",
+        ],
+        [
+          "Built for every age",
+          "Kids, Teens and Adults environments with their own pace, colors and content.",
+        ],
         ["Global access", "Available on any device, mobile-first by design."],
       ];
 
@@ -155,7 +167,6 @@ function AboutPage() {
           <div className="lewc-about-principles-inner">
             <div className="lewc-about-principles-head">
               <div>
-                
                 <h2>
                   {pt ? "O que nos " : "What "}
                   <span>{pt ? "move" : "drives us"}</span>
@@ -189,7 +200,10 @@ function AboutPage() {
             {faqItems.map((item, index) => {
               const isOpen = openFaq === index;
               return (
-                <article className={`lewc-about-faq-item${isOpen ? " is-open" : ""}`} key={item.question}>
+                <article
+                  className={`lewc-about-faq-item${isOpen ? " is-open" : ""}`}
+                  key={item.question}
+                >
                   <button
                     type="button"
                     className="lewc-about-faq-question lewc-about-focus"

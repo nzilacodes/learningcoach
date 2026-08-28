@@ -50,7 +50,10 @@ function AuthPage() {
 
   return (
     <main className="lewc-auth-shell">
-      <section className="lewc-auth-story" aria-label={locale === "pt" ? "A tua jornada" : "Your journey"}>
+      <section
+        className="lewc-auth-story"
+        aria-label={locale === "pt" ? "A tua jornada" : "Your journey"}
+      >
         <div className="lewc-auth-story-inner">
           <div className="lewc-auth-kicker">
             {locale === "pt" ? "O teu espaço de aprendizagem" : "Your learning space"}
@@ -101,10 +104,18 @@ function AuthPage() {
             <span>LEWC</span>
           </Link>
           <div className="lewc-auth-languages" aria-label="Language">
-            <button className={locale === "pt" ? "active" : ""} onClick={() => setLocale("pt")} type="button">
+            <button
+              className={locale === "pt" ? "active" : ""}
+              onClick={() => setLocale("pt")}
+              type="button"
+            >
               PT
             </button>
-            <button className={locale === "en" ? "active" : ""} onClick={() => setLocale("en")} type="button">
+            <button
+              className={locale === "en" ? "active" : ""}
+              onClick={() => setLocale("en")}
+              type="button"
+            >
               EN
             </button>
           </div>
@@ -268,11 +279,23 @@ function signUpSchema(locale: "pt" | "en") {
       fullName: z
         .string()
         .trim()
-        .min(3, locale === "pt" ? "O nome precisa de pelo menos 3 caracteres" : "Name must be at least 3 characters")
-        .max(30, locale === "pt" ? "O nome pode ter no máximo 30 caracteres" : "Name must be at most 30 characters")
+        .min(
+          3,
+          locale === "pt"
+            ? "O nome precisa de pelo menos 3 caracteres"
+            : "Name must be at least 3 characters",
+        )
+        .max(
+          30,
+          locale === "pt"
+            ? "O nome pode ter no máximo 30 caracteres"
+            : "Name must be at most 30 characters",
+        )
         .regex(
           /^[\p{L}]+(?:[ '-][\p{L}]+)*$/u,
-          locale === "pt" ? "O nome contém caracteres inválidos" : "Name contains invalid characters",
+          locale === "pt"
+            ? "O nome contém caracteres inválidos"
+            : "Name contains invalid characters",
         ),
       email: z
         .string()
@@ -280,10 +303,26 @@ function signUpSchema(locale: "pt" | "en") {
         .email(locale === "pt" ? "Email inválido" : "Invalid email"),
       password: z
         .string()
-        .min(8, locale === "pt" ? "A senha precisa de pelo menos 8 caracteres" : "Password needs at least 8 characters")
-        .regex(/[A-Z]/, locale === "pt" ? "A senha precisa de uma letra maiúscula" : "Password needs an uppercase letter")
-        .regex(/[0-9]/, locale === "pt" ? "A senha precisa de um número" : "Password needs a number")
-        .regex(/[^A-Za-z0-9]/, locale === "pt" ? "A senha precisa de um símbolo" : "Password needs a symbol"),
+        .min(
+          8,
+          locale === "pt"
+            ? "A senha precisa de pelo menos 8 caracteres"
+            : "Password needs at least 8 characters",
+        )
+        .regex(
+          /[A-Z]/,
+          locale === "pt"
+            ? "A senha precisa de uma letra maiúscula"
+            : "Password needs an uppercase letter",
+        )
+        .regex(
+          /[0-9]/,
+          locale === "pt" ? "A senha precisa de um número" : "Password needs a number",
+        )
+        .regex(
+          /[^A-Za-z0-9]/,
+          locale === "pt" ? "A senha precisa de um símbolo" : "Password needs a symbol",
+        ),
       confirm: z.string(),
       terms: z.boolean(),
       privacy: z.boolean(),
@@ -355,7 +394,12 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
                 {locale === "pt" ? "Nome completo" : "Full name"}
               </FormLabel>
               <FormControl>
-                <Input autoComplete="name" placeholder="Maria Silva" className="lewc-auth-input" {...field} />
+                <Input
+                  autoComplete="name"
+                  placeholder="Maria Silva"
+                  className="lewc-auth-input"
+                  {...field}
+                />
               </FormControl>
               <FormMessage className="lewc-auth-message" />
             </FormItem>
@@ -433,7 +477,9 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
                 <FormControl>
                   <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
-                <span>{locale === "pt" ? "Aceito os Termos de Utilização" : "I accept the Terms of Use"}</span>
+                <span>
+                  {locale === "pt" ? "Aceito os Termos de Utilização" : "I accept the Terms of Use"}
+                </span>
               </label>
               <FormMessage className="lewc-auth-message" />
             </FormItem>
@@ -449,14 +495,22 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
                   <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <span>
-                  {locale === "pt" ? "Aceito a Política de Privacidade" : "I accept the Privacy Policy"}
+                  {locale === "pt"
+                    ? "Aceito a Política de Privacidade"
+                    : "I accept the Privacy Policy"}
                 </span>
               </label>
             </FormItem>
           )}
         />
         <Button type="submit" disabled={loading} size="lg" className="lewc-auth-primary">
-          {loading ? <Loader2 className="animate-spin" /> : locale === "pt" ? "Criar conta" : "Create account"}
+          {loading ? (
+            <Loader2 className="animate-spin" />
+          ) : locale === "pt" ? (
+            "Criar conta"
+          ) : (
+            "Create account"
+          )}
         </Button>
       </form>
     </Form>
@@ -505,7 +559,9 @@ function ForgotForm({ onBack }: { onBack: () => void }) {
   return (
     <Form {...form}>
       <form onSubmit={submit} className="lewc-auth-form">
-        <h3 className="lewc-auth-forgot-title">{locale === "pt" ? "Recuperar senha" : "Reset password"}</h3>
+        <h3 className="lewc-auth-forgot-title">
+          {locale === "pt" ? "Recuperar senha" : "Reset password"}
+        </h3>
         <p className="lewc-auth-forgot-copy">
           {locale === "pt"
             ? "Enviaremos um link seguro para o seu email."
@@ -518,14 +574,26 @@ function ForgotForm({ onBack }: { onBack: () => void }) {
             <FormItem className="lewc-auth-form-item">
               <FormLabel className="lewc-auth-form-label">Email</FormLabel>
               <FormControl>
-                <Input type="email" autoComplete="email" placeholder="you@email.com" className="lewc-auth-input" {...field} />
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@email.com"
+                  className="lewc-auth-input"
+                  {...field}
+                />
               </FormControl>
               <FormMessage className="lewc-auth-message" />
             </FormItem>
           )}
         />
         <Button type="submit" disabled={loading} className="lewc-auth-primary">
-          {loading ? <Loader2 className="mx-auto animate-spin" /> : locale === "pt" ? "Enviar link" : "Send link"}
+          {loading ? (
+            <Loader2 className="mx-auto animate-spin" />
+          ) : locale === "pt" ? (
+            "Enviar link"
+          ) : (
+            "Send link"
+          )}
         </Button>
         <button type="button" onClick={onBack} className="lewc-auth-back">
           {locale === "pt" ? "← Voltar" : "← Back"}
