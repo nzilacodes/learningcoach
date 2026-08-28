@@ -1,5 +1,5 @@
-import { Sparkles } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
+import coachLogo from "@/assets/coach-logo.png";
 
 export function SiteFooter() {
   const { t } = useLocale();
@@ -8,9 +8,11 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-sunset flex h-10 w-10 items-center justify-center rounded-xl shadow-soft">
-              <Sparkles className="h-5 w-5 text-white" />
-            </div>
+            <img
+              src={coachLogo}
+              alt="LEWC"
+              className="h-10 w-10 rounded-xl object-contain shadow-soft"
+            />
             <div>
               <div className="font-display font-bold">Learning English with Coach</div>
               <div className="text-sm text-muted-foreground">{t("footer.tag")}</div>

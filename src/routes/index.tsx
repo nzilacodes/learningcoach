@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { LandingSiteHeader } from "@/components/landing-site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { useLandingAnimations } from "@/hooks/use-landing-animations";
 import { useLocale } from "@/lib/i18n";
 import lewcHeroIllustration from "@/assets/lewc-hero-illustration-friendly-right-with-phrases.png";
 import "../styles/landing-hero.css";
@@ -95,10 +94,9 @@ const toolkitFeatures = [
 ];
 
 function LandingPage() {
-  const root = useLandingAnimations();
   const { locale } = useLocale();
   return (
-    <div ref={root} className="min-h-screen bg-marketing-surface text-marketing-ink">
+    <div className="min-h-screen bg-marketing-surface text-marketing-ink">
       <LandingSiteHeader />
 
       {/* HERO — conteúdo editorial à esquerda, ilustração de aprendizagem à direita */}
