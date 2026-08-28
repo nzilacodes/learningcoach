@@ -129,9 +129,11 @@ function refreshSession(): Promise<boolean> {
             doRefreshRequest(),
           )
         : doRefreshRequest();
-    refreshInFlight = attempt.catch(() => false).finally(() => {
-      refreshInFlight = null;
-    });
+    refreshInFlight = attempt
+      .catch(() => false)
+      .finally(() => {
+        refreshInFlight = null;
+      });
   }
   return refreshInFlight;
 }

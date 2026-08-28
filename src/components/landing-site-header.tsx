@@ -43,10 +43,8 @@ export function LandingSiteHeader() {
     if (!header) return;
 
     const HEADER_H = 80; // px — deve coincidir com o CSS
-    let currentTheme = "light";
 
     const apply = (theme: string) => {
-      currentTheme = theme;
       header.setAttribute("data-theme", theme);
     };
 
@@ -131,13 +129,27 @@ export function LandingSiteHeader() {
   };
   const pt = locale === "pt";
 
-  const navLinks = [
+  type HeaderRoute =
+    | "/pricing"
+    | "/about"
+    | "/contact"
+    | "/dashboard"
+    | "/curriculum"
+    | "/videos"
+    | "/pronunciation"
+    | "/reading"
+    | "/ai-coach"
+    | "/games"
+    | "/rewards"
+    | "/community";
+
+  const navLinks: { to: HeaderRoute; labelPt: string; labelEn: string }[] = [
     { to: "/pricing", labelPt: "Preços", labelEn: "Pricing" },
     { to: "/about", labelPt: "Sobre", labelEn: "About" },
     { to: "/contact", labelPt: "Contacto", labelEn: "Contact" },
   ];
 
-  const moreLinks = [
+  const moreLinks: { to: HeaderRoute; labelPt: string; labelEn: string }[] = [
     { to: "/dashboard", labelPt: "Painel", labelEn: "Dashboard" },
     { to: "/curriculum", labelPt: "Currículo", labelEn: "Curriculum" },
     { to: "/videos", labelPt: "Vídeos", labelEn: "Videos" },
@@ -169,7 +181,7 @@ export function LandingSiteHeader() {
         {/* Desktop nav */}
         <nav className="l-nav" aria-label="Main navigation">
           {navLinks.map((l) => (
-            <Link key={l.to} to={l.to as any}>
+            <Link key={l.to} to={l.to}>
               {pt ? l.labelPt : l.labelEn}
             </Link>
           ))}
@@ -193,7 +205,7 @@ export function LandingSiteHeader() {
             {moreOpen && (
               <div className="l-dropdown">
                 {moreLinks.map((l) => (
-                  <Link key={l.to} to={l.to as any} onClick={close} className="l-dropdown-link">
+                  <Link key={l.to} to={l.to} onClick={close} className="l-dropdown-link">
                     {pt ? l.labelPt : l.labelEn}
                   </Link>
                 ))}
@@ -267,7 +279,7 @@ export function LandingSiteHeader() {
           <nav className="l-mmenu-nav" aria-label="Mobile navigation">
             {navLinks.map((l, i) => (
               <div className="l-mmenu-li" key={l.to} style={{ "--i": i } as React.CSSProperties}>
-                <Link to={l.to as any} onClick={close} className="l-mmenu-link">
+                <Link to={l.to} onClick={close} className="l-mmenu-link">
                   <span className="l-mmenu-link-i">
                     <b>0{i + 1}</b>
                     {pt ? l.labelPt : l.labelEn}
@@ -280,7 +292,7 @@ export function LandingSiteHeader() {
             <span className="l-mmenu-more-label">{pt ? "Explorar" : "Explore"}</span>
             <div className="l-mmenu-more-grid">
               {moreLinks.map((l) => (
-                <Link key={l.to} to={l.to as any} onClick={close} className="l-mmenu-more-link">
+                <Link key={l.to} to={l.to} onClick={close} className="l-mmenu-more-link">
                   {pt ? l.labelPt : l.labelEn}
                 </Link>
               ))}
