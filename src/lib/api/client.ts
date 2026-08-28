@@ -125,16 +125,16 @@ function refreshSession(): Promise<boolean> {
   if (!refreshInFlight) {
     const attempt: Promise<boolean> =
       typeof navigator !== "undefined" && navigator.locks
-        ? navigator.locks.request<boolean>("learningcoach-session-refresh", () =>
-            doRefreshRequest(),
-          )
+        ? navigator.locks.request("learningcoach-session-refresh", () => doRefreshRequest())
         : doRefreshRequest();
+
     refreshInFlight = attempt
       .catch(() => false)
       .finally(() => {
         refreshInFlight = null;
       });
   }
+
   return refreshInFlight;
 }
 
