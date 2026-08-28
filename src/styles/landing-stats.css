@@ -1,0 +1,100 @@
+/* Métricas da plataforma: grelha equilibrada em desktop e mobile. */
+.lewc-stats-section {
+  width: 100%;
+  padding: 38px 24px 52px;
+  background: #fff;
+  border-top: 1px solid #f0f2f5;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.lewc-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  width: min(980px, 100%);
+  margin: 0 auto;
+}
+
+.lewc-stat-card {
+  display: flex;
+  min-width: 0;
+  min-height: 150px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 12px 18px;
+  border: 1px solid #edf0f4;
+  border-radius: 20px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(19, 42, 77, .07);
+}
+
+.lewc-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  background: #eef4ff;
+  color: #2563eb;
+}
+
+.lewc-stat-card:nth-child(2n) .lewc-stat-icon {
+  background: #edfbfa;
+  color: #10a9a4;
+}
+
+.lewc-stat-card:nth-child(3n) .lewc-stat-icon {
+  background: #fff7df;
+  color: #d99b00;
+}
+
+.lewc-stat-icon svg { width: 21px; height: 21px; stroke-width: 2; }
+
+.lewc-stat-value {
+  color: #159b97;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: clamp(1.45rem, 2.2vw, 2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -.05em;
+}
+
+.lewc-stat-label {
+  max-width: 140px;
+  margin-top: 8px;
+  color: #8b94a1;
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: .62rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+@media (max-width: 1100px) {
+  .lewc-stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .lewc-stat-card { min-height: 142px; }
+}
+
+@media (max-width: 560px) {
+  .lewc-stats-section { padding: 28px 16px 38px; }
+  .lewc-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    width: min(100%, 360px);
+    margin-inline: auto;
+  }
+  .lewc-stat-card {
+    min-height: 138px;
+    padding: 18px 10px 16px;
+    border-radius: 18px;
+  }
+  .lewc-stat-icon { width: 34px; height: 34px; margin-bottom: 9px; border-radius: 11px; }
+  .lewc-stat-icon svg { width: 19px; height: 19px; }
+  .lewc-stat-value { font-size: 1.55rem; }
+  .lewc-stat-label { max-width: 128px; font-size: .56rem; }
+}

@@ -39,11 +39,19 @@ import { Route as AiCoachRouteImport } from './routes/ai-coach'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as WatchVideoIdRouteImport } from './routes/watch.$videoId'
 import { Route as VerifyCodeRouteImport } from './routes/verify.$code'
 import { Route as LevelExamLevelRouteImport } from './routes/level-exam.$level'
 import { Route as LessonLessonIdRouteImport } from './routes/lesson.$lessonId'
 import { Route as CheckoutPlanIdRouteImport } from './routes/checkout.$planId'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminSubscriptionsRouteImport } from './routes/admin/subscriptions'
+import { Route as AdminReportsRouteImport } from './routes/admin/reports'
+import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
+import { Route as AdminCurriculumRouteImport } from './routes/admin/curriculum'
+import { Route as AdminAuditRouteImport } from './routes/admin/audit'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 
 const VideosRoute = VideosRouteImport.update({
   id: '/videos',
@@ -195,6 +203,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const WatchVideoIdRoute = WatchVideoIdRouteImport.update({
   id: '/watch/$videoId',
   path: '/watch/$videoId',
@@ -220,11 +233,46 @@ const CheckoutPlanIdRoute = CheckoutPlanIdRouteImport.update({
   path: '/checkout/$planId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
+  id: '/subscriptions',
+  path: '/subscriptions',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCurriculumRoute = AdminCurriculumRouteImport.update({
+  id: '/curriculum',
+  path: '/curriculum',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/ai-coach': typeof AiCoachRoute
   '/analytics': typeof AnalyticsRoute
   '/audit': typeof AuditRoute
@@ -252,16 +300,23 @@ export interface FileRoutesByFullPath {
   '/subscription': typeof SubscriptionRoute
   '/track': typeof TrackRoute
   '/videos': typeof VideosRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/curriculum': typeof AdminCurriculumRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/lesson/$lessonId': typeof LessonLessonIdRoute
   '/level-exam/$level': typeof LevelExamLevelRoute
   '/verify/$code': typeof VerifyCodeRoute
   '/watch/$videoId': typeof WatchVideoIdRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
   '/ai-coach': typeof AiCoachRoute
   '/analytics': typeof AnalyticsRoute
   '/audit': typeof AuditRoute
@@ -289,17 +344,25 @@ export interface FileRoutesByTo {
   '/subscription': typeof SubscriptionRoute
   '/track': typeof TrackRoute
   '/videos': typeof VideosRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/curriculum': typeof AdminCurriculumRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/lesson/$lessonId': typeof LessonLessonIdRoute
   '/level-exam/$level': typeof LevelExamLevelRoute
   '/verify/$code': typeof VerifyCodeRoute
   '/watch/$videoId': typeof WatchVideoIdRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/ai-coach': typeof AiCoachRoute
   '/analytics': typeof AnalyticsRoute
   '/audit': typeof AuditRoute
@@ -327,11 +390,19 @@ export interface FileRoutesById {
   '/subscription': typeof SubscriptionRoute
   '/track': typeof TrackRoute
   '/videos': typeof VideosRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/curriculum': typeof AdminCurriculumRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/checkout/$planId': typeof CheckoutPlanIdRoute
   '/lesson/$lessonId': typeof LessonLessonIdRoute
   '/level-exam/$level': typeof LevelExamLevelRoute
   '/verify/$code': typeof VerifyCodeRoute
   '/watch/$videoId': typeof WatchVideoIdRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -366,16 +437,23 @@ export interface FileRouteTypes {
     | '/subscription'
     | '/track'
     | '/videos'
+    | '/admin/analytics'
+    | '/admin/audit'
+    | '/admin/curriculum'
+    | '/admin/payments'
+    | '/admin/reports'
+    | '/admin/subscriptions'
+    | '/admin/users'
     | '/checkout/$planId'
     | '/lesson/$lessonId'
     | '/level-exam/$level'
     | '/verify/$code'
     | '/watch/$videoId'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/admin'
     | '/ai-coach'
     | '/analytics'
     | '/audit'
@@ -403,11 +481,19 @@ export interface FileRouteTypes {
     | '/subscription'
     | '/track'
     | '/videos'
+    | '/admin/analytics'
+    | '/admin/audit'
+    | '/admin/curriculum'
+    | '/admin/payments'
+    | '/admin/reports'
+    | '/admin/subscriptions'
+    | '/admin/users'
     | '/checkout/$planId'
     | '/lesson/$lessonId'
     | '/level-exam/$level'
     | '/verify/$code'
     | '/watch/$videoId'
+    | '/admin'
   id:
     | '__root__'
     | '/'
@@ -440,17 +526,25 @@ export interface FileRouteTypes {
     | '/subscription'
     | '/track'
     | '/videos'
+    | '/admin/analytics'
+    | '/admin/audit'
+    | '/admin/curriculum'
+    | '/admin/payments'
+    | '/admin/reports'
+    | '/admin/subscriptions'
+    | '/admin/users'
     | '/checkout/$planId'
     | '/lesson/$lessonId'
     | '/level-exam/$level'
     | '/verify/$code'
     | '/watch/$videoId'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AiCoachRoute: typeof AiCoachRoute
   AnalyticsRoute: typeof AnalyticsRoute
   AuditRoute: typeof AuditRoute
@@ -697,6 +791,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/watch/$videoId': {
       id: '/watch/$videoId'
       path: '/watch/$videoId'
@@ -732,13 +833,86 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutPlanIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/subscriptions': {
+      id: '/admin/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/admin/subscriptions'
+      preLoaderRoute: typeof AdminSubscriptionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/curriculum': {
+      id: '/admin/curriculum'
+      path: '/curriculum'
+      fullPath: '/admin/curriculum'
+      preLoaderRoute: typeof AdminCurriculumRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminAuditRoute: typeof AdminAuditRoute
+  AdminCurriculumRoute: typeof AdminCurriculumRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminAuditRoute: AdminAuditRoute,
+  AdminCurriculumRoute: AdminCurriculumRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   AiCoachRoute: AiCoachRoute,
   AnalyticsRoute: AnalyticsRoute,
   AuditRoute: AuditRoute,

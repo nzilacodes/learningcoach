@@ -360,14 +360,37 @@ function NovaPagina() {
 
 ## 12. Páginas Já Implementadas
 
+> **Nota (24/08/2026):** o Top Header Bar descrito na secção 2 já não se escreve à mão —
+> use o componente `<AppHeader>` em `src/components/app-header.tsx`, que centraliza o
+> markup e aceita `title`, `titleLevel`, `leftExtra`, `titleExtra`, `actions`,
+> `borderClassName` e `blur` para as variantes reais (ver o próprio ficheiro para exemplos
+> de uso nos 19 sítios já migrados).
+
 | Página | Rota | Ficheiro |
 |--------|------|----------|
 | Videos | `/videos` | `src/routes/videos.tsx` |
 | AI Coach | `/ai-coach` | `src/routes/ai-coach.tsx` |
 | Reading | `/reading` | `src/routes/reading.tsx` |
 | Games | `/games` | `src/routes/games.tsx` |
+| Media | `/media` | `src/routes/media.tsx` |
+| Pronúncia | `/pronunciation` | `src/routes/pronunciation.tsx` |
+| Perfil | `/profile` | `src/routes/profile.tsx` |
+| Definições | `/settings` | `src/routes/settings.tsx` |
+| Currículo | `/curriculum` | `src/routes/curriculum.tsx` |
+| Recompensas | `/rewards` | `src/routes/rewards.tsx` |
+| Certificados | `/certificates` | `src/routes/certificates.tsx` |
+| Turmas | `/classes` | `src/routes/classes.tsx` |
+| Comunidade | `/community` | `src/routes/community.tsx` |
+| Assinatura | `/subscription` | `src/routes/subscription.tsx` |
+| Exame final | `/level-exam/$level` | `src/routes/level-exam.$level.tsx` |
+| Diagnóstico | `/placement` | `src/routes/placement.tsx` |
+| Lição | `/lesson/$lessonId` | `src/routes/lesson.$lessonId.tsx` |
+| Vídeo | `/watch/$videoId` | `src/routes/watch.$videoId.tsx` |
+| Dashboard (3 variantes) | `/dashboard` | `src/components/dashboard/{adults,teens,kids}-dashboard.tsx` |
 
-Todas usam o mesmo padrão: Sidebar + Top Header + Conteúdo.
+Todas usam o mesmo padrão: Sidebar + `<AppHeader>` + Conteúdo. `videos.tsx` é a exceção
+deliberada — o seu header é uma barra de pesquisa, não um título, por isso continua a
+usar markup próprio em vez de `<AppHeader>`.
 
 ---
 

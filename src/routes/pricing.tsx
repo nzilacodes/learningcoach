@@ -1,24 +1,23 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Sparkles, CheckCircle2, Crown, Zap, Star } from "lucide-react";
+import { Check, CheckCircle2, Crown, Sparkles, Star } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
-import { SiteHeader } from "@/components/site-header";
+import { LandingSiteHeader } from "@/components/landing-site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { Button } from "@/components/ui/button";
 import { useLocale } from "@/lib/i18n";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { SITE_URL } from "@/lib/site-url";
+import "@/styles/landing-pricing.css";
 
 export const Route = createFileRoute("/pricing")({
-  // Fetched only so head()'s JSON-LD reflects live prices instead of a
-  // hardcoded snapshot that silently drifted whenever an admin changed a
-  // plan's price — the page body still uses its own useQuery for the actual
-  // pricing cards/interactivity.
   loader: async () => {
     const plans = await apiFetch<Plan[]>("/v1/plans").catch(() => []);
-    return { monthlyPlans: plans.filter((p) => p.billing_cycle === "monthly") };
+    return {
+      plans: plans.map((p) => ({ ...p, features: p.features ?? [] })),
+      monthlyPlans: plans.filter((p) => p.billing_cycle === "monthly"),
+    };
   },
   component: PricingPage,
   head: ({ loaderData }) => ({
@@ -77,15 +76,13 @@ interface Plan {
 const TIER_META: Record<
   Tier,
   {
-    icon: typeof Zap;
-    color: string;
+    icon: typeof Sparkles;
     label: { pt: string; en: string };
     desc: { pt: string; en: string };
   }
 > = {
   essential: {
     icon: Sparkles,
-    color: "bg-white ring-slate-100",
     label: { pt: "Essencial", en: "Essential" },
     desc: {
       pt: "Base sólida de inglês para iniciantes.",
@@ -94,7 +91,6 @@ const TIER_META: Record<
   },
   premium: {
     icon: Star,
-    color: "bg-white/40 ring-white/60 backdrop-blur-sm",
     label: { pt: "Premium", en: "Premium" },
     desc: {
       pt: "Ferramentas avançadas para falantes intermediários.",
@@ -103,13 +99,18 @@ const TIER_META: Record<
   },
   vip: {
     icon: Crown,
-    color: "bg-white ring-slate-100",
     label: { pt: "VIP Elite", en: "VIP Elite" },
     desc: {
       pt: "Mestria sem limites para utilizadores exigentes.",
       en: "Unrestricted mastery for power users.",
     },
   },
+};
+
+const TIER_ORDER: Record<Tier, number> = {
+  essential: 0,
+  premium: 1,
+  vip: 2,
 };
 
 const CYCLE_LABEL: Record<Cycle, { pt: string; en: string }> = {
@@ -120,20 +121,33 @@ const CYCLE_LABEL: Record<Cycle, { pt: string; en: string }> = {
 
 function PricingPage() {
   const { locale } = useLocale();
+  const { plans: loaderPlans = [] } = Route.useLoaderData();
   const notify = useNotification();
   const [cycle, setCycle] = useState<Cycle>("monthly");
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const { data: plans = [] } = useQuery({
+  const {
+    data: plans = loaderPlans,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["subscription_plans"],
     queryFn: async () => {
       const data = await apiFetch<Plan[]>("/v1/plans");
       return data.map((p) => ({ ...p, features: p.features ?? [] }));
     },
+    initialData: loaderPlans,
+    staleTime: 30_000,
   });
 
-  const filtered = useMemo(() => plans.filter((p) => p.billing_cycle === cycle), [plans, cycle]);
+  const filtered = useMemo(
+    () =>
+      plans
+        .filter((p) => p.billing_cycle === cycle)
+        .sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier]),
+    [plans, cycle],
+  );
 
   const handleSubscribe = (plan: Plan) => {
     if (!user) {
@@ -144,169 +158,143 @@ function PricingPage() {
     navigate({ to: "/checkout/$planId", params: { planId: plan.id } });
   };
 
+  const totalPlans = String(Math.max(filtered.length, 3)).padStart(2, "0");
+
   return (
-    <div className="mt-16 min-h-screen bg-background">
-      <SiteHeader />
-      <div className="mx-auto max-w-[1440px] px-4 py-12">
-        <>
-          <div className="mb-12 text-center">
-            <h1 className="mt-4 font-display text-4xl font-bold md:text-5xl text-marketing-ink">
-              {locale === "pt" ? "Aprenda inglês " : "Learn English "}
-              <span className="text-gradient-sunset">
-                {locale === "pt" ? "no seu ritmo" : "your way"}
-              </span>
+    <div className="lewc-pricing-shell">
+      <LandingSiteHeader />
+      <main className="lewc-pricing-page">
+        <div className="lewc-pricing-content">
+          <section className="lewc-pricing-billing" aria-label={locale === "pt" ? "Ciclo de pagamento" : "Payment cycle"}>
+            <div className="lewc-pricing-toggle" role="group">
+              {(["monthly", "quarterly", "semiannual"] as Cycle[]).map((option) => {
+                const active = cycle === option;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    className={active ? "is-active" : ""}
+                    aria-pressed={active}
+                    onClick={() => setCycle(option)}
+                  >
+                    {CYCLE_LABEL[option][locale]}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="lewc-pricing-heading" aria-labelledby="pricing-heading">
+            <h1 id="pricing-heading">
+              {locale === "pt" ? "Encontra o " : "Find your "}
+              <span>{locale === "pt" ? "teu plano" : "plan"}</span>
             </h1>
-            <p className="mt-3 text-muted-foreground">
+            <p>
               {locale === "pt"
-                ? "Cancele quando quiser. Pagamento via Multicaixa Express."
-                : "Cancel anytime. Payment via Multicaixa Express."}
+                ? "Começa com a base certa. Evolui com ferramentas que acompanham o teu nível."
+                : "Start with the right foundation. Grow with tools that follow your level."}
             </p>
-          </div>
+          </section>
 
-          <div className="mt-8 flex justify-center px-2">
-            {/* Refined toggle to match image-1.png - Made responsive for small screens */}
-            <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/60 bg-slate-50/50 p-1.5 shadow-sm backdrop-blur-sm max-w-full overflow-x-auto no-scrollbar">
-              {(["monthly", "quarterly", "semiannual"] as Cycle[]).map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setCycle(c)}
-                  className={`rounded-full px-4 sm:px-7 py-2.5 text-2xs sm:text-2xs font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
-                    cycle === c
-                      ? "bg-white text-marketing-ink shadow-[0_2px_8px_rgba(15,23,42,0.08)] ring-1 ring-slate-100"
-                      : "text-slate-400 hover:text-slate-600"
-                  }`}
-                >
-                  {CYCLE_LABEL[c][locale]}
-                </button>
-              ))}
+          {isLoading && plans.length === 0 ? (
+            <div className="lewc-pricing-empty" role="status">
+              {locale === "pt" ? "A carregar planos..." : "Loading plans..."}
             </div>
-          </div>
+          ) : (isError && filtered.length === 0) || filtered.length === 0 ? (
+            <div className="lewc-pricing-empty" role="status">
+              {locale === "pt"
+                ? "Não foi possível carregar os planos neste momento."
+                : "Plans are unavailable right now."}
+            </div>
+          ) : (
+            <section className="lewc-pricing-grid" aria-label={locale === "pt" ? "Planos disponíveis" : "Available plans"}>
+              {filtered.map((plan, index) => {
+                const meta = TIER_META[plan.tier];
+                const Icon = meta.icon;
+                const featured = plan.tier === "premium";
+                const iconClass =
+                  plan.tier === "premium"
+                    ? "is-premium"
+                    : plan.tier === "vip"
+                      ? "is-vip"
+                      : "";
 
-          <div className="mt-20 relative px-4">
-            <div className="mx-auto max-w-[1440px]">
-              <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 justify-items-center items-stretch overflow-visible">
-                {filtered.map((plan) => {
-                  const meta = TIER_META[plan.tier];
-                  const Icon = meta.icon;
-                  const featured = plan.tier === "premium";
+                return (
+                  <article
+                    key={plan.id}
+                    className={`lewc-pricing-card${featured ? " is-featured" : ""}`}
+                  >
+                    {featured && (
+                      <span className="lewc-pricing-popular">
+                        {locale === "pt" ? "Mais popular" : "Most popular"}
+                      </span>
+                    )}
 
-                  const orbColor =
-                    plan.tier === "essential"
-                      ? "bg-teal-400"
-                      : plan.tier === "premium"
-                        ? "bg-pink-400"
-                        : "bg-indigo-400";
-                  const ringColor =
-                    plan.tier === "premium" ? "ring-pink-400/20" : "ring-slate-200/20";
-
-                  return (
-                    <div
-                      key={plan.id}
-                      className={`relative h-full w-full flex justify-center transition-all duration-300 ${
-                        featured ? "z-[5]" : "z-[1]"
-                      }`}
-                    >
-                      {/* Glassmorphic Orb Backdrop - Absolute positioned but pointer-events-none */}
-                      <div
-                        className={`orb absolute -inset-6 ${orbColor} rounded-full z-0 opacity-15 blur-[100px] pointer-events-none transition-opacity duration-700`}
-                      />
-
-                      {/* Glass Card - Unified elegant styles for all, elevation for featured */}
-                      <div
-                        className={`glass-card relative z-10 flex h-full flex-col p-8 w-full md:max-w-[420px] rounded-[2.5rem] bg-white/80 backdrop-blur-2xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-500 lg:min-h-[600px] ${
-                          featured
-                            ? `lg:-translate-y-10 ring-2 ${ringColor} shadow-[0_40px_80px_-20px_rgba(15,23,42,0.1)]`
-                            : ""
-                        }`}
-                      >
-                        {featured && (
-                          <div className="absolute top-8 right-8 inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-slate-100 shadow-sm z-20">
-                            <Star className="h-3 w-3 fill-pink-500 text-pink-500" />
-                            <span className="text-2xs font-black uppercase tracking-widest text-slate-600">
-                              {locale === "pt" ? "MAIS POPULAR" : "MOST POPULAR"}
-                            </span>
-                          </div>
-                        )}
-
-                        <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-10 ring-1 ring-slate-100 relative overflow-hidden">
-                          {featured && (
-                            <div className="absolute inset-0 bg-gradient-to-br from-pink-400/20 to-orange-400/20" />
-                          )}
-                          <Icon
-                            className={`h-8 w-8 relative z-10 ${plan.tier === "essential" ? "text-marketing-teal" : plan.tier === "premium" ? "text-pink-500" : "text-indigo-600"}`}
-                          />
-                        </div>
-
-                        <h2 className="font-display text-3xl font-bold mb-2 text-marketing-ink">
-                          {meta.label[locale]}
-                        </h2>
-                        <p className="text-sm text-slate-500 mb-10 leading-relaxed max-w-[280px]">
-                          {meta.desc[locale]}
-                        </p>
-
-                        <div className="flex items-baseline gap-1 mb-1">
-                          <span className="text-5xl sm:text-6xl font-black tracking-tighter text-marketing-ink">
-                            {plan.price_kz.toLocaleString("pt-AO")}
-                          </span>
-                          <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-                            Kz
-                          </span>
-                        </div>
-                        <div className="text-2xs font-black uppercase tracking-[0.2em] text-slate-400 mb-10">
-                          {plan.duration_days} {locale === "pt" ? "DIAS" : "DAYS"}
-                        </div>
-
-                        <div className="w-full h-px bg-slate-200/80 mb-10" />
-
-                        <div className="flex-grow">
-                          <p className="text-2xs font-black uppercase tracking-[0.2em] text-slate-400 mb-6">
-                            {locale === "pt" ? "O que está incluído:" : "What's included:"}
-                          </p>
-                          <ul className="space-y-4">
-                            {plan.features.map((f, i) => (
-                              <li
-                                key={i}
-                                className="flex items-start gap-4 text-sm font-medium text-slate-600"
-                              >
-                                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
-                                <span>{f}</span>
-                              </li>
-                            ))}
-                            {plan.call_minutes > 0 && (
-                              <li className="flex items-start gap-4 text-sm font-bold text-marketing-ink">
-                                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
-                                <span>
-                                  {plan.call_minutes} min{" "}
-                                  {locale === "pt" ? "com o professor" : "with the teacher"}
-                                </span>
-                              </li>
-                            )}
-                          </ul>
-                        </div>
-
-                        <Button
-                          onClick={() => handleSubscribe(plan)}
-                          className="mt-12 w-full py-8 px-6 bg-marketing-ink text-white text-xs font-bold uppercase tracking-[0.25em] rounded-full shadow-[0_20px_45px_-5px_rgba(15,23,42,0.35)] transition-all hover:bg-slate-900 active:scale-95 overflow-hidden group/btn"
-                          variant="default"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
-                          {locale === "pt" ? "Assinar Agora" : "Subscribe Now"}
-                        </Button>
-                      </div>
+                    <div className="lewc-pricing-card-top">
+                      <span className="lewc-pricing-card-index">
+                        {String(index + 1).padStart(2, "0")} / {totalPlans}
+                      </span>
+                      <span className={`lewc-pricing-card-icon ${iconClass}`} aria-hidden="true">
+                        <Icon size={18} strokeWidth={2.1} />
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
 
-          <p className="text-center mt-12 text-2xs font-bold uppercase tracking-[0.2em] text-slate-400">
-            {locale === "pt"
-              ? "Pagamento Seguro via Multicaixa Express"
-              : "Secure Payment via Multicaixa Express"}
-          </p>
-        </>
-      </div>
+                    <h2 className="lewc-pricing-card-title">{meta.label[locale]}</h2>
+                    <p className="lewc-pricing-card-description">{meta.desc[locale]}</p>
+
+                    <div className="lewc-pricing-card-price">
+                      <strong>{plan.price_kz.toLocaleString("pt-AO")}</strong>
+                      <span>Kz</span>
+                    </div>
+                    <div className="lewc-pricing-card-days">
+                      {plan.duration_days} {locale === "pt" ? "dias" : "days"}
+                    </div>
+
+                    <div className="lewc-pricing-card-rule" />
+                    <p className="lewc-pricing-card-included">
+                      {locale === "pt" ? "O que está incluído" : "What's included"}
+                    </p>
+
+                    <ul className="lewc-pricing-card-features">
+                      {plan.features.map((feature, featureIndex) => (
+                        <li className="lewc-pricing-card-feature" key={`${plan.id}-feature-${featureIndex}`}>
+                          <Check size={14} strokeWidth={2.4} aria-hidden="true" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                      {plan.call_minutes > 0 && (
+                        <li className="lewc-pricing-card-feature">
+                          <Check size={14} strokeWidth={2.4} aria-hidden="true" />
+                          <span>
+                            {plan.call_minutes} min {locale === "pt" ? "com o professor" : "with the teacher"}
+                          </span>
+                        </li>
+                      )}
+                    </ul>
+
+                    <button
+                      type="button"
+                      className="lewc-pricing-card-cta"
+                      onClick={() => handleSubscribe(plan)}
+                    >
+                      {locale === "pt" ? "Assinar agora" : "Subscribe now"} <span aria-hidden="true">→</span>
+                    </button>
+                  </article>
+                );
+              })}
+            </section>
+          )}
+
+          {!isLoading && !isError && filtered.length > 0 && (
+            <p className="lewc-pricing-secure">
+              <CheckCircle2 size={14} strokeWidth={2.2} aria-hidden="true" />
+              {locale === "pt"
+                ? "Pagamento seguro via Multicaixa Express"
+                : "Secure payment via Multicaixa Express"}
+            </p>
+          )}
+        </div>
+      </main>
       <SiteFooter />
     </div>
   );

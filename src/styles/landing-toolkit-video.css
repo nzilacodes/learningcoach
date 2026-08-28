@@ -1,0 +1,430 @@
+.lewc-toolkit-section {
+  position: relative;
+  overflow: hidden;
+  background: #f8fbff;
+  padding: clamp(4.5rem, 8vw, 7.5rem) 1.25rem clamp(5rem, 9vw, 8rem);
+}
+
+.lewc-toolkit-section::before,
+.lewc-toolkit-section::after {
+  position: absolute;
+  pointer-events: none;
+  content: "";
+  border-radius: 999px;
+  filter: blur(1px);
+}
+
+.lewc-toolkit-section::before {
+  width: 22rem;
+  height: 22rem;
+  top: -13rem;
+  left: -10rem;
+  background: rgba(216, 239, 255, .72);
+}
+
+.lewc-toolkit-section::after {
+  width: 19rem;
+  height: 19rem;
+  right: -9rem;
+  bottom: -11rem;
+  background: rgba(232, 226, 255, .58);
+}
+
+.lewc-toolkit-shell {
+  position: relative;
+  z-index: 1;
+  width: min(1360px, 100%);
+  margin: 0 auto;
+}
+
+.lewc-toolkit-header {
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  margin: 0 auto clamp(2.6rem, 5vw, 4.5rem);
+  text-align: center;
+}
+
+.lewc-toolkit-eyebrow {
+  margin: 0 0 .75rem;
+  color: #249eaa;
+  font-family: "DM Mono", monospace;
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .22em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.lewc-toolkit-heading {
+  max-width: 760px;
+  margin: 0 auto;
+  color: #132051;
+  font-family: "DM Sans", sans-serif;
+  font-size: clamp(1.9rem, 3.2vw, 3.3rem);
+  font-weight: 800;
+  letter-spacing: -.055em;
+  line-height: .98;
+}
+
+.lewc-toolkit-stage {
+  position: relative;
+  min-height: 620px;
+  padding: 1.25rem 0;
+}
+
+.lewc-toolkit-cluster {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  width: 330px;
+  gap: 1rem;
+}
+
+.lewc-toolkit-cluster-left {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+.lewc-toolkit-cluster-right {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.lewc-toolkit-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.35rem minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 106px;
+  padding: 1rem 1rem 1rem .95rem;
+  border: 1px solid rgba(197, 215, 234, .75);
+  border-radius: 1.1rem;
+  background: rgba(255, 255, 255, .95);
+  box-shadow: 0 12px 28px rgba(28, 70, 119, .08);
+}
+
+.lewc-toolkit-card-icon {
+  display: grid;
+  width: 3.05rem;
+  height: 3.05rem;
+  place-items: center;
+  border-radius: 999px;
+  background: #eef8fb;
+  color: #2574da;
+}
+
+.lewc-toolkit-card-icon svg {
+  width: 1.7rem;
+  height: 1.7rem;
+  stroke-width: 1.7;
+}
+
+.lewc-toolkit-card:nth-child(3n) .lewc-toolkit-card-icon {
+  color: #20aeb2;
+}
+
+.lewc-toolkit-card-copy {
+  min-width: 0;
+  padding: 0 .75rem;
+}
+
+.lewc-toolkit-card-title {
+  margin: 0;
+  color: #14204e;
+  font-family: "DM Sans", sans-serif;
+  font-size: clamp(1rem, 1.15vw, 1.15rem);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.15;
+}
+
+.lewc-toolkit-card-description {
+  max-width: 18rem;
+  margin: .45rem 0 0;
+  color: #647188;
+  font-family: "DM Sans", sans-serif;
+  font-size: .84rem;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.lewc-toolkit-card-dot {
+  align-self: start;
+  width: .78rem;
+  height: .78rem;
+  margin-top: .15rem;
+  border-radius: 999px;
+  background: #f48278;
+}
+
+.lewc-toolkit-card:nth-child(even) .lewc-toolkit-card-dot {
+  background: #9273dd;
+}
+
+.lewc-toolkit-coach {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  width: 310px;
+  min-height: 390px;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(101, 184, 229, .7);
+  border-radius: 1.5rem;
+  background: rgba(248, 252, 255, .96);
+  box-shadow: 0 20px 38px rgba(33, 89, 150, .12);
+}
+
+.lewc-toolkit-coach-title {
+  position: relative;
+  z-index: 1;
+  margin-top: 1.2rem;
+  color: #2268c9;
+  font-family: "DM Sans", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -.03em;
+}
+
+.lewc-toolkit-coach-word {
+  position: absolute;
+  z-index: 2;
+  color: #12204f;
+  font-family: "DM Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.lewc-toolkit-coach-word.is-learn {
+  top: 4.65rem;
+}
+
+.lewc-toolkit-coach-word.is-practise {
+  bottom: 4.4rem;
+  left: 1.35rem;
+}
+
+.lewc-toolkit-coach-word.is-speak {
+  right: 1.35rem;
+  bottom: 4.4rem;
+}
+
+.lewc-toolkit-coach-character {
+  position: absolute;
+  z-index: 1;
+  bottom: 2.9rem;
+  left: 50%;
+  width: 190px;
+  height: 235px;
+  object-fit: contain;
+  object-position: center bottom;
+  transform: translateX(-50%);
+}
+
+.lewc-toolkit-flows {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.lewc-toolkit-flows.is-mobile {
+  display: none;
+}
+
+.lewc-toolkit-flow-path {
+  fill: none;
+  stroke: #31bec8;
+  stroke-linecap: round;
+  stroke-width: 2.2;
+}
+
+.lewc-toolkit-flow-node {
+  fill: #2679dc;
+  stroke: #edf8ff;
+  stroke-width: 2;
+}
+
+.lewc-toolkit-flow-pulse {
+  fill: #ffffff;
+  filter: drop-shadow(0 0 4px rgba(31, 202, 219, .9));
+}
+
+@media (max-width: 1050px) and (min-width: 761px) {
+  .lewc-toolkit-cluster {
+    width: 290px;
+  }
+
+  .lewc-toolkit-card {
+    grid-template-columns: 2.9rem minmax(0, 1fr) auto;
+    min-height: 96px;
+    padding: .8rem;
+  }
+
+  .lewc-toolkit-card-icon {
+    width: 2.65rem;
+    height: 2.65rem;
+  }
+
+  .lewc-toolkit-card-description {
+    font-size: .76rem;
+  }
+
+  .lewc-toolkit-coach {
+    width: 280px;
+    min-height: 370px;
+  }
+}
+
+@media (max-width: 760px) {
+  .lewc-toolkit-section {
+    padding: 4rem .9rem 4.75rem;
+  }
+
+  .lewc-toolkit-header {
+    margin-bottom: 2.2rem;
+  }
+
+  .lewc-toolkit-eyebrow {
+    margin-bottom: .65rem;
+    font-size: .64rem;
+    letter-spacing: .16em;
+  }
+
+  .lewc-toolkit-heading {
+    max-width: 355px;
+    font-size: clamp(1.6rem, 6.8vw, 2.2rem);
+    line-height: 1.02;
+  }
+
+  .lewc-toolkit-stage {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 .1rem;
+  }
+
+  .lewc-toolkit-cluster {
+    position: relative;
+    inset: auto;
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .72rem;
+    transform: none;
+  }
+
+  .lewc-toolkit-cluster-top {
+    order: 1;
+  }
+
+  .lewc-toolkit-coach {
+    position: relative;
+    inset: auto;
+    order: 2;
+    width: min(285px, 78vw);
+    min-height: 300px;
+    transform: none;
+  }
+
+  .lewc-toolkit-cluster-bottom {
+    order: 3;
+  }
+
+  .lewc-toolkit-card {
+    display: flex;
+    min-height: 92px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: .8rem .7rem .78rem;
+    border-radius: .9rem;
+  }
+
+  .lewc-toolkit-card-icon {
+    width: 2.3rem;
+    height: 2.3rem;
+    margin-bottom: .45rem;
+  }
+
+  .lewc-toolkit-card-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .lewc-toolkit-card-copy {
+    padding: 0;
+  }
+
+  .lewc-toolkit-card-title {
+    font-size: .91rem;
+    line-height: 1.1;
+  }
+
+  .lewc-toolkit-card-description {
+    display: none;
+  }
+
+  .lewc-toolkit-card-dot {
+    position: absolute;
+    top: .68rem;
+    right: .68rem;
+    width: .58rem;
+    height: .58rem;
+    margin: 0;
+  }
+
+  .lewc-toolkit-coach-title {
+    margin-top: 1rem;
+    font-size: 1.15rem;
+  }
+
+  .lewc-toolkit-coach-word {
+    font-size: .86rem;
+  }
+
+  .lewc-toolkit-coach-word.is-learn {
+    top: 3.75rem;
+  }
+
+  .lewc-toolkit-coach-word.is-practise {
+    bottom: 3.5rem;
+    left: 1rem;
+  }
+
+  .lewc-toolkit-coach-word.is-speak {
+    right: 1rem;
+    bottom: 3.5rem;
+  }
+
+  .lewc-toolkit-coach-character {
+    bottom: 2.1rem;
+    width: 155px;
+    height: 190px;
+  }
+
+  .lewc-toolkit-flows.is-desktop {
+    display: none;
+  }
+
+  .lewc-toolkit-flows.is-mobile {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lewc-toolkit-flow-pulse {
+    display: none;
+  }
+}

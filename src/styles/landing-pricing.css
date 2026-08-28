@@ -1,0 +1,391 @@
+.lewc-pricing-shell {
+  min-height: 100vh;
+  background: #fff;
+  color: #0d1116;
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+
+.lewc-pricing-page {
+  min-height: 100vh;
+  padding: 104px 0 0;
+  background: #fff;
+}
+
+.lewc-pricing-content {
+  width: min(1160px, calc(100% - 64px));
+  margin: 0 auto;
+}
+
+.lewc-pricing-billing {
+  display: flex;
+  justify-content: center;
+}
+
+.lewc-pricing-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #cfd6da;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.lewc-pricing-toggle button {
+  min-width: 96px;
+  height: 36px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #0d1116;
+  font: 500 12px/1 "DM Sans", system-ui, sans-serif;
+  cursor: pointer;
+  transition: background-color 180ms cubic-bezier(.23, 1, .32, 1), color 180ms cubic-bezier(.23, 1, .32, 1), transform 160ms cubic-bezier(.23, 1, .32, 1);
+}
+
+.lewc-pricing-toggle button:hover:not(.is-active) {
+  background: #f3f6f8;
+}
+
+.lewc-pricing-toggle button.is-active {
+  background: #2f6fe4;
+  color: #fff;
+}
+
+.lewc-pricing-toggle button:active {
+  transform: scale(.97);
+}
+
+.lewc-pricing-toggle button:focus-visible,
+.lewc-pricing-card-cta:focus-visible {
+  outline: 3px solid rgba(47, 111, 228, .28);
+  outline-offset: 3px;
+}
+
+.lewc-pricing-heading {
+  margin: 70px auto 0;
+  text-align: center;
+}
+
+.lewc-pricing-heading h1 {
+  margin: 0;
+  color: #0d1116;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -.075em;
+}
+
+.lewc-pricing-heading h1 span {
+  color: #2f6fe4;
+}
+
+.lewc-pricing-heading p {
+  max-width: 560px;
+  margin: 14px auto 0;
+  color: #65717d;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.lewc-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  align-items: stretch;
+  margin: 48px auto 0;
+}
+
+.lewc-pricing-empty {
+  grid-column: 1 / -1;
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e1e6e9;
+  border-radius: 17px;
+  color: #65717d;
+  font-size: 14px;
+}
+
+.lewc-pricing-card {
+  position: relative;
+  display: flex;
+  min-height: 500px;
+  flex-direction: column;
+  padding: 29px 27px 24px;
+  border: 1px solid #e1e6e9;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 3px 14px rgba(13, 17, 22, .07);
+}
+
+.lewc-pricing-card.is-featured {
+  border: 2px solid #0d1116;
+  box-shadow: 0 10px 26px rgba(13, 17, 22, .09);
+}
+
+.lewc-pricing-popular {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: #ef7148;
+  color: #fff;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font: 700 9px/1 "DM Mono", monospace;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.lewc-pricing-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lewc-pricing-card-index {
+  color: #77838b;
+  font: 700 9px/1 "DM Mono", monospace;
+  letter-spacing: .14em;
+}
+
+.lewc-pricing-card-icon {
+  width: 41px;
+  height: 41px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e8f2ff;
+  color: #2f6fe4;
+}
+
+.lewc-pricing-card-icon.is-premium {
+  background: #e4f8f4;
+  color: #11aea8;
+}
+
+.lewc-pricing-card-icon.is-vip {
+  background: #f0eaff;
+  color: #7657bc;
+}
+
+.lewc-pricing-card-title {
+  margin: 22px 0 0;
+  color: #12204e;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -.055em;
+}
+
+.lewc-pricing-card-description {
+  min-height: 44px;
+  margin: 9px 0 0;
+  color: #65717d;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.lewc-pricing-card-price {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-top: 23px;
+}
+
+.lewc-pricing-card-price strong {
+  color: #0d1116;
+  font-size: 45px;
+  font-weight: 700;
+  letter-spacing: -.07em;
+  line-height: 1;
+}
+
+.lewc-pricing-card-price span {
+  color: #768189;
+  font: 700 10px/1 "DM Mono", monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.lewc-pricing-card-days {
+  margin-top: 9px;
+  color: #77838b;
+  font: 700 9px/1 "DM Mono", monospace;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.lewc-pricing-card-rule {
+  height: 1px;
+  margin: 23px 0 18px;
+  background: #dfe5e8;
+}
+
+.lewc-pricing-card-included {
+  margin: 0 0 13px;
+  color: #7b858b;
+  font: 700 9px/1 "DM Mono", monospace;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.lewc-pricing-card-features {
+  display: grid;
+  gap: 11px;
+  margin: 0;
+  padding: 0;
+  color: #4d5962;
+  font-size: 13px;
+  line-height: 1.35;
+  list-style: none;
+}
+
+.lewc-pricing-card-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.lewc-pricing-card-feature svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #2f6fe4;
+}
+
+.lewc-pricing-card-cta {
+  width: 100%;
+  min-height: 48px;
+  margin-top: auto;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: #2f6fe4;
+  color: #fff;
+  font: 700 12px/1 "DM Sans", system-ui, sans-serif;
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(.23, 1, .32, 1), filter 180ms cubic-bezier(.23, 1, .32, 1);
+}
+
+.lewc-pricing-card-cta:hover {
+  filter: brightness(.94);
+}
+
+.lewc-pricing-card-cta:active {
+  transform: scale(.97);
+}
+
+.lewc-pricing-card.is-featured .lewc-pricing-card-cta {
+  background: #ef7148;
+}
+
+.lewc-pricing-secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 23px auto 0;
+  padding-bottom: 83px;
+  color: #768189;
+  font: 700 9px/1 "DM Mono", monospace;
+  letter-spacing: .13em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.lewc-pricing-secure svg {
+  color: #11aea8;
+}
+
+.lewc-pricing-footer-spacer {
+  height: 1px;
+}
+
+@media (max-width: 991px) {
+  .lewc-pricing-page {
+    padding-top: 84px;
+  }
+
+  .lewc-pricing-content {
+    width: min(720px, calc(100% - 36px));
+  }
+
+  .lewc-pricing-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-top: 34px;
+  }
+
+  .lewc-pricing-card {
+    min-height: 0;
+    padding: 25px 22px 22px;
+  }
+
+  .lewc-pricing-card-title {
+    font-size: 21px;
+  }
+
+  .lewc-pricing-card-description {
+    min-height: 0;
+    font-size: 12px;
+  }
+
+  .lewc-pricing-card-price strong {
+    font-size: 38px;
+  }
+
+  .lewc-pricing-card-features {
+    font-size: 12px;
+  }
+
+  .lewc-pricing-card-cta {
+    margin-top: 26px;
+  }
+
+  .lewc-pricing-secure {
+    padding-bottom: 62px;
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 520px) {
+  .lewc-pricing-page {
+    padding-top: 78px;
+  }
+
+  .lewc-pricing-content {
+    width: calc(100% - 36px);
+  }
+
+  .lewc-pricing-toggle {
+    width: 100%;
+  }
+
+  .lewc-pricing-toggle button {
+    min-width: 0;
+    flex: 1;
+    padding: 0 8px;
+    font-size: 10px;
+  }
+
+  .lewc-pricing-heading {
+    margin-top: 56px;
+  }
+
+  .lewc-pricing-heading h1 {
+    font-size: clamp(1.85rem, 8vw, 2.35rem);
+  }
+
+  .lewc-pricing-heading p {
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lewc-pricing-toggle button,
+  .lewc-pricing-card-cta {
+    transition: none;
+  }
+}
