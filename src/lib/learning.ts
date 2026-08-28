@@ -57,6 +57,10 @@ export function useCurriculum() {
 }
 
 // ---------- USER STATS ----------
+// Fixed for now, same as the weekly study goal below (goalDays) — not yet
+// user-settable.
+export const DAILY_XP_GOAL = 50;
+
 export function useUserStats() {
   const { user } = useAuth();
   return useQuery({
@@ -67,11 +71,13 @@ export function useUserStats() {
         streakDays: number;
         lastActivityDate: string | null;
         xp: number;
+        todayXp: number;
       }>("/v1/me/study-stats");
       return {
         xp: data.xp,
         streak_days: data.streakDays,
         last_activity_date: data.lastActivityDate,
+        today_xp: data.todayXp,
       };
     },
   });

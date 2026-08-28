@@ -9,6 +9,7 @@ import { useAgeGroup } from "@/lib/use-age-group";
 import { AGE_TRACKS, AGE_GROUP_LABEL, type AgeTrack } from "@/lib/age-tracks";
 import { AgeThemeSwitcher } from "@/components/age-theme-switcher";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import { GamePlayModal } from "@/components/games/game-play-modal";
 import {
   HeaderActionLinks,
@@ -71,7 +72,7 @@ function GamesPage() {
     setSearch("");
   }, [group]);
 
-  const { data: profileStats } = useQuery({
+  const { data: profileStats, isError: profileStatsError } = useQuery({
     queryKey: ["games-profile-stats", user?.id],
     enabled: !!user,
     queryFn: () =>
@@ -80,6 +81,9 @@ function GamesPage() {
       ),
     staleTime: 30_000,
   });
+  // "0" reads as "you genuinely have 0 XP" — on a failed fetch that's not
+  // true, it's just unknown, so these fall back to an explicit "—" instead.
+  const statFallback = profileStatsError ? "—" : null;
 
   const { data: playCounts = {} } = useQuery({
     queryKey: ["games_plays"],
@@ -97,13 +101,19 @@ function GamesPage() {
   const stats = [
     {
       label: locale === "pt" ? "XP total" : "Total XP",
-      value: (profileStats?.xp ?? 0).toLocaleString(),
+      value: statFallback ?? (profileStats?.xp ?? 0).toLocaleString(),
     },
-    { label: locale === "pt" ? "Moedas" : "Coins", value: String(profileStats?.coins ?? 0) },
-    { label: locale === "pt" ? "Nível" : "Level", value: String(profileStats?.level ?? 1) },
+    {
+      label: locale === "pt" ? "Moedas" : "Coins",
+      value: statFallback ?? String(profileStats?.coins ?? 0),
+    },
+    {
+      label: locale === "pt" ? "Nível" : "Level",
+      value: statFallback ?? String(profileStats?.level ?? 1),
+    },
     {
       label: locale === "pt" ? "Dias seguidos" : "Day streak",
-      value: String(profileStats?.streak ?? 0),
+      value: statFallback ?? String(profileStats?.streak ?? 0),
     },
   ];
 
@@ -124,28 +134,29 @@ function GamesPage() {
     .slice(0, 5);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Left Sidebar */}
       <VideosSidebar />
 
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         {/* Top Header Bar */}
-        <header className="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 shrink-0 z-10">
-          <div className="flex items-center gap-3 min-w-0">
-            <h1 className="font-display text-xl font-bold text-[var(--ink)] shrink-0">
-              {locale === "pt" ? "Jogos" : "Games"}
-            </h1>
+        <AppHeader
+          title={locale === "pt" ? "Jogos" : "Games"}
+          titleClassName="font-display text-xl font-bold text-ink shrink-0"
+          titleExtra={
             <div className="hidden md:block">
               <AgeThemeSwitcher />
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <HeaderActionLinks />
-            <MobileAvatarMenu />
-            <DesktopAvatarLink />
-          </div>
-        </header>
+          }
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
@@ -159,7 +170,7 @@ function GamesPage() {
                 <h2 className="font-display text-2xl md:text-4xl font-bold text-(--ink)">
                   {locale === "pt" ? "Jogos Educativos" : "Educational Games"}
                 </h2>
-                <p className="text-gray-500 text-sm md:text-base max-w-md">
+                <p className="text-muted-foreground text-sm md:text-base max-w-md">
                   {locale === "pt" ? track.tagline.pt : track.tagline.en}
                 </p>
                 <div className="md:hidden mt-1">
@@ -175,7 +186,7 @@ function GamesPage() {
                     <span className="font-display text-2xl md:text-3xl font-bold text-(--ink)">
                       {s.value}
                     </span>
-                    <span className="text-2xs uppercase tracking-wider text-gray-400">
+                    <span className="text-2xs uppercase tracking-wider text-muted-foreground">
                       {s.label}
                     </span>
                   </div>
@@ -189,12 +200,12 @@ function GamesPage() {
                 <h3 className="font-display text-xl md:text-2xl font-bold text-(--ink) mb-1">
                   {locale === "pt" ? "Todos os jogos" : "All games"}
                 </h3>
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-muted-foreground">
                   {filteredGames.length} {locale === "pt" ? "jogos" : "games"}
                 </span>
               </div>
               <div className="relative w-full md:w-72">
-                <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -210,7 +221,7 @@ function GamesPage() {
                 className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
                   activeCat === "all"
                     ? "bg-orange-600 text-white"
-                    : "bg-white border border-gray-200 text-gray-500 hover:border-gray-300"
+                    : "bg-white border border-gray-200 text-muted-foreground hover:border-gray-300"
                 }`}
               >
                 {locale === "pt" ? "Todos" : "All"} ({track.games.length})
@@ -224,7 +235,7 @@ function GamesPage() {
                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
                       activeCat === c
                         ? "bg-orange-600 text-white"
-                        : "bg-white border border-gray-200 text-gray-500 hover:border-gray-300"
+                        : "bg-white border border-gray-200 text-muted-foreground hover:border-gray-300"
                     }`}
                   >
                     {locale === "pt" ? CAT_LABELS[c].pt : CAT_LABELS[c].en} ({count})
@@ -247,7 +258,7 @@ function GamesPage() {
               </div>
             ) : (
               <div className="text-center py-16 border-2 border-dashed border-gray-100 rounded-2xl">
-                <p className="text-gray-400 text-sm">
+                <p className="text-muted-foreground text-sm">
                   {locale === "pt" ? "Nenhum jogo encontrado." : "No games found."}
                 </p>
               </div>
@@ -267,10 +278,10 @@ function GamesPage() {
                     <span className="flex-1 min-w-0 font-display font-bold text-sm md:text-base truncate text-(--ink)">
                       {locale === "pt" ? g.pt : g.en}
                     </span>
-                    <span className="hidden sm:inline-block text-2xs font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-2 py-1 rounded-full shrink-0">
+                    <span className="hidden sm:inline-block text-2xs font-bold uppercase tracking-wider text-muted-foreground bg-gray-50 px-2 py-1 rounded-full shrink-0">
                       {locale === "pt" ? CAT_LABELS[g.cat].pt : CAT_LABELS[g.cat].en}
                     </span>
-                    <span className="text-xs md:text-sm text-gray-400 font-semibold w-16 md:w-20 text-right shrink-0">
+                    <span className="text-xs md:text-sm text-muted-foreground font-semibold w-16 md:w-20 text-right shrink-0">
                       {formatPlays(playCounts[g.id] ?? 0)} {locale === "pt" ? "jogadas" : "plays"}
                     </span>
                   </div>
@@ -342,17 +353,17 @@ function GameCard({
         </span>
       </div>
       <div className="p-5 flex flex-col flex-1 gap-2">
-        <span className="self-start text-2xs font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
+        <span className="self-start text-2xs font-bold uppercase tracking-wider text-muted-foreground bg-gray-50 px-2 py-1 rounded-full">
           {locale === "pt" ? catLabel.pt : catLabel.en}
         </span>
-        <h3 className="font-display text-lg font-bold text-[var(--ink)]">{title}</h3>
-        <div className="text-xs text-gray-400 font-semibold flex items-center gap-3">
+        <h3 className="font-display text-lg font-bold text-ink">{title}</h3>
+        <div className="text-xs text-muted-foreground font-semibold flex items-center gap-3">
           <span>{game.dur}</span>
           <span>{game.level}</span>
         </div>
         <div className="mt-auto pt-2">
           {game.locked ? (
-            <div className="w-full py-2.5 rounded-xl bg-gray-50 text-gray-400 text-sm font-semibold flex items-center justify-center gap-2">
+            <div className="w-full py-2.5 rounded-xl bg-gray-50 text-muted-foreground text-sm font-semibold flex items-center justify-center gap-2">
               <Lock className="w-4 h-4" />
               {locale === "pt" ? game.unlockPt : game.unlockEn}
             </div>

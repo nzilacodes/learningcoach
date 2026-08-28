@@ -15,6 +15,7 @@ import {
   Check,
   Loader2,
   Star,
+  Zap,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
 import { useNotification } from "@/lib/notifications/notification-provider";
@@ -22,6 +23,8 @@ import { celebrate, levelProgress, xpForLevel } from "@/lib/gamification";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
+import { Card } from "@/components/ui/card";
 import {
   HeaderActionLinks,
   MobileAvatarMenu,
@@ -91,7 +94,16 @@ type RankRow = {
 };
 
 type TabId = "missions" | "calendar" | "rankings" | "shop" | "avatar" | "friends";
-type RankScope = "world" | "national" | "friends";
+type RankScope = "world" | "national" | "friends" | "week";
+
+// Tier from NTILE(4) OVER weekly XP — see backend getWeeklyLeaderboard.
+// 1 = top quarter of this week's active earners, 4 = bottom quarter.
+const WEEK_TIER = {
+  1: { pt: "Diamante", en: "Diamond", emoji: "💎" },
+  2: { pt: "Ouro", en: "Gold", emoji: "🥇" },
+  3: { pt: "Prata", en: "Silver", emoji: "🥈" },
+  4: { pt: "Bronze", en: "Bronze", emoji: "🥉" },
+} as const;
 
 function RewardsPage() {
   const { locale } = useLocale();
@@ -103,13 +115,17 @@ function RewardsPage() {
   const [shop, setShop] = useState<ShopItem[]>([]);
   const [inventory, setInventory] = useState<{ item_id: string; equipped: boolean }[]>([]);
   const [events, setEvents] = useState<XpEvent[]>([]);
-  const [ranks, setRanks] = useState<{ world: RankRow[]; national: RankRow[]; friends: RankRow[] }>(
-    {
-      world: [],
-      national: [],
-      friends: [],
-    },
-  );
+  const [ranks, setRanks] = useState<{
+    world: RankRow[];
+    national: RankRow[];
+    friends: RankRow[];
+    week: RankRow[];
+  }>({
+    world: [],
+    national: [],
+    friends: [],
+    week: [],
+  });
   const [friendEmail, setFriendEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -174,6 +190,26 @@ function RewardsPage() {
         xp: r.xp,
         sublabel: `${r.cefr_level ?? "—"} · 🔥${r.streak}`,
       }));
+      const weekly = await apiFetch<
+        {
+          rank: string;
+          user_id: string;
+          display_name: string;
+          weekly_xp: number;
+          cefr_level: string | null;
+          tier: 1 | 2 | 3 | 4;
+        }[]
+      >("/v1/weekly-leaderboard?limit=50");
+      const weekRows: RankRow[] = weekly.map((r) => {
+        const tier = WEEK_TIER[r.tier];
+        return {
+          id: r.user_id,
+          name: r.display_name,
+          avatar_url: null,
+          xp: r.weekly_xp,
+          sublabel: `${tier.emoji} ${locale === "pt" ? tier.pt : tier.en} · ${r.cefr_level ?? "—"}`,
+        };
+      });
       const national = user.country
         ? await apiFetch<typeof world>(
             `/v1/leaderboard?limit=50&country=${encodeURIComponent(user.country)}`,
@@ -216,7 +252,7 @@ function RewardsPage() {
           sublabel: `${locale === "pt" ? "Nível" : "Level"} ${f.level} · ${f.country ?? "🌍"}`,
         }));
 
-      setRanks({ world: worldRows, national: nationalRows, friends: friendsRows });
+      setRanks({ world: worldRows, national: nationalRows, friends: friendsRows, week: weekRows });
     } catch (e) {
       setError(
         e instanceof Error
@@ -305,21 +341,19 @@ function RewardsPage() {
   ];
 
   const shell = (content: ReactNode) => (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white border-b border-gray-100 shrink-0 z-10">
-          <div className="flex items-center gap-2 min-w-0">
-            <h1 className="font-display text-xl font-bold text-[var(--ink)] truncate">
-              {locale === "pt" ? "Recompensas" : "Rewards"}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 md:gap-3">
-            <HeaderActionLinks />
-            <MobileAvatarMenu />
-            <DesktopAvatarLink />
-          </div>
-        </header>
+        <AppHeader
+          title={locale === "pt" ? "Recompensas" : "Rewards"}
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">{content}</main>
       </div>
       <VideosMobileNav />
@@ -329,7 +363,7 @@ function RewardsPage() {
   if (loading) {
     return shell(
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--violet)]" />
+        <Loader2 className="h-8 w-8 animate-spin text-violet" />
       </div>,
     );
   }
@@ -337,13 +371,13 @@ function RewardsPage() {
   if (error) {
     return shell(
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <h2 className="font-display text-xl font-bold text-[var(--ink)]">
+        <h2 className="font-display text-xl font-bold text-ink">
           {locale === "pt" ? "Não foi possível carregar as recompensas" : "Couldn't load rewards"}
         </h2>
-        <p className="mt-2 text-sm text-gray-500">{error}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{error}</p>
         <button
           onClick={() => refresh()}
-          className="mt-6 inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+          className="mt-6 inline-flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
         >
           {locale === "pt" ? "Tentar novamente" : "Try again"}
         </button>
@@ -354,22 +388,22 @@ function RewardsPage() {
   if (!profile) {
     return shell(
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--violet)]/10">
-          <Trophy className="h-8 w-8 text-[var(--violet)]" />
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet/10">
+          <Trophy className="h-8 w-8 text-violet" />
         </div>
-        <h2 className="font-display text-xl font-bold text-[var(--ink)]">
+        <h2 className="font-display text-xl font-bold text-ink">
           {locale === "pt"
             ? "Inicia sessão para ver as recompensas"
             : "Sign in to see your rewards"}
         </h2>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-muted-foreground">
           {locale === "pt"
             ? "XP, missões, loja e rankings ficam disponíveis com a tua conta."
             : "XP, missions, shop and rankings unlock with your account."}
         </p>
         <Link
           to="/auth"
-          className="mt-6 inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+          className="mt-6 inline-flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
         >
           {locale === "pt" ? "Entrar" : "Sign in"}
         </Link>
@@ -386,14 +420,14 @@ function RewardsPage() {
   return shell(
     <>
       {/* Hero status strip — same pattern as /games */}
-      <div className="bg-[var(--ink)] text-white">
+      <div className="bg-ink text-white">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 flex flex-col lg:flex-row lg:items-center gap-6">
           <div className="flex items-center gap-4 md:flex-1 md:pr-8 md:border-r md:border-white/10">
             <div className="relative shrink-0">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-2xl font-bold text-white border-2 border-white/20 shadow-lg">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-violet to-magenta flex items-center justify-center text-2xl font-bold text-white border-2 border-white/20 shadow-lg">
                 {displayName.slice(0, 1).toUpperCase()}
               </div>
-              <span className="absolute -bottom-1 -right-1 bg-amber-400 text-[var(--ink)] text-2xs font-extrabold px-2 py-0.5 rounded-full border-2 border-[var(--ink)]">
+              <span className="absolute -bottom-1 -right-1 bg-amber-400 text-ink text-2xs font-extrabold px-2 py-0.5 rounded-full border-2 border-ink">
                 LVL {profile.level}
               </span>
             </div>
@@ -426,7 +460,14 @@ function RewardsPage() {
                 {locale === "pt" ? "Nível" : "Level"} {profile.level + 1}
               </span>
             </div>
-            <div className="h-2.5 bg-white/15 rounded-full overflow-hidden">
+            <div
+              className="h-2.5 bg-white/15 rounded-full overflow-hidden"
+              role="progressbar"
+              aria-valuenow={Math.round(Math.min(100, Math.max(0, lp.pct)))}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={locale === "pt" ? "Progresso de nível" : "Level progress"}
+            >
               <div
                 className="h-full rounded-full bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-400 transition-all duration-700"
                 style={{ width: `${Math.min(100, Math.max(0, lp.pct))}%` }}
@@ -455,8 +496,8 @@ function RewardsPage() {
           <StatCard
             label="XP total"
             value={profile.xp.toLocaleString()}
-            icon={<Sparkles className="w-5 h-5 text-[var(--violet)]" />}
-            accent="bg-[var(--violet)]/10"
+            icon={<Sparkles className="w-5 h-5 text-violet" />}
+            accent="bg-violet/10"
           />
           <StatCard
             label={locale === "pt" ? "Moedas" : "Coins"}
@@ -480,8 +521,8 @@ function RewardsPage() {
               onClick={() => setActiveTab(id)}
               className={`shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all ${
                 activeTab === id
-                  ? "bg-[var(--primary)] text-white shadow-md"
-                  : "bg-white border border-gray-200 text-gray-500 hover:bg-gray-50"
+                  ? "bg-primary text-white shadow-md"
+                  : "bg-white border border-gray-200 text-muted-foreground hover:bg-gray-50"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -511,10 +552,10 @@ function RewardsPage() {
               return (
                 <section key={scope}>
                   <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-display text-lg font-bold text-[var(--ink)]">
+                    <h2 className="font-display text-lg font-bold text-ink">
                       {locale === "pt" ? "Missões" : "Missions"} {label}
                     </h2>
-                    <span className="text-xs font-semibold text-gray-400">
+                    <span className="text-xs font-semibold text-muted-foreground">
                       {list.filter((m) => m.claimed_at).length}/{list.length}
                     </span>
                   </div>
@@ -529,7 +570,7 @@ function RewardsPage() {
                           key={m.id}
                           className={`bg-white rounded-2xl border p-5 transition-all ${
                             done && !claimed
-                              ? "border-[var(--violet)]/40 shadow-md ring-1 ring-[var(--violet)]/10"
+                              ? "border-violet/40 shadow-md ring-1 ring-violet/10"
                               : "border-gray-100 hover:shadow-lg"
                           }`}
                         >
@@ -539,30 +580,37 @@ function RewardsPage() {
                               +{m.xp_reward} XP · +{m.coin_reward}🪙
                             </span>
                           </div>
-                          <div className="mt-3 font-display text-base font-bold text-[var(--ink)]">
+                          <div className="mt-3 font-display text-base font-bold text-ink">
                             {m.title}
                           </div>
-                          <div className="mt-1 text-xs text-gray-500 leading-relaxed">
+                          <div className="mt-1 text-xs text-muted-foreground leading-relaxed">
                             {m.description}
                           </div>
-                          <div className="mt-4 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="mt-4 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                            role="progressbar"
+                            aria-valuenow={pct}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label={m.title}
+                          >
                             <div
                               className={`h-full rounded-full transition-all ${
-                                done ? "bg-emerald-500" : "bg-[var(--primary)]"
+                                done ? "bg-emerald-500" : "bg-primary"
                               }`}
                               style={{ width: `${pct}%` }}
                             />
                           </div>
-                          <div className="mt-1.5 text-2xs text-gray-400 font-medium">
+                          <div className="mt-1.5 text-2xs text-muted-foreground font-medium">
                             {Math.min(progress, m.target)} / {m.target}
                           </div>
                           <button
                             className={`mt-3 w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-opacity ${
                               claimed
-                                ? "bg-gray-50 text-gray-400 border border-gray-100"
+                                ? "bg-gray-50 text-muted-foreground border border-gray-100"
                                 : done
-                                  ? "bg-[var(--primary)] text-white hover:opacity-90"
-                                  : "bg-gray-50 text-gray-500 border border-gray-100 cursor-default"
+                                  ? "bg-primary text-white hover:opacity-90"
+                                  : "bg-gray-50 text-muted-foreground border border-gray-100 cursor-default"
                             }`}
                             disabled={!done || claimed || claiming === m.id}
                             onClick={() => claim(m.id)}
@@ -594,7 +642,7 @@ function RewardsPage() {
               );
             })}
             {missions.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-12">
+              <p className="text-sm text-muted-foreground text-center py-12">
                 {locale === "pt" ? "Ainda sem missões ativas." : "No active missions yet."}
               </p>
             )}
@@ -623,6 +671,11 @@ function RewardsPage() {
                     label: locale === "pt" ? "Amigos" : "Friends",
                     Icon: Users,
                   },
+                  {
+                    id: "week" as const,
+                    label: locale === "pt" ? "Esta Semana" : "This Week",
+                    Icon: Zap,
+                  },
                 ] as const
               ).map(({ id, label, Icon }) => (
                 <button
@@ -630,8 +683,8 @@ function RewardsPage() {
                   onClick={() => setRankScope(id)}
                   className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                     rankScope === id
-                      ? "bg-[var(--ink)] text-white"
-                      : "bg-white border border-gray-200 text-gray-500 hover:bg-gray-50"
+                      ? "bg-ink text-white"
+                      : "bg-white border border-gray-200 text-muted-foreground hover:bg-gray-50"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -640,11 +693,11 @@ function RewardsPage() {
               ))}
             </div>
             {rankScope === "national" && !profile.country ? (
-              <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-500">
+              <Card className="rounded-2xl border-gray-100 bg-white p-8 text-center text-sm text-muted-foreground shadow-none">
                 {locale === "pt"
                   ? "Define o teu país no perfil para veres o ranking nacional."
                   : "Set your country in your profile to see the national ranking."}
-              </div>
+              </Card>
             ) : (
               <RankList
                 rows={
@@ -652,7 +705,9 @@ function RewardsPage() {
                     ? ranks.world
                     : rankScope === "national"
                       ? ranks.national
-                      : ranks.friends
+                      : rankScope === "week"
+                        ? ranks.week
+                        : ranks.friends
                 }
                 me={profile.id}
                 locale={locale}
@@ -669,18 +724,18 @@ function RewardsPage() {
               return (
                 <div
                   key={it.id}
-                  className="group bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-[var(--violet)]/20 transition-all"
+                  className="group bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-violet/20 transition-all"
                 >
-                  <div className="h-24 rounded-xl bg-gradient-to-br from-gray-50 to-[var(--violet)]/5 flex items-center justify-center text-5xl group-hover:scale-105 transition-transform">
+                  <div className="h-24 rounded-xl bg-gradient-to-br from-gray-50 to-violet/5 flex items-center justify-center text-5xl group-hover:scale-105 transition-transform">
                     {it.icon}
                   </div>
-                  <span className="mt-3 inline-block rounded-full bg-gray-50 border border-gray-100 px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wider text-gray-400">
+                  <span className="mt-3 inline-block rounded-full bg-gray-50 border border-gray-100 px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                     {it.category}
                   </span>
-                  <div className="mt-2 font-display text-lg font-bold text-[var(--ink)]">
-                    {it.name}
+                  <div className="mt-2 font-display text-lg font-bold text-ink">{it.name}</div>
+                  <div className="text-xs text-muted-foreground leading-relaxed">
+                    {it.description}
                   </div>
-                  <div className="text-xs text-gray-500 leading-relaxed">{it.description}</div>
                   <div className="mt-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-1.5 font-bold text-yellow-600">
                       <Coins className="h-4 w-4" />
@@ -689,7 +744,7 @@ function RewardsPage() {
                     {owned ? (
                       <button
                         onClick={() => equip(it.id)}
-                        className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                        className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-gray-50 transition-colors"
                       >
                         {locale === "pt" ? "Equipar" : "Equip"}
                       </button>
@@ -697,7 +752,7 @@ function RewardsPage() {
                       <button
                         disabled={!canAfford || buying === it.id}
                         onClick={() => buy(it.id)}
-                        className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         {buying === it.id
                           ? locale === "pt"
@@ -713,7 +768,7 @@ function RewardsPage() {
               );
             })}
             {shop.length === 0 && (
-              <p className="col-span-full text-sm text-gray-500 text-center py-12">
+              <p className="col-span-full text-sm text-muted-foreground text-center py-12">
                 {locale === "pt" ? "Loja vazia por agora." : "Shop is empty for now."}
               </p>
             )}
@@ -722,7 +777,7 @@ function RewardsPage() {
 
         {activeTab === "avatar" && (
           <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-10 text-center max-w-xl mx-auto">
-            <div className="mx-auto flex h-36 w-36 md:h-40 md:w-40 items-center justify-center rounded-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] text-5xl md:text-6xl font-bold text-white shadow-lg">
+            <div className="mx-auto flex h-36 w-36 md:h-40 md:w-40 items-center justify-center rounded-full bg-gradient-to-br from-violet to-magenta text-5xl md:text-6xl font-bold text-white shadow-lg">
               {(profile.full_name ?? "?").slice(0, 1).toUpperCase()}
             </div>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
@@ -733,21 +788,21 @@ function RewardsPage() {
                   return it ? (
                     <span
                       key={i.item_id}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold text-[var(--ink)]"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold text-ink"
                     >
                       <span className="text-lg">{it.icon}</span> {it.name}
                     </span>
                   ) : null;
                 })}
             </div>
-            <p className="mt-5 text-sm text-gray-500 max-w-sm mx-auto">
+            <p className="mt-5 text-sm text-muted-foreground max-w-sm mx-auto">
               {locale === "pt"
                 ? "Compra acessórios na loja e equipa-os para personalizar o teu avatar."
                 : "Buy accessories in the shop and equip them to customize your avatar."}
             </p>
             <button
               onClick={() => setActiveTab("shop")}
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
             >
               <ShoppingBag className="w-4 h-4" />
               {locale === "pt" ? "Ir à loja" : "Go to shop"}
@@ -758,8 +813,8 @@ function RewardsPage() {
         {activeTab === "friends" && (
           <div className="space-y-4 max-w-2xl">
             <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-6">
-              <div className="flex items-center gap-2 font-display text-lg font-bold text-[var(--ink)]">
-                <UserPlus className="h-5 w-5 text-[var(--violet)]" />
+              <div className="flex items-center gap-2 font-display text-lg font-bold text-ink">
+                <UserPlus className="h-5 w-5 text-violet" />
                 {locale === "pt" ? "Adicionar amigo" : "Add friend"}
               </div>
               <div className="mt-3 flex flex-col sm:flex-row gap-2">
@@ -769,11 +824,11 @@ function RewardsPage() {
                   aria-label={locale === "pt" ? "E-mail do amigo" : "Friend's email"}
                   value={friendEmail}
                   onChange={(e) => setFriendEmail(e.target.value)}
-                  className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)]"
+                  className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                 />
                 <button
                   onClick={addFriend}
-                  className="rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity shrink-0"
+                  className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity shrink-0"
                 >
                   {locale === "pt" ? "Adicionar" : "Add"}
                 </button>
@@ -802,10 +857,10 @@ function StatCard({
     <div className="bg-white rounded-2xl border border-gray-100 p-4 md:p-5 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-2xs md:text-xs font-bold uppercase tracking-wider text-gray-400">
+          <p className="text-2xs md:text-xs font-bold uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
-          <p className="mt-1 font-display text-2xl md:text-3xl font-bold text-[var(--ink)] truncate">
+          <p className="mt-1 font-display text-2xl md:text-3xl font-bold text-ink truncate">
             {value}
           </p>
         </div>
@@ -821,7 +876,7 @@ function RankList({ rows, me, locale }: { rows: RankRow[]; me: string; locale: s
   return (
     <div className="space-y-2">
       {rows.length === 0 && (
-        <p className="text-sm text-gray-500 text-center py-10">
+        <p className="text-sm text-muted-foreground text-center py-10">
           {locale === "pt" ? "Sem dados ainda." : "No data yet."}
         </p>
       )}
@@ -830,7 +885,7 @@ function RankList({ rows, me, locale }: { rows: RankRow[]; me: string; locale: s
           key={r.id}
           className={`flex items-center gap-3 md:gap-4 rounded-2xl border p-3 md:p-3.5 transition-all ${
             r.id === me
-              ? "border-[var(--violet)]/30 bg-[var(--violet)]/5"
+              ? "border-violet/30 bg-violet/5"
               : "border-gray-100 bg-white hover:shadow-sm"
           }`}
         >
@@ -842,30 +897,30 @@ function RankList({ rows, me, locale }: { rows: RankRow[]; me: string; locale: s
                   ? "bg-gradient-to-br from-slate-300 to-slate-400 text-white"
                   : i === 2
                     ? "bg-gradient-to-br from-amber-600 to-amber-800 text-white"
-                    : "bg-gray-100 text-gray-500"
+                    : "bg-gray-100 text-muted-foreground"
             }`}
           >
             {i + 1}
           </div>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-white text-xs font-bold shrink-0">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet to-magenta flex items-center justify-center text-white text-xs font-bold shrink-0">
             {(r.name ?? "?").slice(0, 1).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-sm text-[var(--ink)] truncate">
+            <div className="font-semibold text-sm text-ink truncate">
               {r.name ?? "—"}
               {r.id === me && (
-                <span className="ml-1.5 inline-flex rounded-full bg-[var(--violet)]/10 text-[var(--violet)] px-1.5 py-0.5 text-2xs font-bold">
+                <span className="ml-1.5 inline-flex rounded-full bg-violet/10 text-violet px-1.5 py-0.5 text-2xs font-bold">
                   {locale === "pt" ? "Tu" : "You"}
                 </span>
               )}
             </div>
-            <div className="text-xs text-gray-400">{r.sublabel}</div>
+            <div className="text-xs text-muted-foreground">{r.sublabel}</div>
           </div>
           <div className="text-right shrink-0">
-            <div className="font-display text-base md:text-lg font-bold text-[var(--ink)]">
+            <div className="font-display text-base md:text-lg font-bold text-ink">
               {r.xp.toLocaleString()}
             </div>
-            <div className="text-2xs uppercase tracking-wider text-gray-400">XP</div>
+            <div className="text-2xs uppercase tracking-wider text-muted-foreground">XP</div>
           </div>
         </div>
       ))}
@@ -891,10 +946,10 @@ function CalendarHeatmap({ events, locale }: { events: XpEvent[]; locale: string
   const color = (xp: number) => {
     if (xp === 0) return "bg-gray-100";
     const t = xp / max;
-    if (t < 0.25) return "bg-[var(--violet)]/20";
-    if (t < 0.5) return "bg-[var(--violet)]/40";
-    if (t < 0.75) return "bg-[var(--violet)]/70";
-    return "bg-[var(--violet)]";
+    if (t < 0.25) return "bg-violet/20";
+    if (t < 0.5) return "bg-violet/40";
+    if (t < 0.75) return "bg-violet/70";
+    return "bg-violet";
   };
   const totalXp = days.reduce((s, d) => s + d.xp, 0);
   const activeDays = days.filter((d) => d.xp > 0).length;
@@ -902,10 +957,10 @@ function CalendarHeatmap({ events, locale }: { events: XpEvent[]; locale: string
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-6">
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div className="font-display text-lg font-bold text-[var(--ink)]">
+        <div className="font-display text-lg font-bold text-ink">
           {locale === "pt" ? "Últimos 90 dias" : "Last 90 days"}
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-muted-foreground">
           {activeDays} {locale === "pt" ? "dias ativos" : "active days"} · {totalXp} XP
         </div>
       </div>
@@ -918,13 +973,13 @@ function CalendarHeatmap({ events, locale }: { events: XpEvent[]; locale: string
           />
         ))}
       </div>
-      <div className="mt-4 flex items-center gap-2 text-2xs text-gray-400">
+      <div className="mt-4 flex items-center gap-2 text-2xs text-muted-foreground">
         <span>{locale === "pt" ? "Menos" : "Less"}</span>
         <span className="w-3 h-3 rounded-sm bg-gray-100" />
-        <span className="w-3 h-3 rounded-sm bg-[var(--violet)]/20" />
-        <span className="w-3 h-3 rounded-sm bg-[var(--violet)]/40" />
-        <span className="w-3 h-3 rounded-sm bg-[var(--violet)]/70" />
-        <span className="w-3 h-3 rounded-sm bg-[var(--violet)]" />
+        <span className="w-3 h-3 rounded-sm bg-violet/20" />
+        <span className="w-3 h-3 rounded-sm bg-violet/40" />
+        <span className="w-3 h-3 rounded-sm bg-violet/70" />
+        <span className="w-3 h-3 rounded-sm bg-violet" />
         <span>{locale === "pt" ? "Mais" : "More"}</span>
       </div>
     </div>

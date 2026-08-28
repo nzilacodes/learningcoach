@@ -17,6 +17,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import {
   HeaderActionLinks,
   MobileAvatarMenu,
@@ -26,6 +27,7 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import type { DashboardData, SubscriptionRow } from "@/lib/learning";
+import { DAILY_XP_GOAL } from "@/lib/learning";
 import {
   ProfileHeader,
   LeaderboardCard,
@@ -42,13 +44,13 @@ const QUICK_PRACTICE = (locale: "pt" | "en") => [
     icon: Mic,
     label: locale === "pt" ? "Falar" : "Speak",
     to: "/pronunciation" as const,
-    accent: "hover:bg-[var(--violet)]/5",
+    accent: "hover:bg-violet/5",
   },
   {
     icon: BookOpen,
     label: locale === "pt" ? "Ler" : "Read",
     to: "/reading" as const,
-    accent: "hover:bg-[var(--magenta)]/5",
+    accent: "hover:bg-magenta/5",
   },
   {
     icon: Gamepad2,
@@ -85,12 +87,14 @@ export function AdultsDashboard(data: DashboardData) {
     data;
   const goalDays = week.goalDays;
   const daysToGo = Math.max(0, goalDays - week.days);
+  const todayXp = data.userStats?.today_xp ?? 0;
+  const todayXpPct = Math.min(1, todayXp / DAILY_XP_GOAL);
 
   const stats = [
     {
       icon: Flame,
       label: locale === "pt" ? "Sequência" : "Streak",
-      value: String(data.userStats?.streak_days ?? 0),
+      value: (data.userStats?.streak_days ?? 0).toLocaleString(),
       unit: locale === "pt" ? "dias" : "days",
       color: "text-orange-500 bg-orange-100",
     },
@@ -104,38 +108,37 @@ export function AdultsDashboard(data: DashboardData) {
     {
       icon: Trophy,
       label: locale === "pt" ? "Concluídas" : "Completed",
-      value: String(completedLessonCount),
-      unit: locale === "pt" ? "lições" : "lessons",
-      color: "text-[var(--magenta)] bg-[var(--magenta)]/10",
+      value: completedLessonCount.toLocaleString(),
+      unit: locale === "pt" ? "lições no total" : "lessons total",
+      color: "text-magenta bg-magenta/10",
     },
     {
       icon: Clock,
       label: locale === "pt" ? "Estudou" : "Studied",
       value: week.label,
       unit: locale === "pt" ? "semana" : "this week",
-      color: "text-[var(--violet)] bg-[var(--violet)]/10",
+      color: "text-violet bg-violet/10",
     },
   ];
 
   const displayName = data.firstName ?? (locale === "pt" ? "Aluno" : "Learner");
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
-      <div className="flex-1 flex flex-col min-w-0 bg-[#f7f9fb]">
+      <div className="flex-1 flex flex-col min-w-0 bg-panel-bg">
         {/* ====== TopBar ====== */}
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white/80 backdrop-blur-xl border-b border-gray-100 shrink-0 z-10">
-          <div className="flex items-center gap-2 min-w-0">
-            <h1 className="font-display text-xl font-bold text-[var(--ink)] truncate">
-              {locale === "pt" ? "Dashboard" : "Dashboard"}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 md:gap-3">
-            <HeaderActionLinks />
-            <MobileAvatarMenu />
-            <DesktopAvatarLink />
-          </div>
-        </header>
+        <AppHeader
+          title={locale === "pt" ? "Dashboard" : "Dashboard"}
+          blur
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
 
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
           <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
@@ -150,10 +153,10 @@ export function AdultsDashboard(data: DashboardData) {
                   {/* Welcome */}
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">
+                      <p className="text-sm font-medium text-muted-foreground">
                         {locale === "pt" ? "Bons estudos," : "Good studies,"}
                       </p>
-                      <h1 className="font-display text-2xl md:text-3xl font-bold text-[var(--ink)]">
+                      <h1 className="font-display text-2xl md:text-3xl font-bold text-ink">
                         {locale === "pt"
                           ? `Bom dia, ${displayName}!`
                           : `Good morning, ${displayName}!`}{" "}
@@ -161,7 +164,7 @@ export function AdultsDashboard(data: DashboardData) {
                       </h1>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="bg-[var(--violet)]/10 text-[var(--violet)] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="bg-violet/10 text-violet px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5" />
                         {user?.cefrLevel ?? "A1"}
                       </span>
@@ -188,22 +191,24 @@ export function AdultsDashboard(data: DashboardData) {
                           >
                             <s.icon className="w-4 h-4" />
                           </div>
-                          <span className="text-2xs font-bold uppercase tracking-wider text-gray-500">
+                          <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                             {s.label}
                           </span>
                         </div>
                         <div className="flex items-baseline gap-1">
-                          <span className="font-display text-3xl font-bold text-[var(--ink)]">
+                          <span className="font-display text-3xl font-bold text-ink">
                             {s.value}
                           </span>
-                          {s.unit && <span className="text-xs text-gray-400">{s.unit}</span>}
+                          {s.unit && (
+                            <span className="text-xs text-muted-foreground">{s.unit}</span>
+                          )}
                         </div>
                       </div>
                     ))}
                   </div>
 
                   {/* Hero: Continue Card */}
-                  <div className="bg-gradient-to-br from-[var(--violet)] via-[var(--magenta)] to-[var(--violet)] rounded-3xl p-6 md:p-8 text-white flex items-center gap-8 shadow-xl relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-violet via-magenta to-violet rounded-3xl p-6 md:p-8 text-white flex items-center gap-8 shadow-xl relative overflow-hidden">
                     {/* Blobs */}
                     <div className="absolute -top-10 -right-10 w-64 h-64 bg-white/10 blur-3xl rounded-full" />
                     <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-black/10 blur-2xl rounded-full" />
@@ -221,7 +226,18 @@ export function AdultsDashboard(data: DashboardData) {
                           ? `Você parou na lição atual. Complete agora para ganhar XP bônus!`
                           : `You stopped at the current lesson. Complete now to earn bonus XP!`}
                       </p>
-                      <div className="w-full bg-white/20 h-3 rounded-full mb-8 overflow-hidden">
+                      <div
+                        className="w-full bg-white/20 h-3 rounded-full mb-8 overflow-hidden"
+                        role="progressbar"
+                        aria-valuenow={Math.round(Math.max(5, currentPct))}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={
+                          locale === "pt"
+                            ? `Unidade ${currentUnit.index}: ${currentUnit.title}`
+                            : `Unit ${currentUnit.index}: ${currentUnit.title}`
+                        }
+                      >
                         <div
                           className="bg-white h-full rounded-full"
                           style={{ width: `${Math.max(5, currentPct)}%` }}
@@ -230,7 +246,7 @@ export function AdultsDashboard(data: DashboardData) {
                       <Link
                         to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
                         params={nextLessonId ? { lessonId: nextLessonId } : undefined}
-                        className="inline-flex items-center gap-2 bg-white text-[var(--violet)] px-8 py-4 rounded-2xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                        className="inline-flex items-center gap-2 bg-white text-violet px-8 py-4 rounded-2xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform"
                       >
                         <Play className="w-4 h-4 fill-current" />
                         {locale === "pt" ? "Retomar Lição" : "Resume Lesson"}
@@ -248,7 +264,7 @@ export function AdultsDashboard(data: DashboardData) {
 
                   {/* Quick Practice */}
                   <div>
-                    <h3 className="font-display text-lg font-bold text-[var(--ink)] mb-4">
+                    <h3 className="font-display text-lg font-bold text-ink mb-4">
                       {locale === "pt" ? "Prática Rápida" : "Quick Practice"}
                     </h3>
                     <div className="grid grid-cols-4 gap-4">
@@ -258,7 +274,7 @@ export function AdultsDashboard(data: DashboardData) {
                           to={a.to}
                           className={`flex flex-col items-center gap-3 bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-2xl p-5 shadow-sm transition-all ${a.accent} hover:shadow-md active:scale-95`}
                         >
-                          <a.icon className="w-7 h-7 text-[var(--violet)]" />
+                          <a.icon className="w-7 h-7 text-violet" />
                           <span className="text-xs font-bold text-gray-700">{a.label}</span>
                         </Link>
                       ))}
@@ -268,12 +284,12 @@ export function AdultsDashboard(data: DashboardData) {
                   {/* Learning Track — Bento Grid */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-display text-lg font-bold text-[var(--ink)]">
+                      <h3 className="font-display text-lg font-bold text-ink">
                         {locale === "pt" ? "Trilha de Aprendizado" : "Learning Track"}
                       </h3>
                       <Link
                         to="/curriculum"
-                        className="text-sm font-bold text-[var(--violet)] hover:opacity-80"
+                        className="text-sm font-bold text-violet hover:opacity-80"
                       >
                         {locale === "pt" ? "Ver tudo" : "View all"}
                       </Link>
@@ -287,7 +303,7 @@ export function AdultsDashboard(data: DashboardData) {
                           <div
                             className={`aspect-square rounded-2xl overflow-hidden mb-2 border ${
                               u.current
-                                ? "ring-2 ring-[var(--violet)] ring-offset-2 border-[var(--violet)]/20"
+                                ? "ring-2 ring-violet ring-offset-2 border-violet/20"
                                 : u.locked
                                   ? "border-gray-100 grayscale opacity-50 bg-gray-50"
                                   : u.done
@@ -316,7 +332,14 @@ export function AdultsDashboard(data: DashboardData) {
                             )}
                             {u.current && !u.locked && (
                               <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
-                                <div className="h-1 bg-white/30 rounded-full overflow-hidden">
+                                <div
+                                  className="h-1 bg-white/30 rounded-full overflow-hidden"
+                                  role="progressbar"
+                                  aria-valuenow={u.progress}
+                                  aria-valuemin={0}
+                                  aria-valuemax={100}
+                                  aria-label={u.title}
+                                >
                                   <div
                                     className="h-full bg-white rounded-full"
                                     style={{ width: `${u.progress}%` }}
@@ -328,10 +351,10 @@ export function AdultsDashboard(data: DashboardData) {
                           <p
                             className={`text-2xs font-bold uppercase tracking-wider ${
                               u.current
-                                ? "text-[var(--violet)]"
+                                ? "text-violet"
                                 : u.locked
                                   ? "text-gray-300"
-                                  : "text-gray-500"
+                                  : "text-muted-foreground"
                             }`}
                           >
                             {u.current
@@ -339,7 +362,7 @@ export function AdultsDashboard(data: DashboardData) {
                               : `${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`}
                           </p>
                           <p
-                            className={`text-xs font-bold truncate ${u.locked ? "text-gray-300" : "text-[var(--ink)]"}`}
+                            className={`text-xs font-bold truncate ${u.locked ? "text-gray-300" : "text-ink"}`}
                           >
                             {u.title}
                           </p>
@@ -364,10 +387,10 @@ export function AdultsDashboard(data: DashboardData) {
               </div>
             </div>
             {/* --- Right Sidebar (Desktop, fixed) --- */}
-            <aside className="hidden lg:flex flex-col fixed right-0 top-16 bottom-0 w-[380px] border-l border-gray-100 bg-[#f7f9fb] p-6 gap-6 overflow-y-auto">
+            <aside className="hidden lg:flex flex-col fixed right-0 top-16 bottom-0 w-[380px] border-l border-gray-100 bg-panel-bg p-6 gap-6 overflow-y-auto">
               {/* Weekly Goal */}
               <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm flex flex-col items-center">
-                <h4 className="text-sm font-bold text-[var(--ink)] self-start mb-4">
+                <h4 className="text-sm font-bold text-ink self-start mb-4">
                   {locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
                 </h4>
                 <div className="relative w-32 h-32 mb-4">
@@ -387,20 +410,20 @@ export function AdultsDashboard(data: DashboardData) {
                       fill="transparent"
                       strokeWidth="10"
                       strokeLinecap="round"
-                      className="stroke-[var(--violet)] transition-all duration-1000"
+                      className="stroke-violet transition-all duration-1000"
                       strokeDasharray={`${(week.pct * 2 * Math.PI * 42).toFixed(1)} 999`}
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="font-display text-2xl font-bold text-[var(--ink)]">
+                    <span className="font-display text-2xl font-bold text-ink">
                       {week.days}/{goalDays}
                     </span>
-                    <span className="text-2xs uppercase font-bold text-gray-400">
+                    <span className="text-2xs uppercase font-bold text-muted-foreground">
                       {locale === "pt" ? "Dias" : "Days"}
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-center text-gray-500">
+                <p className="text-xs text-center text-muted-foreground">
                   {daysToGo === 0
                     ? locale === "pt"
                       ? "Meta da semana atingida! 🎉"
@@ -413,10 +436,54 @@ export function AdultsDashboard(data: DashboardData) {
                   {Array.from({ length: goalDays }).map((_, i) => (
                     <div
                       key={i}
-                      className={`w-6 h-1.5 rounded-full ${i < week.days ? "bg-[var(--violet)]" : "bg-gray-200"}`}
+                      className={`w-6 h-1.5 rounded-full ${i < week.days ? "bg-violet" : "bg-gray-200"}`}
                     />
                   ))}
                 </div>
+              </div>
+
+              {/* Daily XP Goal */}
+              <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm flex flex-col items-center">
+                <h4 className="text-sm font-bold text-ink self-start mb-4">
+                  {locale === "pt" ? "Meta Diária" : "Daily Goal"}
+                </h4>
+                <div className="relative w-32 h-32 mb-4">
+                  <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      fill="transparent"
+                      strokeWidth="10"
+                      className="stroke-gray-100"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      fill="transparent"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                      className="stroke-sunset transition-all duration-1000"
+                      strokeDasharray={`${(todayXpPct * 2 * Math.PI * 42).toFixed(1)} 999`}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="font-display text-2xl font-bold text-ink">
+                      {todayXp}/{DAILY_XP_GOAL}
+                    </span>
+                    <span className="text-2xs uppercase font-bold text-muted-foreground">XP</span>
+                  </div>
+                </div>
+                <p className="text-xs text-center text-muted-foreground">
+                  {todayXp >= DAILY_XP_GOAL
+                    ? locale === "pt"
+                      ? "Meta de hoje atingida! 🎉"
+                      : "Today's goal reached! 🎉"
+                    : locale === "pt"
+                      ? `Falta${DAILY_XP_GOAL - todayXp === 1 ? "" : "m"} ${DAILY_XP_GOAL - todayXp} XP para a meta de hoje.`
+                      : `${DAILY_XP_GOAL - todayXp} XP to go today.`}
+                </p>
               </div>
 
               {/* Study Reminder */}
@@ -443,15 +510,15 @@ export function AdultsDashboard(data: DashboardData) {
               {/* Welcome */}
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-xs font-medium text-gray-500">
+                  <p className="text-xs font-medium text-muted-foreground">
                     {locale === "pt" ? "Bons estudos," : "Good studies,"}
                   </p>
-                  <h1 className="font-display text-xl font-bold text-[var(--ink)]">
+                  <h1 className="font-display text-xl font-bold text-ink">
                     {locale === "pt" ? `Bom dia, ${displayName}!` : `Good morning, ${displayName}!`}{" "}
                     👋
                   </h1>
                 </div>
-                <span className="bg-[var(--violet)]/10 text-[var(--violet)] px-2.5 py-0.5 rounded-full text-2xs font-bold flex items-center gap-1">
+                <span className="bg-violet/10 text-violet px-2.5 py-0.5 rounded-full text-2xs font-bold flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
                   {user?.cefrLevel ?? "A1"}
                 </span>
@@ -470,26 +537,24 @@ export function AdultsDashboard(data: DashboardData) {
                       <s.icon className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-2xs font-bold uppercase tracking-wider text-gray-400">
+                      <p className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                         {s.label}
                       </p>
-                      <p className="font-display text-base font-bold text-[var(--ink)]">
-                        {s.value}
-                      </p>
+                      <p className="font-display text-base font-bold text-ink">{s.value}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Continue Card — image bg overlay */}
-              <div className="relative h-48 rounded-[2rem] overflow-hidden shadow-md active:scale-[0.98] transition-transform">
+              <div className="relative h-48 rounded-3xl overflow-hidden shadow-md active:scale-[0.98] transition-transform">
                 <img
                   src={currentUnit.image}
                   alt=""
                   className="absolute inset-0 w-full h-full object-cover"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[var(--violet)]/90 via-[var(--violet)]/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-violet/90 via-violet/40 to-transparent" />
                 <div className="absolute bottom-0 w-full p-5 space-y-2">
                   <div className="flex items-end justify-between">
                     <div>
@@ -503,12 +568,19 @@ export function AdultsDashboard(data: DashboardData) {
                     <Link
                       to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
                       params={nextLessonId ? { lessonId: nextLessonId } : undefined}
-                      className="bg-white text-[var(--violet)] px-4 py-2 rounded-full text-xs font-bold shadow-lg active:scale-90 transition-transform shrink-0"
+                      className="bg-white text-violet px-4 py-2 rounded-full text-xs font-bold shadow-lg active:scale-90 transition-transform shrink-0"
                     >
                       {locale === "pt" ? "Retomar" : "Resume"}
                     </Link>
                   </div>
-                  <div className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden">
+                  <div
+                    className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={Math.round(Math.max(5, currentPct))}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={currentUnit.title}
+                  >
                     <div
                       className="bg-white h-full rounded-full"
                       style={{ width: `${Math.max(5, currentPct)}%` }}
@@ -520,7 +592,7 @@ export function AdultsDashboard(data: DashboardData) {
 
               {/* Quick Actions — horizontal scroll */}
               <div>
-                <h3 className="font-display text-base font-bold text-[var(--ink)] mb-3">
+                <h3 className="font-display text-base font-bold text-ink mb-3">
                   {locale === "pt" ? "Prática Rápida" : "Quick Practice"}
                 </h3>
                 <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
@@ -530,17 +602,19 @@ export function AdultsDashboard(data: DashboardData) {
                       to={a.to}
                       className="flex-shrink-0 w-20 flex flex-col items-center gap-2 active:scale-90 transition-transform"
                     >
-                      <div className="w-14 h-14 rounded-2xl bg-[var(--violet)]/10 flex items-center justify-center text-[var(--violet)] shadow-sm">
+                      <div className="w-14 h-14 rounded-2xl bg-violet/10 flex items-center justify-center text-violet shadow-sm">
                         <a.icon className="w-6 h-6" />
                       </div>
-                      <span className="text-2xs font-semibold text-gray-600">{a.label}</span>
+                      <span className="text-2xs font-semibold text-muted-foreground">
+                        {a.label}
+                      </span>
                     </Link>
                   ))}
                 </div>
               </div>
 
               {/* Weekly Goal — horizontal layout */}
-              <div className="bg-white border border-gray-100 rounded-[2rem] p-5 flex items-center gap-5 shadow-sm">
+              <div className="bg-white border border-gray-100 rounded-3xl p-5 flex items-center gap-5 shadow-sm">
                 <div className="relative w-20 h-20 shrink-0">
                   <svg viewBox="0 0 36 36" className="w-full h-full">
                     <path
@@ -550,7 +624,7 @@ export function AdultsDashboard(data: DashboardData) {
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     />
                     <path
-                      className="text-[var(--violet)] stroke-current"
+                      className="text-violet stroke-current"
                       fill="none"
                       strokeWidth="3"
                       strokeLinecap="round"
@@ -559,19 +633,19 @@ export function AdultsDashboard(data: DashboardData) {
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="font-display text-sm font-bold text-[var(--violet)]">
+                    <span className="font-display text-sm font-bold text-violet">
                       {week.days}/{goalDays}
                     </span>
-                    <span className="text-2xs font-bold text-gray-400 uppercase">
+                    <span className="text-2xs font-bold text-muted-foreground uppercase">
                       {locale === "pt" ? "Dias" : "Days"}
                     </span>
                   </div>
                 </div>
                 <div className="flex-1 space-y-1">
-                  <h4 className="font-display text-base font-bold text-[var(--ink)]">
+                  <h4 className="font-display text-base font-bold text-ink">
                     {locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
                   </h4>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {daysToGo === 0
                       ? locale === "pt"
                         ? "Meta da semana atingida! 🎉"
@@ -584,16 +658,58 @@ export function AdultsDashboard(data: DashboardData) {
                     {Array.from({ length: goalDays }).map((_, i) => (
                       <div
                         key={i}
-                        className={`w-6 h-1.5 rounded-full ${i < week.days ? "bg-[var(--violet)]" : "bg-gray-200"}`}
+                        className={`w-6 h-1.5 rounded-full ${i < week.days ? "bg-violet" : "bg-gray-200"}`}
                       />
                     ))}
                   </div>
                 </div>
               </div>
 
+              {/* Daily XP Goal — horizontal layout */}
+              <div className="bg-white border border-gray-100 rounded-3xl p-5 flex items-center gap-5 shadow-sm">
+                <div className="relative w-20 h-20 shrink-0">
+                  <svg viewBox="0 0 36 36" className="w-full h-full">
+                    <path
+                      className="text-gray-100 stroke-current"
+                      fill="none"
+                      strokeWidth="3"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className="text-sunset stroke-current"
+                      fill="none"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeDasharray={`${todayXpPct * 100}, 100`}
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="font-display text-sm font-bold text-sunset">
+                      {todayXp}/{DAILY_XP_GOAL}
+                    </span>
+                    <span className="text-2xs font-bold text-muted-foreground uppercase">XP</span>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-1">
+                  <h4 className="font-display text-base font-bold text-ink">
+                    {locale === "pt" ? "Meta Diária" : "Daily Goal"}
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    {todayXp >= DAILY_XP_GOAL
+                      ? locale === "pt"
+                        ? "Meta de hoje atingida! 🎉"
+                        : "Today's goal reached! 🎉"
+                      : locale === "pt"
+                        ? `Falta${DAILY_XP_GOAL - todayXp === 1 ? "" : "m"} ${DAILY_XP_GOAL - todayXp} XP para a meta de hoje.`
+                        : `${DAILY_XP_GOAL - todayXp} XP to go today.`}
+                  </p>
+                </div>
+              </div>
+
               {/* Learning Track — Vertical Timeline */}
               <div>
-                <h3 className="font-display text-base font-bold text-[var(--ink)] mb-4">
+                <h3 className="font-display text-base font-bold text-ink mb-4">
                   {locale === "pt" ? "Trilha de Aprendizado" : "Learning Track"}
                 </h3>
                 <div className="relative space-y-4">
@@ -605,8 +721,8 @@ export function AdultsDashboard(data: DashboardData) {
                           u.done
                             ? "bg-emerald-500 text-white shadow-lg shadow-emerald-100"
                             : u.current
-                              ? "bg-[var(--violet)]/10 text-[var(--violet)] ring-2 ring-[var(--violet)]/30 shadow-lg"
-                              : "bg-gray-100 text-gray-400"
+                              ? "bg-violet/10 text-violet ring-2 ring-violet/30 shadow-lg"
+                              : "bg-gray-100 text-muted-foreground"
                         }`}
                       >
                         {u.done ? (
@@ -622,20 +738,25 @@ export function AdultsDashboard(data: DashboardData) {
                       >
                         <p
                           className={`text-2xs font-bold uppercase tracking-wider ${
-                            u.current ? "text-[var(--violet)]" : "text-gray-400"
+                            u.current ? "text-violet" : "text-muted-foreground"
                           }`}
                         >
                           {u.current
                             ? `${locale === "pt" ? "ATUAL" : "CURRENT"} • ${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`
                             : `${locale === "pt" ? "UNIDADE" : "UNIT"} ${u.index}`}
                         </p>
-                        <h4 className="font-display text-sm font-bold text-[var(--ink)]">
-                          {u.title}
-                        </h4>
+                        <h4 className="font-display text-sm font-bold text-ink">{u.title}</h4>
                         {u.current && !u.done && (
-                          <div className="mt-2 h-1 bg-gray-100 rounded-full overflow-hidden w-24">
+                          <div
+                            className="mt-2 h-1 bg-gray-100 rounded-full overflow-hidden w-24"
+                            role="progressbar"
+                            aria-valuenow={u.progress}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label={u.title}
+                          >
                             <div
-                              className="h-full bg-[var(--violet)] rounded-full"
+                              className="h-full bg-violet rounded-full"
                               style={{ width: `${u.progress}%` }}
                             />
                           </div>
@@ -645,7 +766,7 @@ export function AdultsDashboard(data: DashboardData) {
                         <Link
                           to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
                           params={nextLessonId ? { lessonId: nextLessonId } : undefined}
-                          className="shrink-0 text-[var(--violet)] text-xs font-bold flex items-center gap-1 mt-1"
+                          className="shrink-0 text-violet text-xs font-bold flex items-center gap-1 mt-1"
                         >
                           {locale === "pt" ? "Continuar" : "Continue"}{" "}
                           <ChevronRight className="w-3 h-3" />
@@ -702,7 +823,7 @@ function SubscriptionCard({
   if (sub?.status === "active") {
     const activationCode = sub.activation_code;
     return (
-      <div className="bg-gradient-to-r from-[var(--violet)] to-[var(--magenta)] premium-shadow rounded-3xl p-6 text-white">
+      <div className="bg-gradient-to-r from-violet to-magenta premium-shadow rounded-3xl p-6 text-white">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
             <Zap className="w-5 h-5" />
@@ -735,12 +856,19 @@ function SubscriptionCard({
             {activationCode}
           </button>
         )}
-        <div className="h-1.5 bg-white/20 rounded-full overflow-hidden mb-4">
+        <div
+          className="h-1.5 bg-white/20 rounded-full overflow-hidden mb-4"
+          role="progressbar"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`${locale === "pt" ? "Plano" : "Plan"} ${planLabel ?? ""}`}
+        >
           <div className="h-full bg-white rounded-full" style={{ width: `${pct}%` }} />
         </div>
         <Link
           to="/pricing"
-          className="block w-full text-center py-2.5 bg-white text-[var(--violet)] rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
+          className="block w-full text-center py-2.5 bg-white text-violet rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
         >
           {locale === "pt" ? "Renovar Plano" : "Renew Plan"}
         </Link>
@@ -754,10 +882,10 @@ function SubscriptionCard({
         <div className="text-2xs font-bold uppercase tracking-widest text-amber mb-1">
           {locale === "pt" ? "Aguardando ativação" : "Awaiting activation"}
         </div>
-        <p className="font-display text-base font-bold text-[var(--ink)]">
+        <p className="font-display text-base font-bold text-ink">
           {locale === "pt" ? "Pagamento em verificação" : "Payment under review"}
         </p>
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-muted-foreground">
           {locale === "pt"
             ? "O administrador irá ativar a sua assinatura após confirmar o pagamento."
             : "The admin will activate your subscription after confirming the payment."}
@@ -770,13 +898,13 @@ function SubscriptionCard({
     <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
       <div className="flex items-center gap-3 mb-3">
         <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-          <Zap className="w-5 h-5 text-gray-400" />
+          <Zap className="w-5 h-5 text-muted-foreground" />
         </div>
         <div>
-          <p className="text-xs font-bold text-[var(--ink)]">
+          <p className="text-xs font-bold text-ink">
             {locale === "pt" ? "Sem assinatura" : "No subscription"}
           </p>
-          <p className="text-2xs text-gray-400">
+          <p className="text-2xs text-muted-foreground">
             {locale === "pt" ? "Escolha um plano" : "Choose a plan"}
           </p>
         </div>

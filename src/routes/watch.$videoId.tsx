@@ -4,7 +4,15 @@ import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 import { Button } from "@/components/ui/button";
+import { Card as CardPrimitive } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
@@ -187,7 +195,11 @@ function WatchPage() {
       <div className="min-h-screen flex flex-col">
         <SiteHeader />
         <main className="flex-1 container mx-auto px-4 py-16 max-w-lg text-center">
-          <img src={youtubeThumb(videoId)} alt="" className="w-full rounded-xl mb-6" />
+          <img
+            src={youtubeThumb(videoId)}
+            alt="Pré-visualização do vídeo"
+            className="w-full rounded-xl mb-6"
+          />
           <h1 className="text-2xl font-bold mb-2">Entre para assistir</h1>
           <p className="text-muted-foreground mb-4">
             Guardamos o seu progresso e geramos automaticamente transcrição, quiz e atividades para
@@ -202,163 +214,176 @@ function WatchPage() {
     );
   }
 
+  // Reached from /videos (VideosSidebar) — keeps the same shell instead of
+  // dropping to the marketing SiteHeader (NAV-2).
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <SiteHeader />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
-        <Link
-          to="/videos"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" /> Biblioteca de vídeos
-        </Link>
+    <div className="flex h-screen overflow-hidden bg-background">
+      <VideosSidebar />
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <AppHeader
+          title="Vídeo"
+          titleLevel="h2"
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide container mx-auto px-4 py-8 max-w-5xl">
+          <Link
+            to="/videos"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" /> Biblioteca de vídeos
+          </Link>
 
-        <h1 className="text-2xl md:text-3xl font-bold mb-1">{title}</h1>
-        <div className="text-sm text-muted-foreground mb-4">
-          {channel} · {level} · {topic}
-        </div>
+          <h1 className="text-2xl md:text-3xl font-bold mb-1">{title}</h1>
+          <div className="text-sm text-muted-foreground mb-4">
+            {channel} · {level} · {topic}
+          </div>
 
-        {/* Player */}
-        <div className="aspect-video w-full rounded-2xl overflow-hidden border bg-black mb-4">
-          {startAt == null ? (
-            <div className="w-full h-full grid place-items-center text-white/70">
-              <Loader2 className="w-6 h-6 animate-spin" />
-            </div>
-          ) : (
-            <iframe
-              key={`${videoId}-${startAt}`}
-              className="w-full h-full"
-              src={buildEmbedUrl(videoId, startAt)}
-              title={title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 mb-6">
-          {resumeAt > 5 && (
-            <span className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary inline-flex items-center gap-1">
-              <PlayCircle className="w-3.5 h-3.5" />
-              Retomado em {formatDuration(resumeAt, { padMinutes: false })}
-            </span>
-          )}
-          <Button size="sm" variant="outline" onClick={markCompleted}>
-            <CheckCircle2 className="w-4 h-4 mr-1" /> Marcar como concluído
-          </Button>
-          {packError && (
-            <Button size="sm" variant="ghost" onClick={() => refetchPack()}>
-              Tentar regenerar materiais
-            </Button>
-          )}
-          <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5" /> Materiais gerados por IA
-          </span>
-        </div>
-
-        {/* Study pack tabs */}
-        <Tabs defaultValue="summary" className="w-full">
-          <TabsList className="flex flex-wrap h-auto">
-            <TabsTrigger value="summary">
-              <FileText className="w-4 h-4 mr-1" /> Resumo
-            </TabsTrigger>
-            <TabsTrigger value="transcript">
-              <BookOpen className="w-4 h-4 mr-1" /> Transcrição
-            </TabsTrigger>
-            <TabsTrigger value="quiz">
-              <ListChecks className="w-4 h-4 mr-1" /> Quiz
-            </TabsTrigger>
-            <TabsTrigger value="listening">
-              <Ear className="w-4 h-4 mr-1" /> Listening
-            </TabsTrigger>
-            <TabsTrigger value="vocab">
-              <BookMarked className="w-4 h-4 mr-1" /> Vocabulary
-            </TabsTrigger>
-            <TabsTrigger value="speaking">
-              <Mic className="w-4 h-4 mr-1" /> Speaking
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="mt-4">
-            {packLoading && (
-              <div className="flex items-center gap-2 text-muted-foreground p-6">
-                <Loader2 className="w-4 h-4 animate-spin" /> Gerando materiais da aula…
+          {/* Player */}
+          <div className="aspect-video w-full rounded-2xl overflow-hidden border bg-black mb-4">
+            {startAt == null ? (
+              <div className="w-full h-full grid place-items-center text-white/70">
+                <Loader2 className="w-6 h-6 animate-spin" />
               </div>
-            )}
-
-            {pack && (
-              <>
-                <TabsContent value="summary">
-                  <Card>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Resumo gerado por IA com base no título e tema — pode conter imprecisões.
-                    </p>
-                    <p className="whitespace-pre-line leading-relaxed">{pack.summary}</p>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="transcript">
-                  <Card>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Excerto simulado com base no título e tema. As legendas nativas do YouTube
-                      estão ativadas no player (botão CC).
-                    </p>
-                    <p className="whitespace-pre-line leading-relaxed">{pack.transcript_excerpt}</p>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="quiz">
-                  <QuizBlock quiz={pack.quiz} />
-                </TabsContent>
-
-                <TabsContent value="listening">
-                  <ChecklistCard title="Atividades de escuta" items={pack.listening_activities} />
-                </TabsContent>
-
-                <TabsContent value="vocab">
-                  <Card>
-                    {pack.key_vocabulary.length === 0 ? (
-                      <p className="text-muted-foreground">Sem vocabulário gerado.</p>
-                    ) : (
-                      <ul className="divide-y">
-                        {pack.key_vocabulary.map((v) => (
-                          <li key={v.word} className="py-3">
-                            <div className="font-semibold">
-                              {v.word}{" "}
-                              <span className="text-muted-foreground text-sm">— {v.pt}</span>
-                            </div>
-                            <div className="text-sm text-muted-foreground italic">
-                              "{v.example}"
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    <div className="mt-4">
-                      <ChecklistCard
-                        title="Praticar vocabulário"
-                        items={pack.vocabulary_activities}
-                        embedded
-                      />
-                    </div>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="speaking">
-                  <ChecklistCard title="Prática de fala" items={pack.speaking_activities} />
-                </TabsContent>
-              </>
+            ) : (
+              <iframe
+                key={`${videoId}-${startAt}`}
+                className="w-full h-full"
+                src={buildEmbedUrl(videoId, startAt)}
+                title={title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
             )}
           </div>
-        </Tabs>
-      </main>
-      <SiteFooter />
+
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            {resumeAt > 5 && (
+              <span className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary inline-flex items-center gap-1">
+                <PlayCircle className="w-3.5 h-3.5" />
+                Retomado em {formatDuration(resumeAt, { padMinutes: false })}
+              </span>
+            )}
+            <Button size="sm" variant="outline" onClick={markCompleted}>
+              <CheckCircle2 className="w-4 h-4 mr-1" /> Marcar como concluído
+            </Button>
+            {packError && (
+              <Button size="sm" variant="ghost" onClick={() => refetchPack()}>
+                Tentar regenerar materiais
+              </Button>
+            )}
+            <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" /> Materiais gerados por IA
+            </span>
+          </div>
+
+          {/* Study pack tabs */}
+          <Tabs defaultValue="summary" className="w-full">
+            <TabsList className="flex flex-wrap h-auto">
+              <TabsTrigger value="summary">
+                <FileText className="w-4 h-4 mr-1" /> Resumo
+              </TabsTrigger>
+              <TabsTrigger value="transcript">
+                <BookOpen className="w-4 h-4 mr-1" /> Transcrição
+              </TabsTrigger>
+              <TabsTrigger value="quiz">
+                <ListChecks className="w-4 h-4 mr-1" /> Quiz
+              </TabsTrigger>
+              <TabsTrigger value="listening">
+                <Ear className="w-4 h-4 mr-1" /> Listening
+              </TabsTrigger>
+              <TabsTrigger value="vocab">
+                <BookMarked className="w-4 h-4 mr-1" /> Vocabulary
+              </TabsTrigger>
+              <TabsTrigger value="speaking">
+                <Mic className="w-4 h-4 mr-1" /> Speaking
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="mt-4">
+              {packLoading && (
+                <div className="flex items-center gap-2 text-muted-foreground p-6">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Gerando materiais da aula…
+                </div>
+              )}
+
+              {pack && (
+                <>
+                  <TabsContent value="summary">
+                    <CardPrimitive className="p-5 shadow-none">
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Resumo gerado por IA com base no título e tema — pode conter imprecisões.
+                      </p>
+                      <p className="whitespace-pre-line leading-relaxed">{pack.summary}</p>
+                    </CardPrimitive>
+                  </TabsContent>
+
+                  <TabsContent value="transcript">
+                    <CardPrimitive className="p-5 shadow-none">
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Excerto simulado com base no título e tema. As legendas nativas do YouTube
+                        estão ativadas no player (botão CC).
+                      </p>
+                      <p className="whitespace-pre-line leading-relaxed">
+                        {pack.transcript_excerpt}
+                      </p>
+                    </CardPrimitive>
+                  </TabsContent>
+
+                  <TabsContent value="quiz">
+                    <QuizBlock quiz={pack.quiz} />
+                  </TabsContent>
+
+                  <TabsContent value="listening">
+                    <ChecklistCard title="Atividades de escuta" items={pack.listening_activities} />
+                  </TabsContent>
+
+                  <TabsContent value="vocab">
+                    <CardPrimitive className="p-5 shadow-none">
+                      {pack.key_vocabulary.length === 0 ? (
+                        <p className="text-muted-foreground">Sem vocabulário gerado.</p>
+                      ) : (
+                        <ul className="divide-y">
+                          {pack.key_vocabulary.map((v) => (
+                            <li key={v.word} className="py-3">
+                              <div className="font-semibold">
+                                {v.word}{" "}
+                                <span className="text-muted-foreground text-sm">— {v.pt}</span>
+                              </div>
+                              <div className="text-sm text-muted-foreground italic">
+                                "{v.example}"
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <div className="mt-4">
+                        <ChecklistCard
+                          title="Praticar vocabulário"
+                          items={pack.vocabulary_activities}
+                          embedded
+                        />
+                      </div>
+                    </CardPrimitive>
+                  </TabsContent>
+
+                  <TabsContent value="speaking">
+                    <ChecklistCard title="Prática de fala" items={pack.speaking_activities} />
+                  </TabsContent>
+                </>
+              )}
+            </div>
+          </Tabs>
+        </main>
+      </div>
+      <VideosMobileNav />
     </div>
   );
-}
-
-function Card({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-xl border bg-card p-5">{children}</div>;
 }
 
 function ChecklistCard({
@@ -393,7 +418,11 @@ function ChecklistCard({
       </ul>
     </>
   );
-  return embedded ? <div>{body}</div> : <Card>{body}</Card>;
+  return embedded ? (
+    <div>{body}</div>
+  ) : (
+    <CardPrimitive className="p-5 shadow-none">{body}</CardPrimitive>
+  );
 }
 
 function QuizBlock({ quiz }: { quiz: StudyPack["quiz"] }) {
@@ -401,14 +430,14 @@ function QuizBlock({ quiz }: { quiz: StudyPack["quiz"] }) {
   const [checked, setChecked] = useState(false);
   if (!quiz || quiz.length === 0) {
     return (
-      <Card>
+      <CardPrimitive className="p-5 shadow-none">
         <p className="text-muted-foreground">Sem quiz gerado ainda.</p>
-      </Card>
+      </CardPrimitive>
     );
   }
   const correct = quiz.reduce((n, q, i) => n + (answers[i] === q.a ? 1 : 0), 0);
   return (
-    <Card>
+    <CardPrimitive className="p-5 shadow-none">
       <div className="space-y-5">
         {quiz.map((q, i) => (
           <div key={i}>
@@ -451,6 +480,6 @@ function QuizBlock({ quiz }: { quiz: StudyPack["quiz"] }) {
           </div>
         )}
       </div>
-    </Card>
+    </CardPrimitive>
   );
 }

@@ -1,61 +1,17 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Users,
-  CreditCard,
-  DollarSign,
-  Clock,
-  TrendingUp,
-  ShieldCheck,
-  CheckCircle2,
-  XCircle,
-} from "lucide-react";
-import { useNotification } from "@/lib/notifications/notification-provider";
-import { SiteHeader } from "@/components/site-header";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { apiFetch } from "@/lib/api/client";
-import {
-  SubscriptionsSection,
-  AnalyticsSection,
-  ReportsSection,
-  CurriculumSection,
-} from "@/components/admin/sections";
-
-type AdminUser = {
-  id: string;
-  full_name: string | null;
-  email: string | null;
-  phone: string | null;
-  country: string | null;
-  age: number | null;
-  cefr_level: string | null;
-  created_at: string;
-};
-
-type AdminPayment = {
-  id: string;
-  amount_kz: number;
-  reference: string;
-  status: string;
-  profiles?: { full_name: string | null; email: string | null } | null;
-  subscription_plans?: { tier: string; billing_cycle: string } | null;
-  subscriptions?: { activation_code: string | null; expires_at: string | null } | null;
-};
+import { Button } from "@/components/ui/button";
+import { AppHeader } from "@/components/app-header";
+import { AdminSidebar, AdminMobileNav } from "@/components/admin/admin-sidebar";
 
 export const Route = createFileRoute("/admin")({
-  component: AdminPage,
+  component: AdminShell,
+  // A server-side beforeLoad session check could be added here later as a
+  // single option — every child route mounts only inside <Outlet/> below,
+  // so none of them would need touching.
   head: () => ({
     meta: [
       { title: "Admin — Learning English with Coach" },
@@ -65,103 +21,31 @@ export const Route = createFileRoute("/admin")({
   }),
 });
 
-function AdminPage() {
+/** Centralized shell + auth guard for every /admin/* window — previously
+ * duplicated per-page across admin.tsx, analytics.tsx and audit.tsx. */
+function AdminShell() {
   const { locale } = useLocale();
-  const notify = useNotification();
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
-  const qc = useQueryClient();
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
   }, [loading, user, navigate]);
 
-  const { data: stats } = useQuery({
-    queryKey: ["admin_stats", isAdmin],
-    enabled: !!user && isAdmin,
-    queryFn: async () => {
-      const s = await apiFetch<{
-        totalUsers: number;
-        activeSubscriptions: number;
-        pendingPayments: number;
-        monthRevenue: number;
-      }>("/v1/admin/stats");
-      return {
-        total: s.totalUsers,
-        active: s.activeSubscriptions,
-        pending: s.pendingPayments,
-        revenue: s.monthRevenue,
-      };
-    },
-  });
-
-  const { data: users = [] } = useQuery({
-    queryKey: ["admin_users"],
-    enabled: !!user && isAdmin,
-    queryFn: async () => {
-      const res = await apiFetch<{ items: AdminUser[] }>("/v1/admin/users?limit=200");
-      return res.items;
-    },
-  });
-
-  const { data: payments = [] } = useQuery({
-    queryKey: ["admin_payments"],
-    enabled: !!user && isAdmin,
-    queryFn: async () => {
-      const res = await apiFetch<{ items: AdminPayment[] }>("/v1/admin/payments?limit=100");
-      return res.items;
-    },
-  });
-
-  const activate = useMutation({
-    mutationFn: async (payment: AdminPayment) =>
-      apiFetch<{ activationCode: string | null }>(`/v1/admin/payments/${payment.id}/activate`, {
-        method: "POST",
-      }),
-    onSuccess: ({ activationCode }) => {
-      if (activationCode) {
-        navigator.clipboard?.writeText(activationCode).catch(() => {});
-        notify.success(
-          locale === "pt"
-            ? `Ativada. Código: ${activationCode} (copiado)`
-            : `Activated. Code: ${activationCode} (copied)`,
-          { duration: 8000 },
-        );
-      } else {
-        notify.success(locale === "pt" ? "Pagamento ativado" : "Payment activated");
-      }
-      qc.invalidateQueries({ queryKey: ["admin_payments"] });
-      qc.invalidateQueries({ queryKey: ["admin_stats"] });
-      // Activating a payment also activates its linked subscription
-      // server-side — without this, SubscriptionsSection kept showing the
-      // pre-activation state until an unrelated refetch.
-      qc.invalidateQueries({ queryKey: ["admin_subscriptions"] });
-    },
-    onError: (e) => notify.fromError(e, { dedupeKey: "admin:activate-payment" }),
-  });
-
-  const cancel = useMutation({
-    mutationFn: async (payment: AdminPayment) =>
-      apiFetch(`/v1/admin/payments/${payment.id}/cancel`, { method: "POST" }),
-    onSuccess: () => {
-      notify.success(locale === "pt" ? "Pagamento cancelado" : "Payment cancelled");
-      qc.invalidateQueries({ queryKey: ["admin_payments"] });
-      // The "Pendentes" stat card reads admin_stats — cancelling a pending
-      // payment used to leave it stale until an unrelated refetch.
-      qc.invalidateQueries({ queryKey: ["admin_stats"] });
-    },
-    onError: (e) => notify.fromError(e, { dedupeKey: "admin:cancel-payment" }),
-  });
-
-  if (loading) return <div className="p-10 text-center">...</div>;
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center gap-2 text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin" /> A carregar…
+      </div>
+    );
+  }
 
   if (user && !isAdmin) {
     return (
-      <div className="theme-adults min-h-screen bg-background text-foreground">
-        <SiteHeader />
-        <div className="mx-auto max-w-lg px-6 py-20 text-center">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--background)] px-6">
+        <div className="mx-auto max-w-lg text-center">
           <ShieldCheck className="mx-auto h-12 w-12 text-magenta" />
-          <h1 className="mt-4 font-display text-2xl font-bold">
+          <h1 className="mt-4 font-display text-2xl font-bold text-ink">
             {locale === "pt" ? "Acesso restrito" : "Restricted access"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -177,266 +61,22 @@ function AdminPage() {
     );
   }
 
-  const statCards = [
-    {
-      icon: Users,
-      label: locale === "pt" ? "Total de alunos" : "Total learners",
-      value: stats?.total ?? 0,
-      color: "text-sunset bg-sunset/10",
-    },
-    {
-      icon: CreditCard,
-      label: locale === "pt" ? "Assinaturas ativas" : "Active subs",
-      value: stats?.active ?? 0,
-      color: "text-magenta bg-magenta/10",
-    },
-    {
-      icon: Clock,
-      label: locale === "pt" ? "Pendentes" : "Pending",
-      value: stats?.pending ?? 0,
-      color: "text-amber bg-amber/10",
-    },
-    {
-      icon: DollarSign,
-      label: locale === "pt" ? "Receita (mês)" : "Revenue (month)",
-      value: `${(stats?.revenue ?? 0).toLocaleString("pt-AO")} Kz`,
-      color: "text-violet bg-violet/10",
-    },
-  ];
+  if (!user) return null;
 
   return (
-    <div className="theme-adults min-h-screen bg-background text-foreground">
-      <SiteHeader />
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-widest text-magenta">Admin</div>
-            <h1 className="mt-1 font-display text-3xl font-bold md:text-4xl">
-              {locale === "pt" ? "Painel do Administrador" : "Administrator Dashboard"}
-            </h1>
+    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+      <AdminSidebar />
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <AppHeader
+          title={locale === "pt" ? "Painel do Administrador" : "Administrator Dashboard"}
+        />
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
+          <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10">
+            <Outlet />
           </div>
-          <div className="flex gap-2">
-            <Button asChild size="sm" variant="outline">
-              <Link to="/analytics">
-                <TrendingUp className="mr-1.5 h-3.5 w-3.5" />
-                {locale === "pt" ? "Analytics" : "Analytics"}
-              </Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link to="/audit">
-                <ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
-                {locale === "pt" ? "Auditoria" : "Audit log"}
-              </Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link to="/track">
-                <Clock className="mr-1.5 h-3.5 w-3.5" />
-                {locale === "pt" ? "Atividade" : "Activity"}
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {statCards.map((s) => (
-            <div key={s.label} className="rounded-2xl border border-border bg-card p-5 shadow-card">
-              <div
-                className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${s.color}`}
-              >
-                <s.icon className="h-5 w-5" />
-              </div>
-              <div className="mt-3 text-2xl font-bold">{s.value}</div>
-              <div className="text-xs text-muted-foreground">{s.label}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-10 rounded-2xl border border-border bg-card shadow-card">
-          <div className="border-b border-border px-6 py-4 flex items-center justify-between">
-            <h2 className="font-display text-xl font-bold">
-              {locale === "pt" ? "Alunos" : "Learners"}
-            </h2>
-            <span className="text-xs text-muted-foreground">
-              {users.length} {locale === "pt" ? "registados" : "registered"}
-            </span>
-          </div>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{locale === "pt" ? "Nome" : "Name"}</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>{locale === "pt" ? "Telefone" : "Phone"}</TableHead>
-                  <TableHead>{locale === "pt" ? "País" : "Country"}</TableHead>
-                  <TableHead>{locale === "pt" ? "Idade" : "Age"}</TableHead>
-                  <TableHead>{locale === "pt" ? "Sala" : "Room"}</TableHead>
-                  <TableHead>CEFR</TableHead>
-                  <TableHead>{locale === "pt" ? "Registo" : "Joined"}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.length === 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={8}
-                      className="py-10 text-center text-sm text-muted-foreground"
-                    >
-                      {locale === "pt" ? "Sem alunos" : "No learners"}
-                    </TableCell>
-                  </TableRow>
-                )}
-                {users.map((u: AdminUser) => {
-                  const room =
-                    u.age == null ? "—" : u.age < 13 ? "Kids" : u.age < 18 ? "Teens" : "Adults";
-                  return (
-                    <TableRow key={u.id}>
-                      <TableCell className="font-medium">{u.full_name || "—"}</TableCell>
-                      <TableCell className="text-xs">{u.email || "—"}</TableCell>
-                      <TableCell className="text-xs">{u.phone || "—"}</TableCell>
-                      <TableCell className="text-xs">{u.country || "—"}</TableCell>
-                      <TableCell>{u.age ?? "—"}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{room}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{u.cefr_level || "—"}</Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {new Date(u.created_at).toLocaleDateString()}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-
-        <div className="mt-10 rounded-2xl border border-border bg-card shadow-card">
-          <div className="border-b border-border px-6 py-4">
-            <h2 className="font-display text-xl font-bold">
-              {locale === "pt" ? "Pagamentos" : "Payments"}
-            </h2>
-          </div>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{locale === "pt" ? "Aluno" : "Learner"}</TableHead>
-                  <TableHead>{locale === "pt" ? "Plano" : "Plan"}</TableHead>
-                  <TableHead>{locale === "pt" ? "Valor" : "Amount"}</TableHead>
-                  <TableHead>{locale === "pt" ? "Referência" : "Reference"}</TableHead>
-                  <TableHead>{locale === "pt" ? "Estado" : "Status"}</TableHead>
-                  <TableHead>{locale === "pt" ? "Código / Expira" : "Code / Expires"}</TableHead>
-                  <TableHead>{locale === "pt" ? "Ações" : "Actions"}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {payments.length === 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="py-10 text-center text-sm text-muted-foreground"
-                    >
-                      {locale === "pt" ? "Ainda sem pagamentos" : "No payments yet"}
-                    </TableCell>
-                  </TableRow>
-                )}
-                {payments.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell>
-                      <div className="font-medium">{p.profiles?.full_name || "—"}</div>
-                      <div className="text-xs text-muted-foreground">{p.profiles?.email}</div>
-                    </TableCell>
-                    <TableCell className="capitalize">
-                      {p.subscription_plans?.tier} · {p.subscription_plans?.billing_cycle}
-                    </TableCell>
-                    <TableCell className="font-semibold">
-                      {p.amount_kz.toLocaleString("pt-AO")} Kz
-                    </TableCell>
-                    <TableCell>
-                      <code className="text-xs">{p.reference}</code>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={p.status} />
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      {p.subscriptions?.activation_code ? (
-                        <div>
-                          <code className="font-mono font-semibold text-magenta">
-                            {p.subscriptions.activation_code}
-                          </code>
-                          {p.subscriptions?.expires_at && (
-                            <div className="text-muted-foreground">
-                              {locale === "pt" ? "expira" : "expires"}{" "}
-                              {new Date(p.subscriptions.expires_at).toLocaleDateString()}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {p.status === "pending" && (
-                        <div className="flex gap-1">
-                          <Button
-                            size="sm"
-                            onClick={() => activate.mutate(p)}
-                            disabled={activate.isPending}
-                            className="bg-emerald-500 text-white hover:bg-emerald-600"
-                          >
-                            <CheckCircle2 className="mr-1 h-3.5 w-3.5" />{" "}
-                            {locale === "pt" ? "Ativar" : "Activate"}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              if (
-                                !window.confirm(
-                                  locale === "pt"
-                                    ? "Cancelar este pagamento pendente?"
-                                    : "Cancel this pending payment?",
-                                )
-                              )
-                                return;
-                              cancel.mutate(p);
-                            }}
-                          >
-                            <XCircle className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-
-        <SubscriptionsSection />
-        <AnalyticsSection />
-        <CurriculumSection />
-        <ReportsSection />
+        </main>
       </div>
+      <AdminMobileNav />
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    pending: "bg-amber/20 text-amber-700 dark:text-amber-400",
-    paid: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
-    cancelled: "bg-muted text-muted-foreground",
-    expired: "bg-destructive/20 text-destructive",
-  };
-  return (
-    <span
-      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${map[status] ?? ""}`}
-    >
-      {status}
-    </span>
   );
 }

@@ -20,6 +20,7 @@ import {
   Settings,
   LogOut,
   Grid3X3,
+  Award,
 } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -33,19 +34,19 @@ const NAV_SECTIONS = [
       {
         to: "/",
         Icon: Home,
-        hoverColor: "group-hover:text-[var(--violet)]",
+        hoverColor: "group-hover:text-violet",
         label: { pt: "Home", en: "Home" },
       },
       {
         to: "/dashboard",
         Icon: LayoutDashboard,
-        hoverColor: "group-hover:text-[var(--amber)]",
+        hoverColor: "group-hover:text-amber",
         label: { pt: "Dashboard", en: "Dashboard" },
       },
       {
         to: "/games",
         Icon: Gamepad2,
-        hoverColor: "group-hover:text-[var(--magenta)]",
+        hoverColor: "group-hover:text-magenta",
         label: { pt: "Jogos", en: "Games" },
       },
     ],
@@ -70,6 +71,12 @@ const NAV_SECTIONS = [
       },
       { to: "/reading", Icon: BookMarked, hoverColor: "", label: { pt: "Reading", en: "Reading" } },
       { to: "/rewards", Icon: Trophy, hoverColor: "", label: { pt: "Recompensas", en: "Rewards" } },
+      {
+        to: "/certificates",
+        Icon: Award,
+        hoverColor: "",
+        label: { pt: "Certificados", en: "Certificates" },
+      },
     ],
   },
   {
@@ -115,8 +122,8 @@ export function VideosSidebar() {
               className="w-10 h-10 rounded-xl object-contain shadow-lg ring-1 ring-gray-100"
             />
             <div className="leading-tight">
-              <div className="font-display font-bold text-lg text-[var(--ink)]">Learning</div>
-              <div className="text-2xs font-medium text-gray-400 uppercase tracking-wider">
+              <div className="font-display font-bold text-lg text-ink">Learning</div>
+              <div className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">
                 Coach
               </div>
             </div>
@@ -134,7 +141,7 @@ export function VideosSidebar() {
         {!collapsed ? (
           <button
             onClick={() => setCollapsed(true)}
-            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-black hover:bg-gray-50 rounded-lg transition-all"
+            className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-black hover:bg-gray-50 rounded-lg transition-all"
             title="Recolher Menu"
             aria-label="Recolher Menu"
           >
@@ -143,11 +150,11 @@ export function VideosSidebar() {
         ) : (
           <button
             onClick={() => setCollapsed(false)}
-            className="absolute -right-3 top-6 w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-full text-gray-400 hover:text-black hover:bg-gray-50 shadow-sm transition-all z-30"
+            className="absolute -right-3 top-6 w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-full text-muted-foreground hover:text-black hover:bg-gray-50 shadow-sm transition-all z-30"
             title="Expandir menu"
             aria-label="Expandir menu"
           >
-            <PanelLeftOpen className="w-3.5 h-3.5" />
+            <PanelLeftOpen className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -157,7 +164,7 @@ export function VideosSidebar() {
         {NAV_SECTIONS.map((section) => (
           <div key={section.label.en} className="space-y-1">
             {!collapsed && (
-              <p className="px-4 text-2xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">
+              <p className="px-4 text-2xs font-bold text-muted-foreground uppercase tracking-[0.2em] mb-3">
                 {locale === "pt" ? section.label.pt : section.label.en}
               </p>
             )}
@@ -169,8 +176,8 @@ export function VideosSidebar() {
                   to={item.to}
                   className={`nav-item flex items-center gap-3 px-4 py-3 rounded-2xl font-medium group transition-all ${
                     isActive
-                      ? "bg-[var(--violet)]/5 text-[var(--violet)] font-bold"
-                      : "text-gray-500 hover:bg-gray-50 hover:text-black"
+                      ? "bg-violet/5 text-violet font-bold"
+                      : "text-muted-foreground hover:bg-gray-50 hover:text-black"
                   } ${collapsed ? "justify-center px-3" : ""}`}
                   title={collapsed ? (locale === "pt" ? item.label.pt : item.label.en) : undefined}
                 >
@@ -206,9 +213,9 @@ export function VideosSidebar() {
                   setProfileOpen(false);
                   navigate({ to: "/profile" });
                 }}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-muted-foreground transition-colors w-full text-left"
               >
-                <User className="w-4 h-4 text-[var(--violet)]" />
+                <User className="w-4 h-4 text-violet" />
                 {locale === "pt" ? "Ver perfil" : "View profile"}
               </button>
               <button
@@ -216,9 +223,9 @@ export function VideosSidebar() {
                   setProfileOpen(false);
                   navigate({ to: "/settings" });
                 }}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-muted-foreground transition-colors w-full text-left"
               >
-                <Settings className="w-4 h-4 text-gray-400" />
+                <Settings className="w-4 h-4 text-muted-foreground" />
                 {locale === "pt" ? "Definições" : "Settings"}
               </button>
               <div className="mx-3 my-1 h-px bg-gray-50" />
@@ -235,10 +242,11 @@ export function VideosSidebar() {
 
         <button
           onClick={() => setProfileOpen(!profileOpen)}
+          aria-label={locale === "pt" ? "Menu de conta" : "Account menu"}
           className={`cursor-pointer group w-full text-left ${collapsed ? "" : "flex items-center gap-3 px-2"}`}
         >
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-white text-sm font-bold border-2 border-white shadow-md overflow-hidden">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet to-magenta flex items-center justify-center text-white text-sm font-bold border-2 border-white shadow-md overflow-hidden">
               {user?.email ? (
                 <span>{user.email.charAt(0).toUpperCase()}</span>
               ) : (
@@ -250,15 +258,17 @@ export function VideosSidebar() {
           {!collapsed && (
             <>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate text-[var(--ink)]">
+                <p className="text-sm font-bold truncate text-ink">
                   {user?.email?.split("@")[0] || "Utilizador"}
                 </p>
-                <p className="text-2xs text-gray-400 font-medium truncate">Premium Member</p>
+                <p className="text-2xs text-muted-foreground font-medium truncate">
+                  Premium Member
+                </p>
               </div>
               {profileOpen ? (
-                <ChevronUp className="w-4 h-4 text-gray-400" />
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
               )}
             </>
           )}
@@ -287,6 +297,7 @@ const MOBILE_MORE_ITEMS = [
   { to: "/pronunciation", Icon: Mic, label: { pt: "Pronúncia", en: "Pronunciation" } },
   { to: "/reading", Icon: BookMarked, label: { pt: "Reading", en: "Reading" } },
   { to: "/rewards", Icon: Trophy, label: { pt: "Recompensas", en: "Rewards" } },
+  { to: "/certificates", Icon: Award, label: { pt: "Certificados", en: "Certificates" } },
 ];
 
 export function VideosMobileNav() {
@@ -314,7 +325,7 @@ export function VideosMobileNav() {
           ref={moreRef}
           className="md:hidden fixed bottom-20 right-4 left-4 z-50 bg-white border border-gray-100 rounded-2xl shadow-2xl py-3 dropdown-enter max-h-[60vh] overflow-y-auto"
         >
-          <div className="px-4 pb-2 text-2xs font-bold text-gray-400 uppercase tracking-[0.2em]">
+          <div className="px-4 pb-2 text-2xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
             {locale === "pt" ? "Mais opções" : "More options"}
           </div>
           {MOBILE_MORE_ITEMS.map((item) => (
@@ -324,8 +335,8 @@ export function VideosMobileNav() {
               onClick={() => setMoreOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${
                 isActive(item.to)
-                  ? "text-[var(--violet)] bg-[var(--violet)]/5"
-                  : "text-gray-600 hover:bg-gray-50"
+                  ? "text-violet bg-violet/5"
+                  : "text-muted-foreground hover:bg-gray-50"
               }`}
             >
               <item.Icon className="w-5 h-5" />
@@ -343,7 +354,7 @@ export function VideosMobileNav() {
               key={item.to}
               to={item.to}
               className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors ${
-                isActive(item.to) ? "text-[var(--violet)]" : "text-gray-400"
+                isActive(item.to) ? "text-violet" : "text-muted-foreground"
               }`}
             >
               <item.Icon className="w-5 h-5" />
@@ -356,7 +367,7 @@ export function VideosMobileNav() {
           <button
             onClick={() => setMoreOpen(!moreOpen)}
             className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-colors ${
-              moreOpen ? "text-[var(--violet)]" : "text-gray-400"
+              moreOpen ? "text-violet" : "text-muted-foreground"
             }`}
           >
             <Grid3X3 className="w-5 h-5" />

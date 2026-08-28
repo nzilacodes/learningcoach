@@ -6,7 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { speak, startRecording, transcribe, type Recorder } from "@/lib/voice";
+import {
+  speak,
+  startRecording,
+  transcribe,
+  describeTranscriptionRejection,
+  type Recorder,
+} from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
 import { uploadMedia } from "@/lib/media";
 import { apiFetch } from "@/lib/api/client";
@@ -67,7 +73,6 @@ export function WordCard({ word, lessonId = null, showTranslation = true }: Prop
     return () => {
       alive = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reloadKey deliberately forces a refetch without changing `word`
   }, [word, reloadKey, locale]);
 
   const play = (accent: "us" | "uk", slow = false) =>
@@ -229,7 +234,7 @@ function PracticeDialog({
       // if it fails (rate limit, size, offline), scoring still works exactly
       // as before, just without a saved "Speaking Attempt" media asset.
       const [transcribed, mediaAsset] = await Promise.all([
-        transcribe(blob),
+        transcribe(blob, { language: "en" }),
         uploadMedia(blob, { filename: "pronuncia.webm" }).catch(() => null),
       ]);
       setStage("assessing");
@@ -249,12 +254,20 @@ function PracticeDialog({
         feedback: score.feedback ?? "",
       });
     } catch (e) {
-      // Consolidates what used to be a bespoke 402 branch here — any
-      // PAYMENT_REQUIRED error now gets the "Ver planos" CTA centrally.
-      notify.fromError(e, {
-        dedupeKey: "word-card:assess",
-        onUpgrade: () => navigate({ to: "/pricing" }),
-      });
+      const rejection = describeTranscriptionRejection(e, locale);
+      if (rejection) {
+        notify.warning(rejection.title, {
+          description: rejection.description,
+          dedupeKey: "word-card:no-speech",
+        });
+      } else {
+        // Consolidates what used to be a bespoke 402 branch here — any
+        // PAYMENT_REQUIRED error now gets the "Ver planos" CTA centrally.
+        notify.fromError(e, {
+          dedupeKey: "word-card:assess",
+          onUpgrade: () => navigate({ to: "/pricing" }),
+        });
+      }
     } finally {
       setStage(null);
     }

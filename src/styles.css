@@ -21,6 +21,7 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 16px);
   --radius-4xl: calc(var(--radius) + 24px);
+  --radius-5xl: calc(var(--radius) + 34px);
 
   --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
@@ -58,11 +59,14 @@
   --color-ink: var(--ink);
   --color-cream: var(--cream);
 
+  --color-panel-bg: var(--panel-bg);
+
   --color-chart-1: var(--sunset);
   --color-chart-2: var(--amber);
   --color-chart-3: var(--magenta);
   --color-chart-4: var(--violet);
   --color-chart-5: var(--ink);
+  --color-chart-6: var(--chart-6);
 
   --color-marketing-teal: var(--marketing-teal);
   --color-marketing-teal-dark: var(--marketing-teal-dark);
@@ -70,6 +74,11 @@
   --color-marketing-lime-dark: var(--marketing-lime-dark);
   --color-marketing-ink: var(--marketing-ink);
   --color-marketing-surface: var(--marketing-surface);
+
+  /* Named easing for the "premium" decelerate curve, was a bare
+     cubic-bezier(0.16,1,0.3,1) arbitrary value repeated 3x in
+     site-header.tsx with no token backing it. */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
@@ -82,9 +91,17 @@
   --violet: oklch(0.4 0.12 260); /* deep indigo */
   --ink: oklch(0.18 0.03 260);
   --cream: oklch(0.985 0.005 250);
+  /* 6th chart category color — same L/C family as sunset..ink above, at a
+     non-overlapping hue (green) instead of reusing --destructive, which
+     carries an error/danger meaning a chart category shouldn't imply. */
+  --chart-6: oklch(0.6 0.13 150);
 
   --background: oklch(0.985 0.005 250);
   --foreground: oklch(0.18 0.03 260);
+  /* Secondary panel background for the dashboard/video app shell — distinct
+     from --background, was 3 independently hand-picked #f7f9fb occurrences
+     across adults/teens-dashboard.tsx. Kids gets its own warm override below. */
+  --panel-bg: #f7f9fb;
 
   /* Public/marketing site — fixed across age-themes, unlike --sunset etc.
      Consolidates ~75 raw hex occurrences that were previously repeated
@@ -168,6 +185,7 @@
   --ring: var(--magenta);
   --accent: oklch(0.95 0.06 85 / 0.7);
   --radius: 1.25rem;
+  --panel-bg: #fdf7ec;
 }
 
 /* Teens — vibrant, modern, electric */
@@ -248,6 +266,30 @@
   box-shadow: var(--shadow-card);
 }
 
+/* Neutral (non brand-tinted) flat shadows for marketing/pricing cards — were
+   3 different hand-authored rgba() values with no token, one of them pixel-
+   matched to a design reference ("Refined toggle to match image-1.png").
+   Kept their exact values, just named. */
+@utility shadow-flat-sm {
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+@utility shadow-flat-md {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+@utility shadow-flat-lg {
+  box-shadow: 0 40px 80px -20px rgba(15, 23, 42, 0.1);
+}
+@utility shadow-flat-btn {
+  box-shadow: 0 20px 45px -5px rgba(15, 23, 42, 0.35);
+}
+
+/* One named layer above the fixed header (z-50) for the scroll-progress bar
+   that sits on top of it — the only spot in the app that needed to go past
+   Tailwind's default z-index scale. */
+@utility z-scroll-progress {
+  z-index: 60;
+}
+
 @utility shadow-premium-btn {
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
 }
@@ -262,7 +304,7 @@
 }
 
 @utility pricing-card {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s var(--ease-in-out);
 }
 
 @utility glass {
@@ -312,7 +354,7 @@
 }
 
 .headline-container h2 {
-  font-size: 2.5rem;
+  font-size: clamp(1.75rem, 1.2rem + 2.5vw, 2.5rem);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.03em;

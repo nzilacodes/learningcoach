@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import {
   HeaderActionLinks,
   MobileAvatarMenu,
@@ -137,28 +138,28 @@ function MediaPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
 
       <div className="flex-1 flex flex-col min-w-0 bg-white">
-        <header className="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 shrink-0 z-10">
-          <div className="flex items-center gap-2">
-            <FolderOpen className="w-5 h-5 text-[var(--primary)]" />
-            <h1 className="font-display text-xl font-bold text-[var(--ink)]">Media</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <HeaderActionLinks />
-            <MobileAvatarMenu />
-            <DesktopAvatarLink />
-          </div>
-        </header>
+        <AppHeader
+          title="Media"
+          leftExtra={<FolderOpen className="w-5 h-5 text-primary" />}
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
 
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
           <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="font-display text-2xl font-bold text-[var(--ink)]">Biblioteca</h2>
-                <p className="text-sm text-gray-500">
+                <h2 className="font-display text-2xl font-bold text-ink">Biblioteca</h2>
+                <p className="text-sm text-muted-foreground">
                   Gerencie vídeos, áudios, imagens e gravações.
                 </p>
               </div>
@@ -194,25 +195,27 @@ function MediaPage() {
 
             <div className="grid grid-cols-3 gap-4 rounded-2xl border border-gray-100 p-5 md:p-6">
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                   Armazenamento
                 </p>
-                <p className="font-display text-xl font-bold text-[var(--ink)]">
-                  {formatBytes(totalBytes)}
+                <p className="font-display text-xl font-bold text-ink">{formatBytes(totalBytes)}</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  Vídeos
                 </p>
+                <p className="font-display text-xl font-bold text-ink">{videoCount}</p>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Vídeos</p>
-                <p className="font-display text-xl font-bold text-[var(--ink)]">{videoCount}</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Áudios</p>
-                <p className="font-display text-xl font-bold text-[var(--ink)]">{audioCount}</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  Áudios
+                </p>
+                <p className="font-display text-xl font-bold text-ink">{audioCount}</p>
               </div>
             </div>
 
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Pesquisar mídia…"
                 value={search}
@@ -229,8 +232,8 @@ function MediaPage() {
                     onClick={() => setTypeFilter(f.key)}
                     className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                       typeFilter === f.key
-                        ? "bg-[var(--primary)] text-white shadow-md"
-                        : "bg-white border border-gray-200 text-gray-500"
+                        ? "bg-primary text-white shadow-md"
+                        : "bg-white border border-gray-200 text-muted-foreground"
                     }`}
                   >
                     {f.label}
@@ -241,8 +244,8 @@ function MediaPage() {
                 onClick={() => setTrashed((t) => !t)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                   trashed
-                    ? "bg-[var(--ink)] text-white"
-                    : "bg-white border border-gray-200 text-gray-500"
+                    ? "bg-ink text-white"
+                    : "bg-white border border-gray-200 text-muted-foreground"
                 }`}
               >
                 <Trash2 className="w-4 h-4" /> Lixeira
@@ -252,10 +255,10 @@ function MediaPage() {
             <div className="rounded-2xl border border-gray-100 overflow-hidden">
               {isLoading ? (
                 <div className="flex items-center justify-center py-16">
-                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                 </div>
               ) : items.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-2 py-16 text-gray-400">
+                <div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground">
                   <FolderOpen className="w-8 h-8" />
                   <p className="text-sm">
                     {trashed
@@ -264,69 +267,80 @@ function MediaPage() {
                   </p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-16">Miniatura</TableHead>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className="text-right">Tamanho</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {items.map((item) => {
-                      const Icon = TYPE_ICON[item.media_type];
-                      return (
-                        <TableRow
-                          key={item.id}
-                          className="cursor-pointer"
-                          onClick={() => setDetailId(item.id)}
-                        >
-                          <TableCell>
-                            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
-                              {item.status === "ready" && item.thumbnail_storage_key ? (
-                                <img
-                                  src={mediaThumbnailUrl(item.id)}
-                                  alt=""
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : item.status === "failed" ? (
-                                <XCircle className="w-4 h-4 text-red-400" />
-                              ) : item.media_type === "video" ? (
-                                <Play className="w-4 h-4 text-gray-400" />
-                              ) : (
-                                <Icon className="w-4 h-4 text-gray-400" />
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-medium text-[var(--ink)]">
-                            {item.title || item.original_filename}
-                          </TableCell>
-                          <TableCell className="text-gray-500 capitalize">
-                            {item.media_type}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                item.status === "failed"
-                                  ? "destructive"
-                                  : item.status === "ready"
-                                    ? "secondary"
-                                    : "outline"
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-16">Miniatura</TableHead>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Tamanho</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {items.map((item) => {
+                        const Icon = TYPE_ICON[item.media_type];
+                        return (
+                          <TableRow
+                            key={item.id}
+                            className="cursor-pointer"
+                            onClick={() => setDetailId(item.id)}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={item.title || item.original_filename}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                setDetailId(item.id);
                               }
-                            >
-                              {STATUS_LABEL[item.status]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right text-gray-500">
-                            {formatBytes(item.size_bytes)}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                            }}
+                          >
+                            <TableCell>
+                              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+                                {item.status === "ready" && item.thumbnail_storage_key ? (
+                                  <img
+                                    src={mediaThumbnailUrl(item.id)}
+                                    alt={item.title || item.original_filename}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : item.status === "failed" ? (
+                                  <XCircle className="w-4 h-4 text-red-400" />
+                                ) : item.media_type === "video" ? (
+                                  <Play className="w-4 h-4 text-muted-foreground" />
+                                ) : (
+                                  <Icon className="w-4 h-4 text-muted-foreground" />
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium text-ink">
+                              {item.title || item.original_filename}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground capitalize">
+                              {item.media_type}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  item.status === "failed"
+                                    ? "destructive"
+                                    : item.status === "ready"
+                                      ? "secondary"
+                                      : "outline"
+                                }
+                              >
+                                {STATUS_LABEL[item.status]}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right text-muted-foreground">
+                              {formatBytes(item.size_bytes)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </div>
 

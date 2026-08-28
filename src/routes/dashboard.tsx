@@ -52,7 +52,7 @@ function DashboardPage() {
         </p>
         <button
           onClick={() => data.refetch()}
-          className="inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+          className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
         >
           Tentar novamente
         </button>

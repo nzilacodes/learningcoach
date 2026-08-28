@@ -17,6 +17,7 @@ import {
   BellOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import type { useStudyReminder } from "@/lib/learning";
 
@@ -37,7 +38,7 @@ export function ProfileHeader() {
     .toUpperCase();
 
   return (
-    <div className="mb-8 rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="mb-8 rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
         <div className="relative">
           {user?.avatarUrl ? (
@@ -73,7 +74,7 @@ export function ProfileHeader() {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -96,7 +97,7 @@ export function LeaderboardCard() {
   });
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display font-bold">Ranking</h3>
         <Trophy className="h-4 w-4 text-amber" />
@@ -131,7 +132,7 @@ export function LeaderboardCard() {
           );
         })}
       </ol>
-    </div>
+    </Card>
   );
 }
 
@@ -153,7 +154,7 @@ export function CertificatesCard() {
   });
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display font-bold">Certificados</h3>
         <div className="flex items-center gap-2">
@@ -198,7 +199,7 @@ export function CertificatesCard() {
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -215,7 +216,7 @@ export function AchievementsCard() {
   });
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display font-bold">Conquistas</h3>
         <Award className="h-4 w-4 text-amber" />
@@ -247,14 +248,14 @@ export function AchievementsCard() {
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }
 
 /* -------- Activity calendar (last 12 weeks heatmap) -------- */
 export function ActivityCalendar() {
   const { user } = useAuth();
-  const { data = [] } = useQuery({
+  const { data = [], isLoading } = useQuery({
     queryKey: ["activity_calendar", user?.id],
     enabled: !!user,
     queryFn: () => apiFetch<{ day: string; seconds: number }[]>("/v1/me/study-sessions?days=84"),
@@ -282,27 +283,35 @@ export function ActivityCalendar() {
   };
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display font-bold">Calendário</h3>
         <Calendar className="h-4 w-4 text-muted-foreground" />
       </div>
-      <div className="grid grid-flow-col grid-rows-7 gap-1">
-        {cells.map((c) => (
-          <div
-            key={c.day}
-            title={`${c.day} · ${Math.round(c.seconds / 60)} min`}
-            className={`h-3 w-3 rounded-sm ${level(c.seconds)}`}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="grid grid-flow-col grid-rows-7 gap-1">
+          {Array.from({ length: 84 }).map((_, i) => (
+            <div key={i} className="h-3 w-3 animate-pulse rounded-sm bg-muted" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-flow-col grid-rows-7 gap-1">
+          {cells.map((c) => (
+            <div
+              key={c.day}
+              title={`${c.day} · ${Math.round(c.seconds / 60)} min`}
+              className={`h-3 w-3 rounded-sm ${level(c.seconds)}`}
+            />
+          ))}
+        </div>
+      )}
       <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-        <span>{activeDays} dias ativos · 12 semanas</span>
+        <span>{isLoading ? "A carregar…" : `${activeDays} dias ativos · 12 semanas`}</span>
         <span>
-          {Math.floor(total / 3600)}h {Math.floor((total % 3600) / 60)}m
+          {isLoading ? "" : `${Math.floor(total / 3600)}h ${Math.floor((total % 3600) / 60)}m`}
         </span>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -311,7 +320,7 @@ export function GoalsCard() {
   const { user } = useAuth();
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display font-bold">Objetivos</h3>
         <Target className="h-4 w-4 text-sunset" />
@@ -348,7 +357,7 @@ export function GoalsCard() {
       <Button asChild size="sm" variant="outline" className="mt-4 w-full">
         <Link to="/onboarding">Editar objetivos</Link>
       </Button>
-    </div>
+    </Card>
   );
 }
 
@@ -377,19 +386,19 @@ export function ClassesCard({ variant = "full" }: { variant?: "full" | "readonly
     // showing a loading state first.
     if (isLoading) {
       return (
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+        <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
           <div className="mb-2 flex items-center gap-2">
             <Users className="h-4 w-4 text-violet" />
             <h3 className="font-display font-bold">Minha turma</h3>
           </div>
           <p className="text-sm text-muted-foreground">A carregar…</p>
-        </div>
+        </Card>
       );
     }
     const joined = data?.joined ?? [];
     if (joined.length === 0) return null;
     return (
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+      <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
         <div className="mb-2 flex items-center gap-2">
           <Users className="h-4 w-4 text-violet" />
           <h3 className="font-display font-bold">Minha turma</h3>
@@ -398,7 +407,7 @@ export function ClassesCard({ variant = "full" }: { variant?: "full" | "readonly
           Você está na turma:{" "}
           <span className="font-semibold text-foreground">{joined[0].name}</span>
         </p>
-      </div>
+      </Card>
     );
   }
 
@@ -407,7 +416,7 @@ export function ClassesCard({ variant = "full" }: { variant?: "full" | "readonly
   const total = owned.length + joined.length;
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+    <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-display font-bold flex items-center gap-2">
           <Users className="h-4 w-4 text-violet" />
@@ -448,7 +457,7 @@ export function ClassesCard({ variant = "full" }: { variant?: "full" | "readonly
       <Button asChild size="sm" variant="outline" className="mt-4 w-full">
         <Link to="/classes">Gerir turmas</Link>
       </Button>
-    </div>
+    </Card>
   );
 }
 
@@ -466,11 +475,11 @@ export function ReminderCard({
   return (
     <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display text-sm font-bold text-[var(--ink)] flex items-center gap-2">
+        <h3 className="font-display text-sm font-bold text-ink flex items-center gap-2">
           {r.enabled ? (
-            <Bell className="w-4 h-4 text-[var(--violet)]" />
+            <Bell className="w-4 h-4 text-violet" />
           ) : (
-            <BellOff className="w-4 h-4 text-gray-400" />
+            <BellOff className="w-4 h-4 text-muted-foreground" />
           )}
           {locale === "pt" ? "Lembrete de estudo" : "Study reminder"}
         </h3>
@@ -504,7 +513,7 @@ export function ReminderCard({
             }
             reminder.save.mutate({ interval_minutes: r.interval_minutes, enabled: turningOn });
           }}
-          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${r.enabled ? "bg-[var(--violet)] text-white" : "border border-gray-200 text-gray-500"}`}
+          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${r.enabled ? "bg-violet text-white" : "border border-gray-200 text-muted-foreground"}`}
         >
           {r.enabled ? (locale === "pt" ? "Ativo" : "On") : locale === "pt" ? "Desativado" : "Off"}
         </button>
@@ -516,15 +525,15 @@ export function ReminderCard({
             onClick={() => reminder.save.mutate({ interval_minutes: m, enabled: r.enabled })}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${
               r.interval_minutes === m
-                ? "bg-[var(--violet)] text-white"
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                ? "bg-violet text-white"
+                : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
             }`}
           >
             {m < 60 ? `${m}m` : `1h`}
           </button>
         ))}
       </div>
-      <p className="mt-3 text-xs text-gray-400">
+      <p className="mt-3 text-xs text-muted-foreground">
         {locale === "pt"
           ? `Notificação a cada ${r.interval_minutes} min`
           : `Notify every ${r.interval_minutes} min`}

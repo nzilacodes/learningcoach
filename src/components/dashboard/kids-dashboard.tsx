@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Flame, Star, Lock, Check, Play, LogOut, PartyPopper } from "lucide-react";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { AGE_TRACKS } from "@/lib/age-tracks";
@@ -18,25 +19,26 @@ export function KidsDashboard(data: DashboardData) {
   const displayName = data.firstName ?? (locale === "pt" ? "Amigo" : "Friend");
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
-      <div className="flex-1 flex flex-col min-w-0 bg-[#fdf7ec]">
+      <div className="flex-1 flex flex-col min-w-0 bg-panel-bg">
         {/* ====== TopBar ====== */}
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white/90 backdrop-blur-xl border-b border-amber-100 shrink-0 z-10">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🌟</span>
-            <h1 className="font-display text-lg font-bold text-[var(--ink)] truncate">
-              {locale === "pt" ? `Oi, ${displayName}!` : `Hi, ${displayName}!`}
-            </h1>
-          </div>
-          <button
-            onClick={() => signOut()}
-            aria-label={locale === "pt" ? "Sair da conta" : "Sign out"}
-            className="p-2 text-gray-400 hover:bg-gray-50 rounded-full transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-        </header>
+        <AppHeader
+          title={locale === "pt" ? `Oi, ${displayName}!` : `Hi, ${displayName}!`}
+          titleClassName="font-display text-lg font-bold text-ink truncate"
+          leftExtra={<span className="text-2xl">🌟</span>}
+          borderClassName="border-amber-100"
+          blur
+          actions={
+            <button
+              onClick={() => signOut()}
+              aria-label={locale === "pt" ? "Sair da conta" : "Sign out"}
+              className="p-2 text-muted-foreground hover:bg-gray-50 rounded-full transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          }
+        />
 
         <main className="flex-1 overflow-y-auto pb-24 scrollbar-hide">
           <div className="max-w-2xl mx-auto px-4 md:px-6 py-6 space-y-6">
@@ -62,7 +64,7 @@ export function KidsDashboard(data: DashboardData) {
 
             {/* Hero: one big CTA */}
             <div
-              className={`bg-gradient-to-br ${track.color} rounded-[2.5rem] p-6 text-white text-center shadow-xl relative overflow-hidden`}
+              className={`bg-gradient-to-br ${track.color} rounded-4xl p-6 text-white text-center shadow-xl relative overflow-hidden`}
             >
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 blur-3xl rounded-full" />
               <div className="relative z-10">
@@ -76,7 +78,14 @@ export function KidsDashboard(data: DashboardData) {
                 <p className="text-white/80 text-sm mb-5">
                   {locale === "pt" ? "Vamos aprender juntos!" : "Let's learn together!"}
                 </p>
-                <div className="w-full bg-white/20 h-3 rounded-full mb-5 overflow-hidden max-w-xs mx-auto">
+                <div
+                  className="w-full bg-white/20 h-3 rounded-full mb-5 overflow-hidden max-w-xs mx-auto"
+                  role="progressbar"
+                  aria-valuenow={Math.round(Math.max(8, currentPct))}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={currentUnit.title}
+                >
                   <div
                     className="bg-white h-full rounded-full"
                     style={{ width: `${Math.max(8, currentPct)}%` }}
@@ -85,7 +94,7 @@ export function KidsDashboard(data: DashboardData) {
                 <Link
                   to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
                   params={nextLessonId ? { lessonId: nextLessonId } : undefined}
-                  className="inline-flex items-center gap-2 bg-white text-[var(--ink)] px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                  className="inline-flex items-center gap-2 bg-white text-ink px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:scale-105 active:scale-95 transition-transform"
                 >
                   <Play className="w-5 h-5 fill-current" />
                   {locale === "pt" ? "Jogar!" : "Play!"}
@@ -95,7 +104,7 @@ export function KidsDashboard(data: DashboardData) {
 
             {/* Simple path */}
             <div>
-              <h3 className="font-display text-lg font-bold text-[var(--ink)] mb-3 text-center">
+              <h3 className="font-display text-lg font-bold text-ink mb-3 text-center">
                 {locale === "pt" ? "Meu caminho" : "My path"}
               </h3>
               <div className="flex flex-col items-center gap-3">
@@ -126,7 +135,7 @@ export function KidsDashboard(data: DashboardData) {
                         </Link>
                       );
                     })()}
-                    <span className="mt-1 text-2xs font-bold text-gray-500">{u.title}</span>
+                    <span className="mt-1 text-2xs font-bold text-muted-foreground">{u.title}</span>
                     {i < units.length - 1 && (
                       <div className="h-4 w-1 bg-amber-200 rounded-full my-1" />
                     )}
@@ -136,7 +145,7 @@ export function KidsDashboard(data: DashboardData) {
             </div>
 
             {/* Achievements — prominent */}
-            <div className="flex items-center gap-2 justify-center text-[var(--ink)]">
+            <div className="flex items-center gap-2 justify-center text-ink">
               <PartyPopper className="w-5 h-5 text-amber-500" />
               <h3 className="font-display text-lg font-bold">
                 {locale === "pt" ? "Minhas Conquistas" : "My Achievements"}

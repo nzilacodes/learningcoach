@@ -10,6 +10,7 @@ import {
   transcribe,
   scorePronunciation,
   feedbackFor,
+  describeTranscriptionRejection,
   type Recorder,
 } from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
@@ -35,10 +36,17 @@ type XpResult = {
   coins_gained: number;
 };
 
-async function awardGameXp(gameId: string): Promise<XpResult> {
+// score/total are optional: when given, the backend scales the game's XP
+// down from its registered max by score/total (see gamification/service.ts's
+// resolveReward) — omitted entirely for games with no meaningful score
+// (WritingGame, gated only by a minimum length).
+async function awardGameXp(gameId: string, score?: number, total?: number): Promise<XpResult> {
   return apiFetch<XpResult>("/v1/xp/events", {
     method: "POST",
-    body: JSON.stringify({ source: "game", meta: { gameId } }),
+    body: JSON.stringify({
+      source: "game",
+      meta: { gameId, ...(score !== undefined ? { score, total } : {}) },
+    }),
   });
 }
 
@@ -111,7 +119,7 @@ function MultipleChoiceGame({
     }
     setFinishing(true);
     try {
-      onFinish(await awardGameXp(game.id));
+      onFinish(await awardGameXp(game.id, score, rounds.length));
     } catch (e) {
       notify.fromError(e, { dedupeKey: "game:xp" });
       setFinishing(false);
@@ -120,7 +128,7 @@ function MultipleChoiceGame({
 
   return (
     <div className="space-y-5">
-      <div className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         {locale === "pt"
           ? `Pergunta ${step + 1} de ${rounds.length}`
           : `Question ${step + 1} of ${rounds.length}`}
@@ -141,7 +149,7 @@ function MultipleChoiceGame({
               key={o.word}
               onClick={() => choose(o.word)}
               disabled={show}
-              className={`rounded-xl border-2 p-3 text-sm font-semibold transition-all ${
+              className={`rounded-xl border-2 p-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${
                 show && isCorrect
                   ? "border-emerald-500 bg-emerald-50"
                   : show && chosen
@@ -166,7 +174,7 @@ function MultipleChoiceGame({
               : "Finish"}
         </Button>
       )}
-      <div className="text-center text-xs text-gray-400">
+      <div className="text-center text-xs text-muted-foreground">
         {locale === "pt" ? "Acertos" : "Correct"}: {score}/{rounds.length}
       </div>
     </div>
@@ -232,7 +240,7 @@ function ListeningGame({
     }
     setFinishing(true);
     try {
-      onFinish(await awardGameXp(game.id));
+      onFinish(await awardGameXp(game.id, score, rounds.length));
     } catch (e) {
       notify.fromError(e, { dedupeKey: "game:xp" });
       setFinishing(false);
@@ -241,7 +249,7 @@ function ListeningGame({
 
   return (
     <div className="space-y-5">
-      <div className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         {locale === "pt"
           ? `Pergunta ${step + 1} de ${rounds.length}`
           : `Question ${step + 1} of ${rounds.length}`}
@@ -250,7 +258,7 @@ function ListeningGame({
         <button
           onClick={play}
           disabled={playing}
-          className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:opacity-90 disabled:opacity-60"
+          className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:opacity-90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           {playing ? <Loader2 className="h-8 w-8 animate-spin" /> : <Volume2 className="h-8 w-8" />}
         </button>
@@ -265,7 +273,7 @@ function ListeningGame({
               key={o.word}
               onClick={() => choose(o.word)}
               disabled={show}
-              className={`rounded-xl border-2 p-3 text-sm font-semibold transition-all ${
+              className={`rounded-xl border-2 p-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${
                 show && isCorrect
                   ? "border-emerald-500 bg-emerald-50"
                   : show && chosen
@@ -290,7 +298,7 @@ function ListeningGame({
               : "Finish"}
         </Button>
       )}
-      <div className="text-center text-xs text-gray-400">
+      <div className="text-center text-xs text-muted-foreground">
         {locale === "pt" ? "Acertos" : "Correct"}: {score}/{rounds.length}
       </div>
     </div>
@@ -347,11 +355,19 @@ function SpeakingGame({
     try {
       const blob = await recorderRef.current!.stop();
       recorderRef.current = null;
-      const text = await transcribe(blob);
+      const text = await transcribe(blob, { language: "en" });
       setTranscript(text);
       setScore(scorePronunciation(target.en, text));
     } catch (e) {
-      notify.fromError(e, { dedupeKey: "game:transcribe" });
+      const rejection = describeTranscriptionRejection(e, locale);
+      if (rejection) {
+        notify.warning(rejection.title, {
+          description: rejection.description,
+          dedupeKey: "game:no-speech",
+        });
+      } else {
+        notify.fromError(e, { dedupeKey: "game:transcribe" });
+      }
     } finally {
       setProcessing(false);
     }
@@ -360,7 +376,7 @@ function SpeakingGame({
   const finish = async () => {
     setFinishing(true);
     try {
-      onFinish(await awardGameXp(game.id));
+      onFinish(await awardGameXp(game.id, score ?? 0, 100));
     } catch (e) {
       notify.fromError(e, { dedupeKey: "game:xp" });
       setFinishing(false);
@@ -369,21 +385,21 @@ function SpeakingGame({
 
   return (
     <div className="space-y-5 text-center">
-      <div className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         {locale === "pt" ? "Repita esta frase" : "Repeat this sentence"}
       </div>
       <div className="font-display text-xl font-bold">"{target.en}"</div>
-      <div className="text-sm text-gray-400">{target.pt}</div>
+      <div className="text-sm text-muted-foreground">{target.pt}</div>
       <button
         onClick={handleMic}
         disabled={processing}
-        className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-transform disabled:opacity-70 ${
+        className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-transform disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
           recording ? "scale-110 animate-pulse" : ""
         }`}
       >
         {processing ? <Loader2 className="h-8 w-8 animate-spin" /> : <Mic className="h-8 w-8" />}
       </button>
-      <div className="text-xs text-gray-400">
+      <div className="text-xs text-muted-foreground">
         {processing
           ? locale === "pt"
             ? "Analisando..."
@@ -400,9 +416,9 @@ function SpeakingGame({
         <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-left">
           <div className="text-sm">
             <span className="font-semibold">{locale === "pt" ? "Você disse: " : "You said: "}</span>
-            <span className="text-gray-500">"{transcript}"</span>
+            <span className="text-muted-foreground">"{transcript}"</span>
           </div>
-          <div className="mt-2 text-sm text-gray-500">{feedbackFor(score, locale)}</div>
+          <div className="mt-2 text-sm text-muted-foreground">{feedbackFor(score, locale)}</div>
         </div>
       )}
       {score !== null && (
@@ -446,7 +462,7 @@ function WritingGame({
 
   return (
     <div className="space-y-4">
-      <div className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         {locale === "pt" ? "Prática de escrita" : "Writing practice"}
       </div>
       <p className="text-sm">
@@ -460,7 +476,7 @@ function WritingGame({
         rows={5}
         placeholder={locale === "pt" ? "Escreva aqui..." : "Write here..."}
       />
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-muted-foreground">
         {text.trim().length}/20 {locale === "pt" ? "caracteres mínimos" : "characters minimum"}
       </p>
       <Button onClick={finish} disabled={!ready || finishing} className="w-full">

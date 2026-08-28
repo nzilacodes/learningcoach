@@ -137,7 +137,12 @@ function CheckoutPage() {
       setOrder(o);
       notify.success("Pedido criado. Complete o pagamento.");
     } catch (e) {
-      notify.fromError(e, { dedupeKey: "checkout:create-order" });
+      const normalized = notify.fromError(e, { dedupeKey: "checkout:create-order" });
+      normalized.fieldPaths?.forEach((path) => {
+        if (path === "method" || path === "phone") {
+          form.setError(path, { type: "server", message: normalized.description });
+        }
+      });
     } finally {
       setLoading(false);
     }

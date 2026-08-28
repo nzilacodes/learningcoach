@@ -6,8 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Users, Plus, Copy, Trash2, LogIn, LogOut, ArrowLeft, GraduationCap } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -79,6 +85,30 @@ type RosterRow = {
   joined_at: string;
 };
 
+// Same app-shell wrapper as the rest of the authenticated app (NAV-1).
+function ClassesShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-screen overflow-hidden bg-background">
+      <VideosSidebar />
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <AppHeader
+          title="Turmas"
+          titleLevel="h2"
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">{children}</main>
+      </div>
+      <VideosMobileNav />
+    </div>
+  );
+}
+
 function ClassesPage() {
   const { locale } = useLocale();
   const notify = useNotification();
@@ -135,7 +165,12 @@ function ClassesPage() {
       qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
       notify.success(locale === "pt" ? "Turma criada!" : "Class created!");
     },
-    onError: (e) => notify.fromError(e, { dedupeKey: "classes:create" }),
+    onError: (e) => {
+      const normalized = notify.fromError(e, { dedupeKey: "classes:create" });
+      if (normalized.fieldPaths?.includes("name")) {
+        createForm.setError("name", { type: "server", message: normalized.description });
+      }
+    },
   });
 
   const joinClass = useMutation({
@@ -146,7 +181,12 @@ function ClassesPage() {
       qc.invalidateQueries({ queryKey: ["my_classes", user?.id] });
       notify.success(locale === "pt" ? "Você entrou na turma!" : "You joined the class!");
     },
-    onError: (e) => notify.fromError(e, { dedupeKey: "classes:join" }),
+    onError: (e) => {
+      const normalized = notify.fromError(e, { dedupeKey: "classes:join" });
+      if (normalized.fieldPaths?.includes("inviteCode")) {
+        joinForm.setError("code", { type: "server", message: normalized.description });
+      }
+    },
   });
 
   const deleteClass = useMutation({
@@ -180,10 +220,9 @@ function ClassesPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen">
-        <SiteHeader />
+      <ClassesShell>
         <div className="p-16 text-center text-muted-foreground">Loading…</div>
-      </div>
+      </ClassesShell>
     );
   }
 
@@ -191,8 +230,7 @@ function ClassesPage() {
   const joined = data?.joined ?? [];
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
+    <ClassesShell>
       <div className="mx-auto max-w-5xl px-6 py-10">
         {selectedClass ? (
           <div>
@@ -254,7 +292,7 @@ function ClassesPage() {
               </AlertDialog>
             </div>
 
-            <div className="mt-8 rounded-2xl border border-border bg-card shadow-card">
+            <Card className="mt-8 rounded-2xl border-border bg-card shadow-card">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -339,7 +377,7 @@ function ClassesPage() {
                   </TableBody>
                 </Table>
               </div>
-            </div>
+            </Card>
           </div>
         ) : (
           <>
@@ -361,7 +399,7 @@ function ClassesPage() {
             </div>
 
             <div className="mt-8 grid gap-6 lg:grid-cols-2">
-              <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+              <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
                 <h2 className="font-display text-lg font-bold">
                   {locale === "pt" ? "Minhas turmas" : "My classes"}
                 </h2>
@@ -424,10 +462,10 @@ function ClassesPage() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </Card>
 
               <div className="space-y-6">
-                <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+                <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
                   <h2 className="font-display text-lg font-bold">
                     {locale === "pt" ? "Entrar numa turma" : "Join a class"}
                   </h2>
@@ -461,9 +499,9 @@ function ClassesPage() {
                       </Button>
                     </form>
                   </Form>
-                </div>
+                </Card>
 
-                <div className="rounded-3xl border border-border bg-card p-6 shadow-card">
+                <Card className="rounded-3xl border-border bg-card p-6 shadow-card">
                   <h2 className="font-display text-lg font-bold">
                     {locale === "pt" ? "Turmas que participo" : "Classes I'm in"}
                   </h2>
@@ -497,13 +535,12 @@ function ClassesPage() {
                       </div>
                     ))}
                   </div>
-                </div>
+                </Card>
               </div>
             </div>
           </>
         )}
       </div>
-      <SiteFooter />
-    </div>
+    </ClassesShell>
   );
 }

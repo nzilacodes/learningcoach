@@ -13,6 +13,8 @@ import {
 } from "@/lib/level-access";
 import { useCurriculum, type LessonRow } from "@/lib/learning";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
+import { Card } from "@/components/ui/card";
 import {
   ArrowRight,
   BookOpen,
@@ -190,26 +192,24 @@ function CurriculumPage() {
   const levelMeta = LEVEL_META[activeLevel];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
 
       <div className="flex-1 flex flex-col min-w-0 bg-white">
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white border-b border-gray-100 shrink-0 z-10">
-          <div className="flex items-center gap-2 min-w-0">
-            <h1 className="font-display text-xl font-bold text-[var(--ink)] truncate">
-              {locale === "pt" ? "Currículo" : "Curriculum"}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 md:gap-3">
-            <HeaderActionLinks />
-            <MobileAvatarMenu />
-            <DesktopAvatarLink />
-          </div>
-        </header>
+        <AppHeader
+          title={locale === "pt" ? "Currículo" : "Curriculum"}
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
 
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
           {/* Path hero */}
-          <div className="bg-[var(--ink)] text-white">
+          <div className="bg-ink text-white">
             <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
@@ -251,7 +251,7 @@ function CurriculumPage() {
                         onClick={() => setActiveLevel(lvl)}
                         className={`relative flex flex-col items-center gap-1 px-3 sm:px-4 py-2.5 rounded-2xl transition-all min-w-[64px] sm:min-w-[76px] ${
                           active
-                            ? "bg-white text-[var(--ink)] shadow-lg"
+                            ? "bg-white text-ink shadow-lg"
                             : locked
                               ? "bg-white/5 text-white/40"
                               : "bg-white/10 text-white hover:bg-white/15"
@@ -292,15 +292,15 @@ function CurriculumPage() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-gray-100 font-display font-bold text-[var(--ink)] shadow-sm">
+                    <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-gray-100 font-display font-bold text-ink shadow-sm">
                       {activeLevel}
                     </span>
                     <div>
-                      <div className="font-display text-lg font-bold text-[var(--ink)]">
+                      <div className="font-display text-lg font-bold text-ink">
                         {activeCourse?.title ??
                           `${locale === "pt" ? "Nível" : "Level"} ${activeLevel}`}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         {locale === "pt" ? levelMeta.label.pt : levelMeta.label.en}
                         {activeUnits.length > 0 &&
                           ` · ${activeUnits.length} ${locale === "pt" ? "unidades" : "units"}`}
@@ -310,18 +310,25 @@ function CurriculumPage() {
                     </div>
                   </div>
                   {activeCourse?.description && (
-                    <p className="mt-3 text-sm text-gray-600 max-w-2xl">
+                    <p className="mt-3 text-sm text-muted-foreground max-w-2xl">
                       {activeCourse.description}
                     </p>
                   )}
                 </div>
                 {user && !activeLevelLocked && totalLessonsInLevel > 0 && (
                   <div className="sm:w-48 shrink-0">
-                    <div className="flex justify-between text-2xs font-semibold text-gray-500 mb-1.5">
+                    <div className="flex justify-between text-2xs font-semibold text-muted-foreground mb-1.5">
                       <span>{locale === "pt" ? "Progresso" : "Progress"}</span>
                       <span>{levelPct}%</span>
                     </div>
-                    <div className="h-2 bg-white/80 rounded-full overflow-hidden border border-gray-100">
+                    <div
+                      className="h-2 bg-white/80 rounded-full overflow-hidden border border-gray-100"
+                      role="progressbar"
+                      aria-valuenow={levelPct}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={locale === "pt" ? "Progresso" : "Progress"}
+                    >
                       <div
                         className={`h-full rounded-full transition-all ${levelMeta.bar}`}
                         style={{ width: `${levelPct}%` }}
@@ -343,12 +350,12 @@ function CurriculumPage() {
                     <div className="text-2xs uppercase tracking-widest font-bold text-amber-700/70">
                       {locale === "pt" ? "Exame final" : "Final exam"} · {activeLevel}
                     </div>
-                    <div className="font-display font-bold text-[var(--ink)] mt-0.5">
+                    <div className="font-display font-bold text-ink mt-0.5">
                       {locale === "pt"
                         ? `Parabéns! Concluiu todas as lições de ${activeLevel}.`
                         : `Congrats! You finished all ${activeLevel} lessons.`}
                     </div>
-                    <div className="text-sm text-gray-500 mt-1">
+                    <div className="text-sm text-muted-foreground mt-1">
                       {locale === "pt"
                         ? `Faça o exame final para desbloquear o próximo nível. Nota mínima: ${minScore}%.`
                         : `Take the final exam to unlock the next level. Minimum score: ${minScore}%.`}
@@ -368,19 +375,19 @@ function CurriculumPage() {
 
             {/* Continue banner */}
             {user && !activeLevelLocked && nextLesson && !showExamCta && (
-              <div className="rounded-2xl border border-[var(--violet)]/20 bg-gradient-to-br from-[var(--violet)]/8 to-white p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:justify-between">
+              <div className="rounded-2xl border border-violet/20 bg-gradient-to-br from-violet/8 to-white p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:justify-between">
                 <div className="flex items-start gap-3">
-                  <div className="rounded-xl bg-[var(--violet)]/15 p-3 shrink-0">
-                    <Sparkles className="w-5 h-5 text-[var(--violet)]" />
+                  <div className="rounded-xl bg-violet/15 p-3 shrink-0">
+                    <Sparkles className="w-5 h-5 text-violet" />
                   </div>
                   <div>
-                    <div className="text-2xs uppercase tracking-widest font-bold text-[var(--violet)]/70">
+                    <div className="text-2xs uppercase tracking-widest font-bold text-violet/70">
                       {locale === "pt" ? "Próxima lição" : "Next lesson"} · {activeLevel}
                     </div>
-                    <div className="font-display font-bold text-[var(--ink)] mt-0.5">
+                    <div className="font-display font-bold text-ink mt-0.5">
                       {nextLesson.lesson.title}
                     </div>
-                    <div className="text-sm text-gray-500 mt-1">
+                    <div className="text-sm text-muted-foreground mt-1">
                       {nextLesson.unit.title} ·{" "}
                       {LESSON_TYPE_LABEL[nextLesson.lesson.lesson_type] ??
                         nextLesson.lesson.lesson_type}
@@ -393,7 +400,7 @@ function CurriculumPage() {
                 <Link
                   to="/lesson/$lessonId"
                   params={{ lessonId: nextLesson.lesson.id }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] text-white px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity shrink-0"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-white px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity shrink-0"
                 >
                   {locale === "pt" ? "Continuar" : "Continue"}
                   <ArrowRight className="w-4 h-4" />
@@ -403,41 +410,41 @@ function CurriculumPage() {
 
             {/* Locked level */}
             {user && activeLevelLocked && (
-              <div className="rounded-2xl border border-gray-100 bg-white p-5 md:p-6 flex items-start gap-3">
+              <Card className="rounded-2xl border-gray-100 bg-white p-5 md:p-6 flex items-start gap-3 shadow-none">
                 <div className="rounded-xl bg-gray-50 p-3 shrink-0">
-                  <Lock className="w-5 h-5 text-gray-400" />
+                  <Lock className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <div className="font-display font-bold text-[var(--ink)]">
+                  <div className="font-display font-bold text-ink">
                     {locale === "pt"
                       ? `Nível ${activeLevel} bloqueado`
                       : `Level ${activeLevel} locked`}
                   </div>
-                  <p className="text-sm text-gray-500 mt-1 mb-3">
+                  <p className="text-sm text-muted-foreground mt-1 mb-3">
                     {locale === "pt"
                       ? `Para desbloquear ${activeLevel}, conclua o nível atual${unlocked ? ` (${unlocked})` : ""} e passe no exame final.`
                       : `To unlock ${activeLevel}, finish your current level${unlocked ? ` (${unlocked})` : ""} and pass the final exam.`}
                   </p>
                   <Link
                     to="/cefr-levels"
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-gray-50 transition-colors"
                   >
                     {locale === "pt" ? "Ver progresso de níveis" : "View level progress"}
                   </Link>
                 </div>
-              </div>
+              </Card>
             )}
 
             {/* Guest CTA */}
             {!user && (
-              <div className="rounded-2xl border border-gray-100 bg-white p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:justify-between">
+              <Card className="rounded-2xl border-gray-100 bg-white p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:justify-between shadow-none">
                 <div>
-                  <div className="font-display font-bold text-[var(--ink)]">
+                  <div className="font-display font-bold text-ink">
                     {locale === "pt"
                       ? "Entre para desbloquear o seu currículo"
                       : "Sign in to unlock your curriculum"}
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     {locale === "pt"
                       ? "Faça o teste de nivelamento e comece pela lição certa."
                       : "Take the placement test and start at the right lesson."}
@@ -446,23 +453,23 @@ function CurriculumPage() {
                 <div className="flex flex-wrap gap-2">
                   <Link
                     to="/auth"
-                    className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-gray-50 transition-colors"
                   >
                     {locale === "pt" ? "Entrar" : "Sign in"}
                   </Link>
                   <Link
                     to="/placement"
-                    className="inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
                   >
                     {locale === "pt" ? "Fazer nivelamento" : "Take placement"}
                   </Link>
                 </div>
-              </div>
+              </Card>
             )}
 
             {/* Units list */}
             {isLoading ? (
-              <div className="flex items-center justify-center gap-2 py-16 text-gray-400">
+              <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
                 <Loader2 className="w-5 h-5 animate-spin" />
                 <span className="text-sm">
                   {locale === "pt" ? "Carregando currículo…" : "Loading curriculum…"}
@@ -470,14 +477,14 @@ function CurriculumPage() {
               </div>
             ) : isError ? (
               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 py-16 text-center">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {locale === "pt"
                     ? "Não foi possível carregar o currículo."
                     : "Couldn't load the curriculum."}
                 </p>
                 <button
                   onClick={() => refetch()}
-                  className="mt-4 inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                  className="mt-4 inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
                 >
                   {locale === "pt" ? "Tentar novamente" : "Try again"}
                 </button>
@@ -485,7 +492,7 @@ function CurriculumPage() {
             ) : activeUnits.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 py-16 text-center">
                 <BookOpen className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {locale === "pt"
                     ? "Sem unidades publicadas neste nível ainda."
                     : "No units published for this level yet."}
@@ -493,7 +500,7 @@ function CurriculumPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 px-1">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">
                   {locale === "pt" ? "Unidades" : "Units"}
                 </h3>
                 {activeUnits.map((u, idx) => {
@@ -504,14 +511,14 @@ function CurriculumPage() {
                   const locked = activeLevelLocked;
                   const open = openUnitId === u.id;
                   return (
-                    <div
+                    <Card
                       key={u.id}
-                      className={`rounded-2xl border bg-white overflow-hidden transition-all ${
+                      className={`rounded-2xl bg-white overflow-hidden transition-all ${
                         locked
-                          ? "border-gray-100 opacity-70"
+                          ? "border-gray-100 opacity-70 shadow-none"
                           : open
-                            ? "border-[var(--violet)]/25 shadow-md"
-                            : "border-gray-100 hover:shadow-sm"
+                            ? "border-violet/25 shadow-md"
+                            : "border-gray-100 hover:shadow-sm shadow-none"
                       }`}
                     >
                       <button
@@ -522,46 +529,55 @@ function CurriculumPage() {
                           className={`w-11 h-11 rounded-xl flex items-center justify-center font-display font-bold shrink-0 ${
                             pct === 100
                               ? "bg-emerald-50 text-emerald-600"
-                              : "bg-[var(--violet)]/10 text-[var(--violet)]"
+                              : "bg-violet/10 text-violet"
                           }`}
                         >
                           {pct === 100 ? <CheckCircle2 className="w-5 h-5" /> : idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-[var(--ink)] truncate">
-                              {u.title}
-                            </span>
-                            {locked && <Lock className="w-3.5 h-3.5 text-gray-400 shrink-0" />}
+                            <span className="font-semibold text-ink truncate">{u.title}</span>
+                            {locked && (
+                              <Lock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                            )}
                           </div>
                           {u.theme && (
-                            <div className="text-xs text-gray-400 truncate mt-0.5">{u.theme}</div>
+                            <div className="text-xs text-muted-foreground truncate mt-0.5">
+                              {u.theme}
+                            </div>
                           )}
                           <div className="mt-2 flex items-center gap-3">
-                            <div className="h-1.5 flex-1 max-w-[200px] bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-1.5 flex-1 max-w-[200px] bg-gray-100 rounded-full overflow-hidden"
+                              role="progressbar"
+                              aria-valuenow={pct}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
+                              aria-label={`${u.title} — ${locale === "pt" ? "progresso" : "progress"}`}
+                            >
                               <div
                                 className={`h-full rounded-full transition-all ${
-                                  pct === 100 ? "bg-emerald-500" : "bg-[var(--primary)]"
+                                  pct === 100 ? "bg-emerald-500" : "bg-primary"
                                 }`}
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
-                            <span className="text-xs text-gray-400 font-medium shrink-0">
+                            <span className="text-xs text-muted-foreground font-medium shrink-0">
                               {done}/{total} {locale === "pt" ? "lições" : "lessons"}
                             </span>
                           </div>
                         </div>
                         {open ? (
-                          <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />
+                          <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />
                         ) : (
-                          <ChevronRight className="w-5 h-5 text-gray-400 shrink-0" />
+                          <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
                         )}
                       </button>
 
                       {open && (
                         <div className="border-t border-gray-50 bg-gray-50/40">
                           {lessons.length === 0 ? (
-                            <div className="px-5 py-4 text-sm text-gray-500">
+                            <div className="px-5 py-4 text-sm text-muted-foreground">
                               {locale === "pt"
                                 ? "Nenhuma lição publicada."
                                 : "No lessons published."}
@@ -576,7 +592,7 @@ function CurriculumPage() {
                                   <li
                                     key={l.id}
                                     className={`px-4 md:px-5 py-3.5 flex items-center gap-3 ${
-                                      isNext ? "bg-[var(--violet)]/5" : ""
+                                      isNext ? "bg-violet/5" : ""
                                     }`}
                                   >
                                     <div
@@ -586,37 +602,37 @@ function CurriculumPage() {
                                           : isDone
                                             ? "bg-emerald-50"
                                             : isNext
-                                              ? "bg-[var(--violet)]/10"
+                                              ? "bg-violet/10"
                                               : "bg-white border border-gray-100"
                                       }`}
                                     >
                                       {locked ? (
-                                        <Lock className="w-4 h-4 text-gray-400" />
+                                        <Lock className="w-4 h-4 text-muted-foreground" />
                                       ) : isDone ? (
                                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                                       ) : (
                                         <BookOpen
-                                          className={`w-4 h-4 ${isNext ? "text-[var(--violet)]" : "text-gray-400"}`}
+                                          className={`w-4 h-4 ${isNext ? "text-violet" : "text-muted-foreground"}`}
                                         />
                                       )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <div className="text-sm font-semibold text-[var(--ink)] truncate">
+                                      <div className="text-sm font-semibold text-ink truncate">
                                         {l.title}
                                         {isNext && (
-                                          <span className="ml-2 inline-flex rounded-full bg-[var(--violet)]/10 text-[var(--violet)] px-1.5 py-0.5 text-2xs font-bold">
+                                          <span className="ml-2 inline-flex rounded-full bg-violet/10 text-violet px-1.5 py-0.5 text-2xs font-bold">
                                             {locale === "pt" ? "Seguinte" : "Next"}
                                           </span>
                                         )}
                                       </div>
-                                      <div className="text-xs text-gray-400 mt-0.5">
+                                      <div className="text-xs text-muted-foreground mt-0.5">
                                         {LESSON_TYPE_LABEL[l.lesson_type] ?? l.lesson_type}
                                         {l.duration_min ? ` · ${l.duration_min} min` : ""}
                                         {l.xp_reward ? ` · +${l.xp_reward} XP` : ""}
                                       </div>
                                     </div>
                                     {locked ? (
-                                      <span className="text-xs text-gray-400 font-medium shrink-0">
+                                      <span className="text-xs text-muted-foreground font-medium shrink-0">
                                         {locale === "pt" ? "Bloqueado" : "Locked"}
                                       </span>
                                     ) : (
@@ -625,9 +641,9 @@ function CurriculumPage() {
                                         params={{ lessonId: l.id }}
                                         className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold shrink-0 transition-all ${
                                           isNext
-                                            ? "bg-[var(--primary)] text-white hover:opacity-90"
+                                            ? "bg-primary text-white hover:opacity-90"
                                             : isDone
-                                              ? "border border-gray-200 text-gray-600 hover:bg-white"
+                                              ? "border border-gray-200 text-muted-foreground hover:bg-white"
                                               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                                         }`}
                                       >
@@ -652,7 +668,7 @@ function CurriculumPage() {
                           )}
                         </div>
                       )}
-                    </div>
+                    </Card>
                   );
                 })}
               </div>

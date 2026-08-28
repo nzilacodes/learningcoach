@@ -33,8 +33,6 @@ import { Route as ClassesRouteImport } from './routes/classes'
 import { Route as CertificatesRouteImport } from './routes/certificates'
 import { Route as CefrLevelsRouteImport } from './routes/cefr-levels'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuditRouteImport } from './routes/audit'
-import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AiCoachRouteImport } from './routes/ai-coach'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
@@ -173,16 +171,6 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuditRoute = AuditRouteImport.update({
-  id: '/audit',
-  path: '/audit',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AnalyticsRoute = AnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AiCoachRoute = AiCoachRouteImport.update({
   id: '/ai-coach',
   path: '/ai-coach',
@@ -274,8 +262,6 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/ai-coach': typeof AiCoachRoute
-  '/analytics': typeof AnalyticsRoute
-  '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/cefr-levels': typeof CefrLevelsRoute
   '/certificates': typeof CertificatesRoute
@@ -318,8 +304,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ai-coach': typeof AiCoachRoute
-  '/analytics': typeof AnalyticsRoute
-  '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/cefr-levels': typeof CefrLevelsRoute
   '/certificates': typeof CertificatesRoute
@@ -364,8 +348,6 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/ai-coach': typeof AiCoachRoute
-  '/analytics': typeof AnalyticsRoute
-  '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/cefr-levels': typeof CefrLevelsRoute
   '/certificates': typeof CertificatesRoute
@@ -411,8 +393,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/ai-coach'
-    | '/analytics'
-    | '/audit'
     | '/auth'
     | '/cefr-levels'
     | '/certificates'
@@ -455,8 +435,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/ai-coach'
-    | '/analytics'
-    | '/audit'
     | '/auth'
     | '/cefr-levels'
     | '/certificates'
@@ -500,8 +478,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/ai-coach'
-    | '/analytics'
-    | '/audit'
     | '/auth'
     | '/cefr-levels'
     | '/certificates'
@@ -546,8 +522,6 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
   AiCoachRoute: typeof AiCoachRoute
-  AnalyticsRoute: typeof AnalyticsRoute
-  AuditRoute: typeof AuditRoute
   AuthRoute: typeof AuthRoute
   CefrLevelsRoute: typeof CefrLevelsRoute
   CertificatesRoute: typeof CertificatesRoute
@@ -749,20 +723,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/audit': {
-      id: '/audit'
-      path: '/audit'
-      fullPath: '/audit'
-      preLoaderRoute: typeof AuditRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/analytics': {
-      id: '/analytics'
-      path: '/analytics'
-      fullPath: '/analytics'
-      preLoaderRoute: typeof AnalyticsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/ai-coach': {
       id: '/ai-coach'
       path: '/ai-coach'
@@ -914,8 +874,6 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
   AiCoachRoute: AiCoachRoute,
-  AnalyticsRoute: AnalyticsRoute,
-  AuditRoute: AuditRoute,
   AuthRoute: AuthRoute,
   CefrLevelsRoute: CefrLevelsRoute,
   CertificatesRoute: CertificatesRoute,

@@ -17,7 +17,9 @@ import {
 } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -40,8 +42,10 @@ function profileSchema(locale: "pt" | "en") {
       .int()
       .min(4, locale === "pt" ? "Idade inválida (4–120)" : "Invalid age (4–120)")
       .max(120, locale === "pt" ? "Idade inválida (4–120)" : "Invalid age (4–120)"),
-    country: z.string(),
-    nativeLang: z.string(),
+    country: z.string().min(1, locale === "pt" ? "País obrigatório" : "Country required"),
+    nativeLang: z
+      .string()
+      .min(1, locale === "pt" ? "Língua materna obrigatória" : "Native language required"),
     goal: z.string(),
     interests: z.array(z.string()),
   });
@@ -121,25 +125,34 @@ function ProfilePage() {
       await refresh();
       notify.success(locale === "pt" ? "Perfil atualizado" : "Profile updated");
     } catch (err) {
-      notify.fromError(err, { dedupeKey: "profile:save" });
+      const normalized = notify.fromError(err, { dedupeKey: "profile:save" });
+      // Backend field names diverge from the form's own for 2 of these.
+      const toFormField: Record<string, keyof ProfileValues> = {
+        fullName: "fullName",
+        country: "country",
+        age: "age",
+        nativeLanguage: "nativeLang",
+        learningGoal: "goal",
+        interests: "interests",
+      };
+      normalized.fieldPaths?.forEach((path) => {
+        const field = toFormField[path];
+        if (field) form.setError(field, { type: "server", message: normalized.description });
+      });
     } finally {
       setSaving(false);
     }
   });
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
       <div className="flex-1 flex flex-col min-w-0 bg-white">
-        <header className="h-16 flex items-center px-4 md:px-6 bg-white border-b border-gray-100 shrink-0 z-10">
-          <h1 className="font-display text-xl font-bold text-[var(--ink)] truncate">
-            {locale === "pt" ? "O meu perfil" : "My profile"}
-          </h1>
-        </header>
+        <AppHeader title={locale === "pt" ? "O meu perfil" : "My profile"} />
         <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8">
           <div className="mx-auto max-w-2xl space-y-6">
-            <div className="rounded-2xl border border-gray-100 bg-white p-6 premium-shadow">
-              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+            <Card className="rounded-2xl border-gray-100 bg-white p-6 premium-shadow">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <Mail className="h-4 w-4" /> {user.email}
                 </span>
@@ -149,7 +162,7 @@ function ProfilePage() {
                   </span>
                 )}
               </div>
-            </div>
+            </Card>
 
             <Form {...form}>
               <form
@@ -163,7 +176,7 @@ function ProfilePage() {
                     <FormItem>
                       <FormLabel>{locale === "pt" ? "Nome completo" : "Full name"}</FormLabel>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <FormControl>
                           <Input autoComplete="name" className="pl-9" {...field} />
                         </FormControl>
@@ -181,7 +194,7 @@ function ProfilePage() {
                       <FormItem>
                         <FormLabel>{locale === "pt" ? "Idade" : "Age"}</FormLabel>
                         <div className="relative">
-                          <Cake className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                          <Cake className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                           <FormControl>
                             <Input type="number" min={4} max={120} className="pl-9" {...field} />
                           </FormControl>
@@ -197,7 +210,7 @@ function ProfilePage() {
                       <FormItem>
                         <FormLabel>{locale === "pt" ? "País" : "Country"}</FormLabel>
                         <div className="relative">
-                          <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                          <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                           <FormControl>
                             <Input autoComplete="country-name" className="pl-9" {...field} />
                           </FormControl>
@@ -217,7 +230,7 @@ function ProfilePage() {
                         {locale === "pt" ? "Língua materna" : "Native language"}
                       </FormLabel>
                       <div className="relative">
-                        <Languages className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <Languages className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <FormControl>
                           <Input className="pl-9" {...field} />
                         </FormControl>
@@ -246,8 +259,8 @@ function ProfilePage() {
                               onClick={() => field.onChange(g.id)}
                               className={`rounded-xl border-2 p-3 text-left text-sm font-medium transition ${
                                 active
-                                  ? "border-[var(--violet)] bg-[var(--violet)]/10"
-                                  : "border-gray-100 hover:border-[var(--violet)]/50"
+                                  ? "border-violet bg-violet/10"
+                                  : "border-gray-100 hover:border-violet/50"
                               }`}
                             >
                               {locale === "pt" ? g.pt : g.en}
@@ -283,8 +296,8 @@ function ProfilePage() {
                               onClick={toggle}
                               className={`flex items-center gap-1 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition ${
                                 active
-                                  ? "border-[var(--violet)] bg-[var(--violet)] text-white"
-                                  : "border-gray-100 hover:border-[var(--violet)]/50"
+                                  ? "border-violet bg-violet text-white"
+                                  : "border-gray-100 hover:border-violet/50"
                               }`}
                             >
                               {active && <Check className="h-3 w-3" />}
@@ -301,7 +314,7 @@ function ProfilePage() {
                   type="submit"
                   size="lg"
                   disabled={saving}
-                  className="w-full bg-[var(--violet)] text-white hover:opacity-90"
+                  className="w-full bg-violet text-white hover:opacity-90"
                 >
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

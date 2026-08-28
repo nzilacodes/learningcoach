@@ -1,17 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, useRef } from "react";
-import {
-  Search,
-  Play,
-  Flame,
-  MoreVertical,
-  CheckCircle,
-  Share2,
-  User,
-  Settings,
-  LogOut,
-} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Search, Play, Flame, MoreVertical, CheckCircle, Share2 } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { useAgeGroup } from "@/lib/use-age-group";
@@ -20,8 +10,8 @@ import { AGE_TRACKS } from "@/lib/age-tracks";
 import { extractYouTubeId, youtubeThumb, videoPoolForAge } from "@/lib/youtube";
 import { useUserStats, useWeeklyStudy } from "@/lib/learning";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
 import { useNotification } from "@/lib/notifications/notification-provider";
-import { useClickOutside } from "@/hooks/use-click-outside";
 
 export const Route = createFileRoute("/videos")({
   component: VideosPage,
@@ -89,8 +79,7 @@ function matchesFilter(video: { title: string; channel: string }, filter: string
 }
 
 function VideosPage() {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const qc = useQueryClient();
   const { group } = useAgeGroup();
   const { locale } = useLocale();
@@ -98,9 +87,26 @@ function VideosPage() {
   const [activeFilter, setActiveFilter] = useState("All Videos");
   const [searchQuery, setSearchQuery] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
-  const avatarRef = useRef<HTMLDivElement>(null);
-  useClickOutside(avatarRef, setAvatarMenuOpen);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenMenuId(null);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [openMenuId]);
+
+  // Makes the "⌘ K" hint next to the search box real instead of decorative.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
   const { data: recent } = useQuery({
     queryKey: ["video_history_list", user?.id],
@@ -137,8 +143,9 @@ function VideosPage() {
           {/* Search */}
           <div className="flex-1 max-w-2xl">
             <div className="relative group">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-(--violet) transition-colors" />
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-(--violet) transition-colors" />
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -155,7 +162,7 @@ function VideosPage() {
                 className="w-full pl-14 pr-6 py-3.5 bg-gray-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-(--violet)/10 transition-all outline-none"
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                <span className="px-2 py-1 bg-white border border-gray-100 rounded-md text-2xs text-gray-400 font-bold">
+                <span className="px-2 py-1 bg-white border border-gray-100 rounded-md text-2xs text-muted-foreground font-bold">
                   ⌘ K
                 </span>
               </div>
@@ -164,61 +171,8 @@ function VideosPage() {
 
           {/* Right side */}
           <div className="flex items-center gap-5">
-            {/* Avatar with dropdown — mobile only */}
-            <div className="relative md:hidden" ref={avatarRef}>
-              {avatarMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-20" onClick={() => setAvatarMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 py-2 dropdown-enter premium-shadow">
-                    <button
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        navigate({ to: "/profile" });
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-                    >
-                      <User className="w-4 h-4 text-[var(--violet)]" />
-                      {locale === "pt" ? "Ver perfil" : "View profile"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        navigate({ to: "/settings" });
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
-                    >
-                      <Settings className="w-4 h-4 text-gray-400" />
-                      {locale === "pt" ? "Definições" : "Settings"}
-                    </button>
-                    <div className="mx-3 my-1 h-px bg-gray-50" />
-                    <button
-                      onClick={() => signOut()}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-red-400 transition-colors w-full text-left"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {locale === "pt" ? "Sair da conta" : "Sign out"}
-                    </button>
-                  </div>
-                </>
-              )}
-              <button
-                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
-                className="h-10 w-10 rounded-full border-2 border-white shadow-sm overflow-hidden cursor-pointer hover:border-[var(--violet)] transition-all"
-              >
-                <div className="w-full h-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-white text-sm font-bold">
-                  {user?.email?.charAt(0).toUpperCase() || "U"}
-                </div>
-              </button>
-            </div>
-            {/* Avatar — desktop only (sidebar's own menu covers desktop; this just links straight to the profile page) */}
-            <Link
-              to="/profile"
-              className="hidden md:block h-10 w-10 rounded-full border-2 border-white shadow-sm overflow-hidden hover:border-[var(--violet)] transition-all"
-            >
-              <div className="w-full h-full bg-gradient-to-br from-[var(--violet)] to-[var(--magenta)] flex items-center justify-center text-white text-sm font-bold">
-                {user?.email?.charAt(0).toUpperCase() || "U"}
-              </div>
-            </Link>
+            <MobileAvatarMenu />
+            <DesktopAvatarLink />
           </div>
         </header>
 
@@ -227,13 +181,13 @@ function VideosPage() {
           {/* Mobile Stats */}
           <div className="md:hidden grid grid-cols-3 gap-3">
             <div className="glass-card rounded-2xl p-4 text-center premium-shadow">
-              <div className="text-2xs font-bold uppercase tracking-wider text-gray-400">
+              <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 Study Hours
               </div>
               <div className="text-xl font-bold text-(--ink)">{weekHours}</div>
             </div>
             <div className="glass-card rounded-2xl p-4 text-center premium-shadow">
-              <div className="text-2xs font-bold uppercase tracking-wider text-gray-400">
+              <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 Streak
               </div>
               <div className="text-xl font-bold text-(--ink)">
@@ -241,7 +195,7 @@ function VideosPage() {
               </div>
             </div>
             <div className="glass-card rounded-2xl p-4 text-center premium-shadow">
-              <div className="text-2xs font-bold uppercase tracking-wider text-gray-400">
+              <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 Watched
               </div>
               <div className="text-xl font-bold text-(--ink)">{watchedCount}</div>
@@ -257,7 +211,7 @@ function VideosPage() {
                 className={`px-6 py-2.5 rounded-2xl text-sm font-bold whitespace-nowrap transition-all ${
                   activeFilter === f
                     ? "bg-black text-white shadow-lg shadow-black/10"
-                    : "bg-white border border-gray-100 text-gray-500 hover:text-black hover:border-gray-200"
+                    : "bg-white border border-gray-100 text-muted-foreground hover:text-black hover:border-gray-200"
                 }`}
               >
                 {f}
@@ -283,7 +237,7 @@ function VideosPage() {
                     }
                   : undefined
               }
-              className="group relative block aspect-21/9 rounded-[3rem] overflow-hidden premium-shadow cursor-pointer"
+              className="group relative block aspect-21/9 rounded-5xl overflow-hidden premium-shadow cursor-pointer"
             >
               <img
                 src={
@@ -361,7 +315,14 @@ function VideosPage() {
                           </div>
                         </div>
                         {pct > 0 && (
-                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30">
+                          <div
+                            className="absolute bottom-0 left-0 right-0 h-1 bg-white/30"
+                            role="progressbar"
+                            aria-valuenow={pct}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label={`${r.title ?? r.video_id} — assistido`}
+                          >
                             <div className="h-full bg-(--violet)" style={{ width: `${pct}%` }} />
                           </div>
                         )}
@@ -370,7 +331,9 @@ function VideosPage() {
                         <h4 className="font-display font-bold text-sm leading-tight group-hover:text-(--violet) transition-colors line-clamp-2">
                           {r.title ?? r.video_id}
                         </h4>
-                        <span className="text-2xs text-gray-400 font-bold">{r.channel}</span>
+                        <span className="text-2xs text-muted-foreground font-bold">
+                          {r.channel}
+                        </span>
                       </div>
                     </Link>
                   );
@@ -381,7 +344,7 @@ function VideosPage() {
 
           {/* Video Grid */}
           {filteredCatalog.length === 0 && (
-            <p className="text-sm text-gray-400 font-medium">
+            <p className="text-sm text-muted-foreground font-medium">
               {locale === "pt"
                 ? "Nenhum vídeo encontrado para esta pesquisa/categoria."
                 : "No videos found for this search/category."}
@@ -425,7 +388,9 @@ function VideosPage() {
                       <h4 className="font-display font-bold text-sm leading-tight group-hover:text-(--violet) transition-colors line-clamp-2">
                         {video.title}
                       </h4>
-                      <span className="text-2xs text-gray-400 font-bold">{video.level}</span>
+                      <span className="text-2xs text-muted-foreground font-bold">
+                        {video.level}
+                      </span>
                     </Link>
 
                     {/* 3-dot menu */}
@@ -434,9 +399,10 @@ function VideosPage() {
                         e.stopPropagation();
                         setOpenMenuId(openMenuId === video.videoId ? null : video.videoId);
                       }}
+                      aria-label={locale === "pt" ? "Mais opções" : "More options"}
                       className="p-1.5 hover:bg-gray-100 rounded-xl transition-colors"
                     >
-                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                      <MoreVertical className="w-4 h-4 text-muted-foreground" />
                     </button>
 
                     {/* Dropdown */}
@@ -470,7 +436,7 @@ function VideosPage() {
                                 notify.fromError(e, { dedupeKey: "videos:mark-complete" });
                               }
                             }}
-                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-muted-foreground transition-colors w-full text-left"
                           >
                             <CheckCircle className="w-4 h-4 text-green-500" />
                             {locale === "pt" ? "Marcar como concluído" : "Mark as completed"}
@@ -490,7 +456,7 @@ function VideosPage() {
                                 notify.success(locale === "pt" ? "Link copiado" : "Link copied");
                               }
                             }}
-                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-gray-600 transition-colors w-full text-left"
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-xs font-bold text-muted-foreground transition-colors w-full text-left"
                           >
                             <Share2 className="w-4 h-4 text-blue-500" />
                             {locale === "pt" ? "Compartilhar" : "Share"}
@@ -506,10 +472,10 @@ function VideosPage() {
 
           {/* Footer */}
           <footer className="pt-10 pb-20 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-6">
-            <span className="text-sm font-bold text-gray-400">
+            <span className="text-sm font-bold text-muted-foreground">
               © {new Date().getFullYear()} Learning Coach Platform
             </span>
-            <div className="flex gap-8 text-sm font-bold text-gray-400">
+            <div className="flex gap-8 text-sm font-bold text-muted-foreground">
               <span>Privacy</span>
               <span>Terms</span>
               <span>Support</span>

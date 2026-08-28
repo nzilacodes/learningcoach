@@ -21,7 +21,7 @@ export function AgeThemeSwitcher() {
             onClick={() => setTheme(o.key)}
             aria-label={locale === "pt" ? o.pt : o.en}
             title={locale === "pt" ? o.pt : o.en}
-            className={`flex items-center gap-1 rounded-md px-2 py-1 text-2xs font-semibold transition-all ${
+            className={`flex items-center gap-1 rounded-md px-2 py-1 text-2xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${
               active
                 ? "bg-gradient-sunset text-white shadow-soft"
                 : "text-muted-foreground hover:text-foreground"

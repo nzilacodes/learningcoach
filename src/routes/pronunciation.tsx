@@ -20,6 +20,13 @@ import { useLocale } from "@/lib/i18n";
 import { normalizeApiError } from "@/lib/errors/normalize-api-error";
 import { InlineStatusFromError } from "@/components/feedback/inline-status";
 import { useNotification } from "@/lib/notifications/notification-provider";
+import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 
 function PronunciationRouteError({ error }: { error: Error }) {
   const { locale } = useLocale();
@@ -98,106 +105,129 @@ function PronunciationPage() {
   }, [history]);
 
   return (
-    <main className="container max-w-5xl py-8 space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold">Pronúncia & Speaking</h1>
-        <p className="text-muted-foreground">
-          Ouve, repete, grava e recebe avaliação profissional em segundos.
-        </p>
-      </header>
+    <div className="flex h-screen overflow-hidden bg-background">
+      <VideosSidebar />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Explorar palavra</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form
-            className="flex gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setCurrent(word.trim().toLowerCase());
-            }}
-          >
-            <Label htmlFor="pronunciation-word" className="sr-only">
-              Palavra
-            </Label>
-            <Input
-              id="pronunciation-word"
-              value={word}
-              onChange={(e) => setWord(e.target.value)}
-              placeholder="ex: pronunciation"
-            />
-            <Button type="submit">Analisar</Button>
-          </form>
-          {current && <WordCard word={current} />}
-        </CardContent>
-      </Card>
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <AppHeader
+          title="Pronúncia"
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
 
-      <Card>
-        <CardHeader className="flex-row items-baseline justify-between">
-          <CardTitle>Evolução</CardTitle>
-          <span className="text-sm text-muted-foreground">
-            Média global: <b>{avg}</b> · {history.length} tentativas
-          </span>
-        </CardHeader>
-        <CardContent>
-          {chartData.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Ainda sem dados — pratique acima para começar a acompanhar a evolução.
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
+          <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6">
+            <p className="text-muted-foreground">
+              Ouve, repete, grava e recebe avaliação profissional em segundos.
             </p>
-          ) : (
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                  <XAxis dataKey="i" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="Global" stroke="#2563eb" strokeWidth={2} />
-                  <Line type="monotone" dataKey="Pronúncia" stroke="#16a34a" />
-                  <Line type="monotone" dataKey="Fluência" stroke="#f59e0b" />
-                  <Line type="monotone" dataKey="Entoação" stroke="#db2777" />
-                  <Line type="monotone" dataKey="Ritmo" stroke="#9333ea" />
-                  <Line type="monotone" dataKey="Clareza" stroke="#0891b2" />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Histórico recente</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {history.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Sem tentativas ainda.</p>
-          ) : (
-            <ul className="divide-y">
-              {history.slice(0, 20).map((r) => (
-                <li key={r.id} className="py-2 text-sm flex justify-between gap-4">
-                  <div>
-                    <div className="font-medium">{r.word ?? r.expected_text}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(r.created_at).toLocaleString()}
-                    </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Explorar palavra</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <form
+                  className="flex gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setCurrent(word.trim().toLowerCase());
+                  }}
+                >
+                  <Label htmlFor="pronunciation-word" className="sr-only">
+                    Palavra
+                  </Label>
+                  <Input
+                    id="pronunciation-word"
+                    value={word}
+                    onChange={(e) => setWord(e.target.value)}
+                    placeholder="ex: pronunciation"
+                  />
+                  <Button type="submit">Analisar</Button>
+                </form>
+                {current && <WordCard word={current} />}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                <CardTitle>Evolução</CardTitle>
+                <span className="text-sm text-muted-foreground">
+                  Média global: <b>{avg}</b> · {history.length} tentativas
+                </span>
+              </CardHeader>
+              <CardContent>
+                {chartData.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Ainda sem dados — pratique acima para começar a acompanhar a evolução.
+                  </p>
+                ) : (
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                        <XAxis dataKey="i" />
+                        <YAxis domain={[0, 100]} />
+                        <Tooltip />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="Global"
+                          stroke="var(--color-chart-1)"
+                          strokeWidth={2}
+                        />
+                        <Line type="monotone" dataKey="Pronúncia" stroke="var(--color-chart-2)" />
+                        <Line type="monotone" dataKey="Fluência" stroke="var(--color-chart-3)" />
+                        <Line type="monotone" dataKey="Entoação" stroke="var(--color-chart-4)" />
+                        <Line type="monotone" dataKey="Ritmo" stroke="var(--color-chart-5)" />
+                        <Line type="monotone" dataKey="Clareza" stroke="var(--color-chart-6)" />
+                      </LineChart>
+                    </ResponsiveContainer>
                   </div>
-                  <div className="text-right">
-                    <div className="font-mono">{Math.round(Number(r.overall ?? 0))}/100</div>
-                    {r.phoneme_issues && r.phoneme_issues.length > 0 && (
-                      <div className="text-xs text-muted-foreground">
-                        {r.phoneme_issues.map((p) => p.sound).join(" ")}
-                      </div>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
-    </main>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Histórico recente</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {history.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Sem tentativas ainda.</p>
+                ) : (
+                  <ul className="divide-y">
+                    {history.slice(0, 20).map((r) => (
+                      <li key={r.id} className="py-2 text-sm flex justify-between gap-4">
+                        <div>
+                          <div className="font-medium">{r.word ?? r.expected_text}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(r.created_at).toLocaleString()}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-mono">{Math.round(Number(r.overall ?? 0))}/100</div>
+                          {r.phoneme_issues && r.phoneme_issues.length > 0 && (
+                            <div className="text-xs text-muted-foreground">
+                              {r.phoneme_issues.map((p) => p.sound).join(" ")}
+                            </div>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+
+      <VideosMobileNav />
+    </div>
   );
 }

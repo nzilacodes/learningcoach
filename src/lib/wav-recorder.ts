@@ -5,12 +5,24 @@
  *  (including iOS Safari, where MediaRecorder produces fragmented MP4 that
  *  the model can't decode). */
 
+import { assertRecordingIsUsable } from "@/lib/recording-guard";
+
 export type WavRecorder = {
   stop: () => Promise<Blob>;
   cancel: () => void;
 };
 
 const TARGET_SR = 16000;
+
+/** RMS over the raw captured samples, scaled the same way as
+ * audio-level-meter.ts (*4 headroom) so both recorders share one silence
+ * threshold. Computed directly from PCM instead of tapping a live
+ * AnalyserNode — cheaper and more precise since every sample is already in hand. */
+function peakRms(samples: Float32Array): number {
+  let sumSquares = 0;
+  for (let i = 0; i < samples.length; i++) sumSquares += samples[i] * samples[i];
+  return Math.min(1, Math.sqrt(sumSquares / Math.max(1, samples.length)) * 4);
+}
 
 function downsample(input: Float32Array, inputSR: number, targetSR: number): Float32Array {
   if (targetSR >= inputSR) return input;
@@ -100,10 +112,13 @@ export async function startWavRecording(): Promise<WavRecorder> {
     void ctx.close();
   };
 
+  const startedAt = Date.now();
+
   return {
     stop: async () => {
       // Let the last audio callback fire.
       await new Promise((r) => setTimeout(r, 100));
+      const elapsedMs = Date.now() - startedAt;
       const inputSR = ctx.sampleRate;
       cleanup();
       const total = chunks.reduce((n, c) => n + c.length, 0);
@@ -113,6 +128,7 @@ export async function startWavRecording(): Promise<WavRecorder> {
         merged.set(c, off);
         off += c.length;
       }
+      assertRecordingIsUsable(elapsedMs, peakRms(merged));
       const down = downsample(merged, inputSR, TARGET_SR);
       return encodeWav(down, TARGET_SR);
     },

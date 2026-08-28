@@ -15,15 +15,25 @@ import {
   Flag,
   UserX,
 } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
+import {
+  HeaderActionLinks,
+  MobileAvatarMenu,
+  DesktopAvatarLink,
+} from "@/components/mobile-avatar-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import { ageToRoom, type AgeTheme } from "@/lib/age-theme";
-import { startRecording, transcribe, type Recorder } from "@/lib/voice";
+import {
+  startRecording,
+  transcribe,
+  describeTranscriptionRejection,
+  type Recorder,
+} from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNotification } from "@/lib/notifications/notification-provider";
@@ -90,6 +100,32 @@ type Message = {
   created_at: string;
 };
 
+// Same app-shell wrapper as the rest of the authenticated app (curriculum,
+// games, rewards, etc.) — community was still on the marketing SiteHeader,
+// one of the un-reclassified SiteHeader pages the NAV-1 audit flagged.
+function CommunityShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-screen overflow-hidden bg-background">
+      <VideosSidebar />
+      <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <AppHeader
+          title="Comunidade"
+          titleLevel="h2"
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">{children}</main>
+      </div>
+      <VideosMobileNav />
+    </div>
+  );
+}
+
 function CommunityPage() {
   const { locale } = useLocale();
   const notify = useNotification();
@@ -114,13 +150,38 @@ function CommunityPage() {
   const room: Room | null = user ? ageToRoom(user.age) : null;
   const displayName = user?.fullName || (user?.email?.split("@")[0] ?? "You");
 
-  const { data, isError, refetch } = useQuery({
+  // Incremental polling (PERF-01): after the first snapshot, each 3s poll
+  // only asks the server for messages created after the last one we've
+  // seen, instead of re-fetching (and re-transferring) the same up-to-200-row
+  // snapshot every time. sinceRef lives outside React Query's cache on
+  // purpose — it must survive between polls without itself triggering one.
+  const [messages, setMessages] = useState<Message[]>([]);
+  const sinceRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    setMessages([]);
+    sinceRef.current = null;
+  }, [room]);
+
+  const { isError, refetch } = useQuery({
     queryKey: ["community_messages", room],
     enabled: !!room && started,
     refetchInterval: 3000,
-    queryFn: () => apiFetch<{ room: Room; messages: Message[] }>("/v1/community/messages"),
+    queryFn: async () => {
+      const since = sinceRef.current;
+      const qs = since ? `?since=${encodeURIComponent(since)}` : "";
+      const res = await apiFetch<{ room: Room; messages: Message[] }>(
+        `/v1/community/messages${qs}`,
+      );
+      if (res.messages.length > 0) {
+        sinceRef.current = res.messages[res.messages.length - 1]!.created_at;
+        setMessages((prev) => (since ? [...prev, ...res.messages] : res.messages));
+      } else if (!since) {
+        setMessages([]);
+      }
+      return res;
+    },
   });
-  const messages = data?.messages ?? [];
 
   const { data: blockedUsers = [], refetch: refetchBlocked } = useQuery({
     queryKey: ["community_blocked"],
@@ -180,6 +241,10 @@ function CommunityPage() {
     if (!ok) return;
     try {
       await apiFetch(`/v1/community/users/${targetUserId}/block`, { method: "POST" });
+      // Full re-snapshot, not an incremental poll — a block must also purge
+      // that user's messages already sitting in local state, which a
+      // since-cursor fetch would never touch (it only ever adds new rows).
+      sinceRef.current = null;
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["community_messages", room] }),
         refetchBlocked(),
@@ -192,6 +257,7 @@ function CommunityPage() {
   const unblockUser = async (targetUserId: string) => {
     try {
       await apiFetch(`/v1/community/users/${targetUserId}/block`, { method: "DELETE" });
+      sinceRef.current = null;
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["community_messages", room] }),
         refetchBlocked(),
@@ -219,7 +285,7 @@ function CommunityPage() {
     setTranscribing(true);
     try {
       const blob = await recorder.stop();
-      const text = (await transcribe(blob)).trim();
+      const text = (await transcribe(blob, { language: locale })).trim();
       if (text) {
         await send("voice", text);
       } else {
@@ -229,7 +295,15 @@ function CommunityPage() {
         });
       }
     } catch (e) {
-      notify.fromError(e, { dedupeKey: "community:transcribe" });
+      const rejection = describeTranscriptionRejection(e, locale);
+      if (rejection) {
+        notify.warning(rejection.title, {
+          description: rejection.description,
+          dedupeKey: "community:no-speech",
+        });
+      } else {
+        notify.fromError(e, { dedupeKey: "community:transcribe" });
+      }
     } finally {
       setTranscribing(false);
     }
@@ -237,10 +311,9 @@ function CommunityPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen">
-        <SiteHeader />
+      <CommunityShell>
         <div className="p-16 text-center text-muted-foreground">Loading…</div>
-      </div>
+      </CommunityShell>
     );
   }
 
@@ -248,8 +321,7 @@ function CommunityPage() {
     const meta = roomsMeta[room];
     const Icon = meta.icon;
     return (
-      <div className="min-h-screen">
-        <SiteHeader />
+      <CommunityShell>
         <div className="mx-auto max-w-lg px-6 py-16">
           <div className="glass rounded-3xl p-8 text-center shadow-glow">
             <div
@@ -316,8 +388,7 @@ function CommunityPage() {
             </p>
           </div>
         </div>
-        <SiteFooter />
-      </div>
+      </CommunityShell>
     );
   }
 
@@ -326,8 +397,7 @@ function CommunityPage() {
   const onlineCount = new Set(messages.slice(-30).map((m) => m.user_id)).size || 1;
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
+    <CommunityShell>
       <div className="mx-auto max-w-7xl px-6 py-10">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
           <div>
@@ -564,7 +634,6 @@ function CommunityPage() {
           </aside>
         </div>
       </div>
-      <SiteFooter />
-    </div>
+    </CommunityShell>
   );
 }

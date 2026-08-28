@@ -14,10 +14,10 @@ import {
 
 function AccountAvatar({ url }: { url: string | null }) {
   return (
-    <Avatar className="h-8 w-8">
+    <Avatar className="h-10 w-10">
       {url && <AvatarImage src={url} alt="" />}
       <AvatarFallback className="bg-gray-200">
-        <User className="h-4 w-4 text-gray-600" />
+        <User className="h-5 w-5 text-muted-foreground" />
       </AvatarFallback>
     </Avatar>
   );
@@ -33,7 +33,7 @@ export function HeaderActionLinks() {
     <>
       <Link
         to="/pricing"
-        className="bg-[var(--ink)] text-white px-3 md:px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity"
+        className="bg-ink text-white px-3 md:px-4 py-1.5 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-opacity"
       >
         <Zap className="w-4 h-4 text-yellow-400" fill="currentColor" />
         <span className="hidden sm:inline">Upgrade</span>
@@ -41,14 +41,14 @@ export function HeaderActionLinks() {
       <Link
         to="/contact"
         title={locale === "pt" ? "Ajuda" : "Help"}
-        className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex"
+        className="p-2 text-muted-foreground hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex"
       >
         <HelpCircle className="w-5 h-5" />
       </Link>
       <Link
         to="/rewards"
         title={locale === "pt" ? "Recompensas" : "Rewards"}
-        className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex"
+        className="p-2 text-muted-foreground hover:bg-gray-50 rounded-full transition-colors hidden sm:inline-flex"
       >
         <Gift className="w-5 h-5" />
       </Link>
@@ -85,16 +85,16 @@ export function MobileAvatarMenu() {
         >
           <DropdownMenuItem
             onClick={() => navigate({ to: "/profile" })}
-            className="gap-3 rounded-lg px-3 py-2.5 text-xs font-bold text-gray-600"
+            className="gap-3 rounded-lg px-3 py-2.5 text-xs font-bold text-muted-foreground"
           >
-            <User className="h-4 w-4 text-[var(--violet)]" />
+            <User className="h-4 w-4 text-violet" />
             {locale === "pt" ? "Ver perfil" : "View profile"}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => navigate({ to: "/settings" })}
-            className="gap-3 rounded-lg px-3 py-2.5 text-xs font-bold text-gray-600"
+            className="gap-3 rounded-lg px-3 py-2.5 text-xs font-bold text-muted-foreground"
           >
-            <Settings className="h-4 w-4 text-gray-400" />
+            <Settings className="h-4 w-4 text-muted-foreground" />
             {locale === "pt" ? "Definições" : "Settings"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />

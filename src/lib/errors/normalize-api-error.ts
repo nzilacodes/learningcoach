@@ -23,7 +23,6 @@ export type NormalizedError = {
  * string. See src/lib/errors/error-code-map.ts for the copy this reads.
  */
 export function normalizeApiError(error: unknown, locale: Locale = "pt"): NormalizedError {
-  // eslint-disable-next-line no-console -- internal-only diagnostic, never rendered
   console.error(error);
 
   const code: ErrorCode = error instanceof ApiError ? error.code : "UNKNOWN_ERROR";

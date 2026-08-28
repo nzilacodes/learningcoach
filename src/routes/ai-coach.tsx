@@ -16,12 +16,18 @@ import { useLocale } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
 import {
   HeaderActionLinks,
   MobileAvatarMenu,
   DesktopAvatarLink,
 } from "@/components/mobile-avatar-menu";
-import { startRecording, transcribe, type Recorder } from "@/lib/voice";
+import {
+  startRecording,
+  transcribe,
+  describeTranscriptionRejection,
+  type Recorder,
+} from "@/lib/voice";
 import { describeGetUserMediaError } from "@/lib/media-devices";
 import { SITE_URL } from "@/lib/site-url";
 import { useNotification } from "@/lib/notifications/notification-provider";
@@ -204,10 +210,18 @@ function AICoachPage() {
       try {
         const blob = await recorder.stop();
         setRecorder(null);
-        const text = await transcribe(blob);
+        const text = await transcribe(blob, { language: locale });
         if (text.trim()) setInput((prev) => (prev ? `${prev} ${text}` : text));
       } catch (e) {
-        notify.fromError(e, { dedupeKey: "ai-coach:transcribe" });
+        const rejection = describeTranscriptionRejection(e, locale);
+        if (rejection) {
+          notify.warning(rejection.title, {
+            description: rejection.description,
+            dedupeKey: "ai-coach:no-speech",
+          });
+        } else {
+          notify.fromError(e, { dedupeKey: "ai-coach:transcribe" });
+        }
       } finally {
         setTranscribing(false);
       }
@@ -238,23 +252,23 @@ function AICoachPage() {
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Left Sidebar */}
       <VideosSidebar />
 
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0 bg-white">
         {/* Top Header Bar */}
-        <header className="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 shrink-0 z-10">
-          <div className="flex items-center gap-2">
-            <h1 className="font-display text-xl font-bold text-[var(--ink)]">AI Coach</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <HeaderActionLinks />
-            <MobileAvatarMenu />
-            <DesktopAvatarLink />
-          </div>
-        </header>
+        <AppHeader
+          title="AI Coach"
+          actions={
+            <>
+              <HeaderActionLinks />
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
 
         {/* Content area */}
         <div className="flex-1 flex overflow-hidden">
@@ -264,7 +278,7 @@ function AICoachPage() {
               <div className="w-full max-w-[800px]">
                 {/* Welcome Header */}
                 <div className="text-center mb-12">
-                  <h2 className="font-display text-4xl md:text-5xl font-bold text-[var(--ink)] mb-4 leading-tight">
+                  <h2 className="font-display text-4xl md:text-5xl font-bold text-ink mb-4 leading-tight">
                     {locale === "pt" ? "O que vamos aprender hoje?" : "What shall we learn today?"}
                   </h2>
                 </div>
@@ -275,12 +289,12 @@ function AICoachPage() {
                     <button
                       key={s.text}
                       onClick={() => setInput(s.text)}
-                      className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-2xl hover:border-[var(--primary)]/40 cursor-pointer transition-all shadow-sm text-left group"
+                      className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-2xl hover:border-primary/40 cursor-pointer transition-all shadow-sm text-left group"
                     >
-                      <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center shrink-0 group-hover:bg-[var(--primary)]/5 transition-colors">
-                        <s.icon className="w-5 h-5 text-[var(--primary)]" />
+                      <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center shrink-0 group-hover:bg-primary/5 transition-colors">
+                        <s.icon className="w-5 h-5 text-primary" />
                       </div>
-                      <span className="text-sm font-semibold text-[var(--ink)]">{s.text}</span>
+                      <span className="text-sm font-semibold text-ink">{s.text}</span>
                     </button>
                   ))}
                 </div>
@@ -288,7 +302,7 @@ function AICoachPage() {
             ) : (
               <div className="w-full max-w-[800px] flex-1 space-y-5 mb-8">
                 {transcriptLoading ? (
-                  <div className="flex items-center justify-center gap-2 py-12 text-gray-400">
+                  <div className="flex items-center justify-center gap-2 py-12 text-muted-foreground">
                     <Loader2 className="w-5 h-5 animate-spin" />
                     <span className="text-sm">
                       {locale === "pt" ? "Carregando conversa…" : "Loading conversation…"}
@@ -303,8 +317,8 @@ function AICoachPage() {
                       <div
                         className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
                           m.role === "user"
-                            ? "bg-[var(--primary)] text-white"
-                            : "bg-gray-50 border border-gray-100 text-[var(--ink)]"
+                            ? "bg-primary text-white"
+                            : "bg-gray-50 border border-gray-100 text-ink"
                         }`}
                       >
                         {m.content}
@@ -335,7 +349,7 @@ function AICoachPage() {
                 )}
                 {sending && (
                   <div className="flex justify-start">
-                    <div className="rounded-2xl px-4 py-2.5 bg-gray-50 border border-gray-100 flex items-center gap-2 text-gray-400">
+                    <div className="rounded-2xl px-4 py-2.5 bg-gray-50 border border-gray-100 flex items-center gap-2 text-muted-foreground">
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       <span className="text-xs">Coach</span>
                     </div>
@@ -347,7 +361,7 @@ function AICoachPage() {
 
             {/* Chat Input */}
             <div className="w-full max-w-[800px] mx-auto">
-              <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm focus-within:shadow-md focus-within:ring-1 focus-within:ring-[var(--primary)]/20 transition-all overflow-hidden">
+              <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm focus-within:shadow-md focus-within:ring-1 focus-within:ring-primary/20 transition-all overflow-hidden">
                 <div className="flex items-start px-4 pt-4 pb-2">
                   <textarea
                     ref={textareaRef}
@@ -375,12 +389,12 @@ function AICoachPage() {
                     }
                     disabled={transcribing}
                     rows={1}
-                    className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm text-[var(--ink)] placeholder:text-gray-400 max-h-40 outline-none"
+                    className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm text-ink placeholder:text-muted-foreground max-h-40 outline-none"
                   />
                   <button
                     onClick={send}
                     disabled={sending || !input.trim()}
-                    className="ml-2 p-2 text-gray-400 hover:text-[var(--primary)] transition-colors shrink-0 disabled:opacity-40"
+                    className="ml-2 p-2 text-muted-foreground hover:text-primary transition-colors shrink-0 disabled:opacity-40"
                   >
                     {sending ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -397,7 +411,7 @@ function AICoachPage() {
                       className={`flex items-center gap-1.5 px-3 py-1 rounded-full border transition-colors disabled:opacity-50 ${
                         recorder
                           ? "bg-red-50 border-red-200 text-red-600"
-                          : "bg-white border-gray-200/50 hover:bg-gray-50 text-gray-500"
+                          : "bg-white border-gray-200/50 hover:bg-gray-50 text-muted-foreground"
                       }`}
                     >
                       {recorder ? (
@@ -416,12 +430,12 @@ function AICoachPage() {
                       </span>
                     </button>
                   </div>
-                  <div className="text-2xs font-medium text-gray-400">
+                  <div className="text-2xs font-medium text-muted-foreground">
                     {input.length} / {MAX_MESSAGE_LENGTH.toLocaleString()}
                   </div>
                 </div>
               </div>
-              <p className="text-2xs text-center mt-3 text-gray-400">
+              <p className="text-2xs text-center mt-3 text-muted-foreground">
                 {locale === "pt"
                   ? "O Coach pode gerar informações imprecisas."
                   : "Coach may generate inaccurate information."}
@@ -436,15 +450,16 @@ function AICoachPage() {
               <div className="p-6 flex items-center">
                 <button
                   onClick={() => setProjectsSidebarOpen(false)}
-                  className="p-1 hover:bg-gray-50 rounded-md transition-colors text-gray-500 mr-2"
+                  aria-label={locale === "pt" ? "Fechar barra lateral" : "Close sidebar"}
+                  className="p-1 hover:bg-gray-50 rounded-md transition-colors text-muted-foreground mr-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
                 <div className="flex items-center gap-2 flex-1">
-                  <span className="font-display text-lg font-semibold text-[var(--ink)]">
+                  <span className="font-display text-lg font-semibold text-ink">
                     {locale === "pt" ? "Conversas" : "Conversations"}
                   </span>
-                  <span className="text-gray-400 text-sm">({conversations.length})</span>
+                  <span className="text-muted-foreground text-sm">({conversations.length})</span>
                 </div>
               </div>
 
@@ -453,10 +468,10 @@ function AICoachPage() {
                 {/* New Conversation Button */}
                 <button
                   onClick={() => setActiveId(null)}
-                  className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all text-left"
+                  className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-primary hover:bg-primary/5 transition-all text-left"
                 >
-                  <Plus className="w-5 h-5 text-[var(--primary)]" />
-                  <div className="text-sm font-bold text-[var(--ink)]">
+                  <Plus className="w-5 h-5 text-primary" />
+                  <div className="text-sm font-bold text-ink">
                     {locale === "pt" ? "Nova conversa" : "New conversation"}
                   </div>
                 </button>
@@ -468,20 +483,20 @@ function AICoachPage() {
                     <button
                       key={conversation.id}
                       onClick={() => setActiveId(conversation.id)}
-                      className={`w-full text-left p-4 rounded-xl bg-white border hover:border-[var(--primary)]/40 cursor-pointer transition-all shadow-sm ${
-                        active ? "border-[var(--primary)]" : "border-gray-200"
+                      className={`w-full text-left p-4 rounded-xl bg-white border hover:border-primary/40 cursor-pointer transition-all shadow-sm ${
+                        active ? "border-primary" : "border-gray-200"
                       }`}
                     >
                       <div className="flex justify-between items-start mb-1">
-                        <h4 className="text-sm font-bold text-[var(--ink)] truncate pr-4">
+                        <h4 className="text-sm font-bold text-ink truncate pr-4">
                           {conversation.title ||
                             (locale === "pt" ? "Nova conversa" : "New conversation")}
                         </h4>
                         <div
-                          className={`w-2 h-2 rounded-full shrink-0 mt-1 ${active ? "bg-[var(--primary)]" : "bg-gray-200"}`}
+                          className={`w-2 h-2 rounded-full shrink-0 mt-1 ${active ? "bg-primary" : "bg-gray-200"}`}
                         />
                       </div>
-                      <p className="text-[12px] text-gray-500">
+                      <p className="text-[12px] text-muted-foreground">
                         {new Date(conversation.updated_at).toLocaleDateString(
                           locale === "pt" ? "pt-PT" : "en-US",
                           {
@@ -497,11 +512,11 @@ function AICoachPage() {
                 })}
                 {conversationsLoading && conversations.length === 0 && (
                   <div className="flex justify-center py-6">
-                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                   </div>
                 )}
                 {!conversationsLoading && conversations.length === 0 && (
-                  <p className="text-center text-xs text-gray-400 py-6">
+                  <p className="text-center text-xs text-muted-foreground py-6">
                     {locale === "pt" ? "Nenhuma conversa ainda." : "No conversations yet."}
                   </p>
                 )}
@@ -513,7 +528,8 @@ function AICoachPage() {
           {!projectsSidebarOpen && (
             <button
               onClick={() => setProjectsSidebarOpen(true)}
-              className="hidden lg:flex items-center justify-center w-10 shrink-0 border-l border-gray-100 hover:bg-gray-50 transition-colors text-gray-500"
+              aria-label={locale === "pt" ? "Abrir barra lateral" : "Open sidebar"}
+              className="hidden lg:flex items-center justify-center w-10 shrink-0 border-l border-gray-100 hover:bg-gray-50 transition-colors text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <ChevronRight className="w-5 h-5 rotate-180" />
             </button>

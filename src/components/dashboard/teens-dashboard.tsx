@@ -11,10 +11,13 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { VideosSidebar, VideosMobileNav } from "@/components/videos/videos-sidebar";
+import { AppHeader } from "@/components/app-header";
+import { Card } from "@/components/ui/card";
 import { MobileAvatarMenu, DesktopAvatarLink } from "@/components/mobile-avatar-menu";
 import { useLocale } from "@/lib/i18n";
 import { AGE_TRACKS } from "@/lib/age-tracks";
 import type { DashboardData } from "@/lib/learning";
+import { DAILY_XP_GOAL } from "@/lib/learning";
 import {
   ProfileHeader,
   LeaderboardCard,
@@ -42,29 +45,32 @@ export function TeensDashboard(data: DashboardData) {
   } = data;
   const displayName = data.firstName ?? (locale === "pt" ? "Aluno" : "Learner");
   const teenGames = track.games.slice(0, 4);
+  const todayXp = data.userStats?.today_xp ?? 0;
+  const todayXpPct = Math.min(1, todayXp / DAILY_XP_GOAL);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <VideosSidebar />
-      <div className="flex-1 flex flex-col min-w-0 bg-[#f7f9fb]">
+      <div className="flex-1 flex flex-col min-w-0 bg-panel-bg">
         {/* ====== TopBar ====== */}
-        <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-white/80 backdrop-blur-xl border-b border-gray-100 shrink-0 z-10">
-          <h1 className="font-display text-xl font-bold text-[var(--ink)] truncate">
-            {locale === "pt" ? "Seu progresso 🎮" : "Your progress 🎮"}
-          </h1>
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="flex items-center gap-1.5 bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full text-sm font-bold">
-              <Flame className="w-4 h-4" />
-              {data.userStats?.streak_days ?? 0}
-            </div>
-            <div className="flex items-center gap-1.5 bg-amber-100 text-amber-600 px-3 py-1.5 rounded-full text-sm font-bold">
-              <Star className="w-4 h-4" />
-              {(data.userStats?.xp ?? 0).toLocaleString()}
-            </div>
-            <MobileAvatarMenu />
-            <DesktopAvatarLink />
-          </div>
-        </header>
+        <AppHeader
+          title={locale === "pt" ? "Seu progresso 🎮" : "Your progress 🎮"}
+          blur
+          actions={
+            <>
+              <div className="flex items-center gap-1.5 bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full text-sm font-bold">
+                <Flame className="w-4 h-4" />
+                {data.userStats?.streak_days ?? 0}
+              </div>
+              <div className="flex items-center gap-1.5 bg-amber-100 text-amber-600 px-3 py-1.5 rounded-full text-sm font-bold">
+                <Star className="w-4 h-4" />
+                {(data.userStats?.xp ?? 0).toLocaleString()}
+              </div>
+              <MobileAvatarMenu />
+              <DesktopAvatarLink />
+            </>
+          }
+        />
 
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 scrollbar-hide">
           <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 grid gap-6 lg:grid-cols-[1fr_340px]">
@@ -73,10 +79,10 @@ export function TeensDashboard(data: DashboardData) {
               <ProfileHeader />
 
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm font-medium text-muted-foreground">
                   {locale === "pt" ? "E aí," : "Hey,"}
                 </p>
-                <h2 className="font-display text-2xl font-bold text-[var(--ink)]">
+                <h2 className="font-display text-2xl font-bold text-ink">
                   {displayName}! {locale === "pt" ? "Bora treinar?" : "Ready to level up?"}
                 </h2>
               </div>
@@ -95,7 +101,14 @@ export function TeensDashboard(data: DashboardData) {
                       ? `Unidade ${currentUnit.index}: ${currentUnit.title}`
                       : `Unit ${currentUnit.index}: ${currentUnit.title}`}
                   </h3>
-                  <div className="w-full bg-white/20 h-2.5 rounded-full mb-5 overflow-hidden max-w-xs">
+                  <div
+                    className="w-full bg-white/20 h-2.5 rounded-full mb-5 overflow-hidden max-w-xs"
+                    role="progressbar"
+                    aria-valuenow={Math.round(Math.max(5, currentPct))}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={currentUnit.title}
+                  >
                     <div
                       className="bg-white h-full rounded-full"
                       style={{ width: `${Math.max(5, currentPct)}%` }}
@@ -104,7 +117,7 @@ export function TeensDashboard(data: DashboardData) {
                   <Link
                     to={nextLessonId ? "/lesson/$lessonId" : "/curriculum"}
                     params={nextLessonId ? { lessonId: nextLessonId } : undefined}
-                    className="inline-flex items-center gap-2 bg-white text-[var(--ink)] px-6 py-3 rounded-2xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                    className="inline-flex items-center gap-2 bg-white text-ink px-6 py-3 rounded-2xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform"
                   >
                     <Play className="w-4 h-4 fill-current" />
                     {locale === "pt" ? "Continuar" : "Keep going"}
@@ -115,14 +128,11 @@ export function TeensDashboard(data: DashboardData) {
               {/* Games teaser */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-display text-lg font-bold text-[var(--ink)] flex items-center gap-2">
-                    <Gamepad2 className="w-5 h-5 text-[var(--violet)]" />
+                  <h3 className="font-display text-lg font-bold text-ink flex items-center gap-2">
+                    <Gamepad2 className="w-5 h-5 text-violet" />
                     {locale === "pt" ? "Jogos para você" : "Games for you"}
                   </h3>
-                  <Link
-                    to="/games"
-                    className="text-sm font-bold text-[var(--violet)] hover:opacity-80"
-                  >
+                  <Link to="/games" className="text-sm font-bold text-violet hover:opacity-80">
                     {locale === "pt" ? "Ver todos" : "See all"}
                   </Link>
                 </div>
@@ -146,13 +156,10 @@ export function TeensDashboard(data: DashboardData) {
               {/* Learning Track — horizontal scroll strip */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-display text-lg font-bold text-[var(--ink)]">
+                  <h3 className="font-display text-lg font-bold text-ink">
                     {locale === "pt" ? "Trilha" : "Track"}
                   </h3>
-                  <Link
-                    to="/curriculum"
-                    className="text-sm font-bold text-[var(--violet)] hover:opacity-80"
-                  >
+                  <Link to="/curriculum" className="text-sm font-bold text-violet hover:opacity-80">
                     {locale === "pt" ? "Ver tudo" : "View all"}
                   </Link>
                 </div>
@@ -162,7 +169,7 @@ export function TeensDashboard(data: DashboardData) {
                       key={u.id}
                       className={`shrink-0 w-32 rounded-2xl overflow-hidden border relative ${
                         u.current
-                          ? "ring-2 ring-[var(--violet)] border-[var(--violet)]/20"
+                          ? "ring-2 ring-violet border-violet/20"
                           : u.locked
                             ? "opacity-50 border-gray-100"
                             : "border-gray-100"
@@ -189,12 +196,10 @@ export function TeensDashboard(data: DashboardData) {
                           </>
                         )}
                       </div>
-                      <p className="text-2xs font-bold text-gray-500 px-2 pt-1.5">
+                      <p className="text-2xs font-bold text-muted-foreground px-2 pt-1.5">
                         {locale === "pt" ? "UNIDADE" : "UNIT"} {u.index}
                       </p>
-                      <p className="text-xs font-bold text-[var(--ink)] px-2 pb-2 truncate">
-                        {u.title}
-                      </p>
+                      <p className="text-xs font-bold text-ink px-2 pb-2 truncate">{u.title}</p>
                     </div>
                   ))}
                 </div>
@@ -206,14 +211,14 @@ export function TeensDashboard(data: DashboardData) {
                 className="flex items-center justify-between bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-[var(--violet)]/10 flex items-center justify-center text-[var(--violet)]">
+                  <div className="w-11 h-11 rounded-xl bg-violet/10 flex items-center justify-center text-violet">
                     <MessagesSquare className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="font-display font-bold text-[var(--ink)]">
+                    <p className="font-display font-bold text-ink">
                       {locale === "pt" ? "Sala de conversa" : "Chat room"}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       {locale === "pt"
                         ? "Pratique com outros adolescentes"
                         : "Practice with other teens"}
@@ -228,41 +233,81 @@ export function TeensDashboard(data: DashboardData) {
 
             {/* --- Sidebar --- */}
             <aside className="space-y-6">
-              <div className="bg-white/70 backdrop-blur-md border border-gray-100/80 rounded-3xl p-6 shadow-sm">
+              <Card className="bg-white/70 backdrop-blur-md border-gray-100/80 rounded-3xl p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-bold text-[var(--ink)]">
+                  <h4 className="text-sm font-bold text-ink">
                     {locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
                   </h4>
-                  <span className="text-xs font-bold text-[var(--violet)]">
+                  <span className="text-xs font-bold text-violet">
                     {week.days}/{week.goalDays}
                   </span>
                 </div>
-                <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                <div
+                  className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={Math.round(week.pct * 100)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={locale === "pt" ? "Meta Semanal" : "Weekly Goal"}
+                >
                   <div
-                    className="h-full bg-[var(--violet)] rounded-full transition-all duration-700"
+                    className="h-full bg-violet rounded-full transition-all duration-700"
                     style={{ width: `${week.pct * 100}%` }}
                   />
                 </div>
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-muted-foreground">
                   {completedLessonCount}{" "}
                   {locale === "pt" ? "lições concluídas" : "lessons completed"} · {week.label}{" "}
                   {locale === "pt" ? "esta semana" : "this week"}
                 </p>
-              </div>
+              </Card>
+
+              <Card className="bg-white/70 backdrop-blur-md border-gray-100/80 rounded-3xl p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-bold text-ink">
+                    {locale === "pt" ? "Meta Diária" : "Daily Goal"}
+                  </h4>
+                  <span className="text-xs font-bold text-sunset">
+                    {todayXp}/{DAILY_XP_GOAL} XP
+                  </span>
+                </div>
+                <div
+                  className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={Math.round(todayXpPct * 100)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={locale === "pt" ? "Meta Diária" : "Daily Goal"}
+                >
+                  <div
+                    className="h-full bg-sunset rounded-full transition-all duration-700"
+                    style={{ width: `${todayXpPct * 100}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {todayXp >= DAILY_XP_GOAL
+                    ? locale === "pt"
+                      ? "Meta de hoje atingida! 🎉"
+                      : "Today's goal reached! 🎉"
+                    : locale === "pt"
+                      ? `Falta${DAILY_XP_GOAL - todayXp === 1 ? "" : "m"} ${DAILY_XP_GOAL - todayXp} XP para a meta de hoje.`
+                      : `${DAILY_XP_GOAL - todayXp} XP to go today.`}
+                </p>
+              </Card>
 
               <LeaderboardCard />
               <ClassesCard />
               <ReminderCard reminder={reminder} locale={locale} />
 
               {/* Read-only subscription status — teens don't manage billing */}
-              <div className="rounded-3xl border border-gray-100/80 bg-white/70 backdrop-blur-md p-6 shadow-sm">
+              <Card className="rounded-3xl border-gray-100/80 bg-white/70 backdrop-blur-md p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-1">
-                  <Users className="w-4 h-4 text-gray-400" />
-                  <h4 className="text-sm font-bold text-[var(--ink)]">
+                  <Users className="w-4 h-4 text-muted-foreground" />
+                  <h4 className="text-sm font-bold text-ink">
                     {locale === "pt" ? "Seu acesso" : "Your access"}
                   </h4>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   {subscription.sub?.status === "active"
                     ? locale === "pt"
                       ? "Acesso ativo pela sua conta responsável."
@@ -275,7 +320,7 @@ export function TeensDashboard(data: DashboardData) {
                         ? "Peça a um responsável para ativar seu plano."
                         : "Ask a guardian to activate your plan."}
                 </p>
-              </div>
+              </Card>
             </aside>
           </div>
         </main>
