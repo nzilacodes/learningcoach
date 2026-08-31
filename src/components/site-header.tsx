@@ -187,13 +187,15 @@ export function SiteHeader() {
 
               {/* CTA Button */}
               <Link
-                to={user ? "/dashboard" : "/auth"}
+                to={user ? (isAdmin ? "/admin" : "/dashboard") : "/auth"}
                 className="group hidden items-center gap-2.5 rounded-full bg-marketing-ink px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white transition-all duration-300 hover:shadow-lg lg:inline-flex"
               >
                 {user
-                  ? locale === "pt"
-                    ? "Painel"
-                    : "Dashboard"
+                  ? isAdmin
+                    ? "Admin"
+                    : locale === "pt"
+                      ? "Painel"
+                      : "Dashboard"
                   : locale === "pt"
                     ? "Entrar"
                     : "Sign in"}

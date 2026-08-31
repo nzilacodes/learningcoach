@@ -40,13 +40,20 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { locale, setLocale } = useLocale();
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (loading || !user) return;
-    navigate({ to: user.age == null ? "/onboarding" : "/dashboard" });
-  }, [user, loading, navigate]);
+    // Admins never go through onboarding (OnboardingGate bypasses them
+    // entirely) and have no age/dashboard concept — age == null used to be
+    // read as "needs onboarding" here regardless of role, which sent every
+    // admin straight to /onboarding since admin accounts have no age set.
+    // For everyone else, OnboardingGate (the single source of truth for
+    // onboardingStatus) already redirects to /onboarding on its own once
+    // this lands on /dashboard, so it doesn't need duplicating here.
+    navigate({ to: isAdmin ? "/admin" : "/dashboard" });
+  }, [user, loading, isAdmin, navigate]);
 
   return (
     <main className="lewc-auth-shell">
