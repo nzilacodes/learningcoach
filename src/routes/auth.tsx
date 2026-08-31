@@ -1,11 +1,10 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Sparkles, Mail, Lock, User, ArrowRight, Check, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useNotification } from "@/lib/notifications/notification-provider";
-import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,7 +19,9 @@ import {
 import { useLocale } from "@/lib/i18n";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
-import { passwordError } from "@/lib/password";
+import coachLogo from "@/assets/coach-logo.png";
+import "@/styles/auth-page.css";
+import "@/styles/auth-controls.css";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -37,7 +38,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { locale } = useLocale();
+  const { locale, setLocale } = useLocale();
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -48,80 +49,116 @@ function AuthPage() {
   }, [user, loading, navigate]);
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <div className="bg-hero min-h-screen flex justify-center items-center">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-2">
-          <div className="hidden flex-col justify-center md:flex">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-semibold shadow-card backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5 text-magenta" />
-              {locale === "pt" ? "Bem-vindo(a) de volta" : "Welcome back"}
-            </div>
-            <h1 className="mt-6 font-display text-5xl font-bold leading-tight">
-              {locale === "pt" ? "Sua jornada de inglês " : "Your English journey "}
-              <span className="text-gradient-sunset">
-                {locale === "pt" ? "continua aqui." : "continues here."}
-              </span>
-            </h1>
-            <p className="mt-4 text-lg text-muted-foreground">
-              {locale === "pt"
-                ? "Retome de onde parou, mantenha sua sequência e conquiste novos níveis com o Coach."
-                : "Pick up where you left off, keep your streak, and unlock new levels with Coach."}
-            </p>
-            <div className="mt-8 space-y-3">
-              {[
-                {
-                  pt: "Dados sincronizados em todos os seus dispositivos",
-                  en: "Data synced across all your devices",
-                },
-                {
-                  pt: "Sessão segura com cookies HttpOnly",
-                  en: "Secure session with HttpOnly cookies",
-                },
-                {
-                  pt: "Certificados oficiais a cada nível CEFR",
-                  en: "Official CEFR certificates per level",
-                },
-              ].map((f) => (
-                <div key={f.en} className="flex items-center gap-3 text-sm">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-sunset text-white">
-                    <Check className="h-3.5 w-3.5" />
-                  </div>
-                  {locale === "pt" ? f.pt : f.en}
-                </div>
-              ))}
-            </div>
+    <main className="lewc-auth-shell">
+      <section
+        className="lewc-auth-story"
+        aria-label={locale === "pt" ? "A tua jornada" : "Your journey"}
+      >
+        <div className="lewc-auth-story-inner">
+          <div className="lewc-auth-kicker">
+            {locale === "pt" ? "O teu espaço de aprendizagem" : "Your learning space"}
           </div>
-
-          <div className="glass rounded-3xl p-8 shadow-glow">
-            {mode !== "forgot" && (
-              <div className="flex rounded-xl bg-muted p-1 text-sm font-semibold">
-                <button
-                  onClick={() => setMode("signin")}
-                  className={`flex-1 rounded-lg px-4 py-2 transition-all ${
-                    mode === "signin" ? "bg-background shadow-card" : "text-muted-foreground"
-                  }`}
-                >
-                  {locale === "pt" ? "Entrar" : "Sign in"}
-                </button>
-                <button
-                  onClick={() => setMode("signup")}
-                  className={`flex-1 rounded-lg px-4 py-2 transition-all ${
-                    mode === "signup" ? "bg-background shadow-card" : "text-muted-foreground"
-                  }`}
-                >
-                  {locale === "pt" ? "Criar conta" : "Sign up"}
-                </button>
+          <h1>
+            {locale === "pt" ? "Sua jornada de inglês " : "Your English journey "}
+            <span>{locale === "pt" ? "continua aqui." : "continues here."}</span>
+          </h1>
+          <p className="lewc-auth-story-copy">
+            {locale === "pt"
+              ? "Retome de onde parou, mantenha sua sequência e conquiste novos níveis com o Coach."
+              : "Pick up where you left off, keep your streak, and unlock new levels with Coach."}
+          </p>
+          <div className="lewc-auth-features">
+            {[
+              {
+                pt: "Dados sincronizados",
+                en: "Synced data",
+                detailPt: "todos os dispositivos",
+                detailEn: "all devices",
+              },
+              {
+                pt: "Sessão segura",
+                en: "Secure session",
+                detailPt: "cookies HttpOnly",
+                detailEn: "HttpOnly cookies",
+              },
+              {
+                pt: "Certificados oficiais",
+                en: "Official certificates",
+                detailPt: "níveis CEFR",
+                detailEn: "CEFR levels",
+              },
+            ].map((feature) => (
+              <div className="lewc-auth-feature" key={feature.en}>
+                <strong>{locale === "pt" ? feature.pt : feature.en}</strong>
+                <span> · {locale === "pt" ? feature.detailPt : feature.detailEn}</span>
               </div>
-            )}
-
-            {mode === "signin" && <SignInForm onForgot={() => setMode("forgot")} />}
-            {mode === "signup" && <SignUpForm onDone={() => setMode("signin")} />}
-            {mode === "forgot" && <ForgotForm onBack={() => setMode("signin")} />}
+            ))}
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+
+      <section className="lewc-auth-panel">
+        <div className="lewc-auth-panel-top">
+          <Link to="/" className="lewc-auth-brand" aria-label="LEWC">
+            <img src={coachLogo} alt="LEWC" />
+            <span>LEWC</span>
+          </Link>
+          <div className="lewc-auth-languages" aria-label="Language">
+            <button
+              className={locale === "pt" ? "active" : ""}
+              onClick={() => setLocale("pt")}
+              type="button"
+            >
+              PT
+            </button>
+            <button
+              className={locale === "en" ? "active" : ""}
+              onClick={() => setLocale("en")}
+              type="button"
+            >
+              EN
+            </button>
+          </div>
+        </div>
+
+        <div className="lewc-auth-content">
+          <div className="lewc-auth-kicker">{locale === "pt" ? "Acesso" : "Sign in"}</div>
+          <h2>
+            {locale === "pt" ? "Bem-vindo " : "Welcome "}
+            <span>{locale === "pt" ? "de volta." : "back."}</span>
+          </h2>
+          <p className="lewc-auth-intro">
+            {locale === "pt"
+              ? "A tua próxima sessão está a um passo. Retoma de onde ficaste."
+              : "Your next session is one step away. Pick up where you left off."}
+          </p>
+
+          {mode !== "forgot" && (
+            <div className="lewc-auth-tabs" role="tablist">
+              <button
+                type="button"
+                onClick={() => setMode("signin")}
+                className={mode === "signin" ? "active" : ""}
+              >
+                {locale === "pt" ? "Entrar" : "Sign in"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("signup")}
+                className={mode === "signup" ? "active" : ""}
+              >
+                {locale === "pt" ? "Criar conta" : "Sign up"}
+              </button>
+            </div>
+          )}
+
+          {mode === "signin" && <SignInForm onForgot={() => setMode("forgot")} />}
+          {mode === "signup" && <SignUpForm onDone={() => setMode("signin")} />}
+          {mode === "forgot" && <ForgotForm onBack={() => setMode("signin")} />}
+        </div>
+        <div className="lewc-auth-footer">Learning English with Coach</div>
+      </section>
+    </main>
   );
 }
 
@@ -140,6 +177,7 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
   const { locale } = useLocale();
   const notify = useNotification();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { refresh } = useAuth();
 
   const form = useForm<SignInValues>({
@@ -156,7 +194,6 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
       });
       await refresh();
       notify.success(locale === "pt" ? "Sessão iniciada" : "Signed in");
-      // Route handled by AuthPage's useEffect based on profile completeness.
     } catch (e) {
       const normalized = notify.fromError(e, { dedupeKey: "auth:signin" });
       normalized.fieldPaths?.forEach((path) => {
@@ -171,26 +208,23 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
 
   return (
     <Form {...form}>
-      <form className="mt-6 space-y-4" onSubmit={submit}>
+      <form className="lewc-auth-form" onSubmit={submit}>
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@email.com"
-                    className="pl-9"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
+            <FormItem className="lewc-auth-form-item">
+              <FormLabel className="lewc-auth-form-label">Email</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@email.com"
+                  className="lewc-auth-input"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage className="lewc-auth-message" />
             </FormItem>
           )}
         />
@@ -198,46 +232,41 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
           control={form.control}
           name="password"
           render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center justify-between">
-                <FormLabel>{locale === "pt" ? "Senha" : "Password"}</FormLabel>
-                <button
-                  type="button"
-                  onClick={onForgot}
-                  className="text-xs font-semibold text-magenta hover:underline"
-                >
+            <FormItem className="lewc-auth-form-item">
+              <div className="lewc-auth-form-head">
+                <FormLabel className="lewc-auth-form-label">
+                  {locale === "pt" ? "Senha" : "Password"}
+                </FormLabel>
+                <button type="button" onClick={onForgot} className="lewc-auth-forgot-link">
                   {locale === "pt" ? "Esqueceu?" : "Forgot?"}
                 </button>
               </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <div className="lewc-auth-input-wrap">
                 <FormControl>
                   <Input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     placeholder="••••••••"
-                    className="pl-9"
+                    className="lewc-auth-input"
                     {...field}
                   />
                 </FormControl>
+                <button
+                  type="button"
+                  className="lewc-auth-password-toggle"
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  title={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+                </button>
               </div>
-              <FormMessage />
+              <FormMessage className="lewc-auth-message" />
             </FormItem>
           )}
         />
-        <Button
-          type="submit"
-          disabled={loading}
-          size="lg"
-          className="bg-gradient-sunset w-full text-white shadow-soft hover:opacity-90"
-        >
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              {locale === "pt" ? "Entrar" : "Sign in"} <ArrowRight className="ml-1.5 h-4 w-4" />
-            </>
-          )}
+        <Button type="submit" disabled={loading} size="lg" className="lewc-auth-primary">
+          {loading ? <Loader2 className="animate-spin" /> : locale === "pt" ? "Entrar" : "Sign in"}
         </Button>
       </form>
     </Form>
@@ -247,15 +276,53 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
 function signUpSchema(locale: "pt" | "en") {
   return z
     .object({
-      fullName: z.string().min(1, locale === "pt" ? "Nome obrigatório" : "Name is required"),
+      fullName: z
+        .string()
+        .trim()
+        .min(
+          3,
+          locale === "pt"
+            ? "O nome precisa de pelo menos 3 caracteres"
+            : "Name must be at least 3 characters",
+        )
+        .max(
+          30,
+          locale === "pt"
+            ? "O nome pode ter no máximo 30 caracteres"
+            : "Name must be at most 30 characters",
+        )
+        .regex(
+          /^[\p{L}]+(?:[ '-][\p{L}]+)*$/u,
+          locale === "pt"
+            ? "O nome contém caracteres inválidos"
+            : "Name contains invalid characters",
+        ),
       email: z
         .string()
         .min(1, locale === "pt" ? "Email obrigatório" : "Email is required")
         .email(locale === "pt" ? "Email inválido" : "Invalid email"),
-      password: z.string().superRefine((pw, ctx) => {
-        const message = passwordError(pw, locale);
-        if (message) ctx.addIssue({ code: z.ZodIssueCode.custom, message });
-      }),
+      password: z
+        .string()
+        .min(
+          8,
+          locale === "pt"
+            ? "A senha precisa de pelo menos 8 caracteres"
+            : "Password needs at least 8 characters",
+        )
+        .regex(
+          /[A-Z]/,
+          locale === "pt"
+            ? "A senha precisa de uma letra maiúscula"
+            : "Password needs an uppercase letter",
+        )
+        .regex(
+          /[0-9]/,
+          locale === "pt" ? "A senha precisa de um número" : "Password needs a number",
+        )
+        .regex(
+          /[^A-Za-z0-9]/,
+          locale === "pt" ? "A senha precisa de um símbolo" : "Password needs a symbol",
+        ),
       confirm: z.string(),
       terms: z.boolean(),
       privacy: z.boolean(),
@@ -317,25 +384,24 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
 
   return (
     <Form {...form}>
-      <form className="mt-6 space-y-4" onSubmit={submit}>
+      <form className="lewc-auth-form" onSubmit={submit}>
         <FormField
           control={form.control}
           name="fullName"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>{locale === "pt" ? "Nome completo" : "Full name"}</FormLabel>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    autoComplete="name"
-                    placeholder="Maria Silva"
-                    className="pl-9"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
+            <FormItem className="lewc-auth-form-item">
+              <FormLabel className="lewc-auth-form-label">
+                {locale === "pt" ? "Nome completo" : "Full name"}
+              </FormLabel>
+              <FormControl>
+                <Input
+                  autoComplete="name"
+                  placeholder="Maria Silva"
+                  className="lewc-auth-input"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage className="lewc-auth-message" />
             </FormItem>
           )}
         />
@@ -343,21 +409,18 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@email.com"
-                    className="pl-9"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
+            <FormItem className="lewc-auth-form-item">
+              <FormLabel className="lewc-auth-form-label">Email</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@email.com"
+                  className="lewc-auth-input"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage className="lewc-auth-message" />
             </FormItem>
           )}
         />
@@ -366,17 +429,20 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
             control={form.control}
             name="password"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>{locale === "pt" ? "Senha" : "Password"}</FormLabel>
+              <FormItem className="lewc-auth-form-item">
+                <FormLabel className="lewc-auth-form-label">
+                  {locale === "pt" ? "Senha" : "Password"}
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="password"
                     autoComplete="new-password"
                     placeholder="••••••••"
+                    className="lewc-auth-input"
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="lewc-auth-message" />
               </FormItem>
             )}
           />
@@ -384,17 +450,20 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
             control={form.control}
             name="confirm"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>{locale === "pt" ? "Confirmar" : "Confirm"}</FormLabel>
+              <FormItem className="lewc-auth-form-item">
+                <FormLabel className="lewc-auth-form-label">
+                  {locale === "pt" ? "Confirmar" : "Confirm"}
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="password"
                     autoComplete="new-password"
                     placeholder="••••••••"
+                    className="lewc-auth-input"
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="lewc-auth-message" />
               </FormItem>
             )}
           />
@@ -403,20 +472,16 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
           control={form.control}
           name="terms"
           render={({ field }) => (
-            <FormItem>
-              <label className="flex items-start gap-2 text-xs">
+            <FormItem className="lewc-auth-form-item">
+              <label className="lewc-auth-check-row lewc-auth-check-row-inline">
                 <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    className="mt-0.5"
-                  />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <span>
                   {locale === "pt" ? "Aceito os Termos de Utilização" : "I accept the Terms of Use"}
                 </span>
               </label>
-              <FormMessage />
+              <FormMessage className="lewc-auth-message" />
             </FormItem>
           )}
         />
@@ -424,14 +489,10 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
           control={form.control}
           name="privacy"
           render={({ field }) => (
-            <FormItem>
-              <label className="flex items-start gap-2 text-xs">
+            <FormItem className="lewc-auth-form-item">
+              <label className="lewc-auth-check-row lewc-auth-check-row-inline">
                 <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    className="mt-0.5"
-                  />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <span>
                   {locale === "pt"
@@ -442,19 +503,13 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
             </FormItem>
           )}
         />
-        <Button
-          type="submit"
-          disabled={loading}
-          size="lg"
-          className="bg-gradient-sunset w-full text-white shadow-soft hover:opacity-90"
-        >
+        <Button type="submit" disabled={loading} size="lg" className="lewc-auth-primary">
           {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="animate-spin" />
+          ) : locale === "pt" ? (
+            "Criar conta"
           ) : (
-            <>
-              {locale === "pt" ? "Criar conta" : "Create account"}{" "}
-              <ArrowRight className="ml-1.5 h-4 w-4" />
-            </>
+            "Create account"
           )}
         </Button>
       </form>
@@ -503,11 +558,11 @@ function ForgotForm({ onBack }: { onBack: () => void }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={submit} className="mt-6 space-y-4">
-        <h3 className="font-display text-xl font-bold">
+      <form onSubmit={submit} className="lewc-auth-form">
+        <h3 className="lewc-auth-forgot-title">
           {locale === "pt" ? "Recuperar senha" : "Reset password"}
         </h3>
-        <p className="text-sm text-muted-foreground">
+        <p className="lewc-auth-forgot-copy">
           {locale === "pt"
             ? "Enviaremos um link seguro para o seu email."
             : "We'll send a secure reset link to your email."}
@@ -516,29 +571,31 @@ function ForgotForm({ onBack }: { onBack: () => void }) {
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
+            <FormItem className="lewc-auth-form-item">
+              <FormLabel className="lewc-auth-form-label">Email</FormLabel>
               <FormControl>
-                <Input type="email" autoComplete="email" placeholder="you@email.com" {...field} />
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@email.com"
+                  className="lewc-auth-input"
+                  {...field}
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="lewc-auth-message" />
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={loading} className="bg-gradient-sunset w-full text-white">
+        <Button type="submit" disabled={loading} className="lewc-auth-primary">
           {loading ? (
-            <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+            <Loader2 className="mx-auto animate-spin" />
           ) : locale === "pt" ? (
             "Enviar link"
           ) : (
             "Send link"
           )}
         </Button>
-        <button
-          type="button"
-          onClick={onBack}
-          className="w-full text-xs text-muted-foreground hover:text-foreground"
-        >
+        <button type="button" onClick={onBack} className="lewc-auth-back">
           {locale === "pt" ? "← Voltar" : "← Back"}
         </button>
       </form>

@@ -1,0 +1,198 @@
+/* Choose Your Path — learning-path cards inspired by the approved concept. */
+.lewc-path-section {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+  background: #f2f8ff;
+  padding: 72px 24px 82px;
+  isolation: isolate;
+}
+
+.lewc-path-shell {
+  position: relative;
+  z-index: 1;
+  width: min(1400px, 100%);
+  margin: 0 auto;
+}
+
+.lewc-path-header {
+  position: relative;
+  z-index: 1;
+  margin: 0 auto 42px;
+  text-align: center;
+}
+
+.lewc-path-header h2 {
+  margin: 0;
+  color: #071b55;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: clamp(1.9rem, 3.2vw, 3.3rem);
+  font-weight: 800;
+  line-height: .98;
+  letter-spacing: -.065em;
+}
+
+.lewc-path-header p {
+  margin: 18px auto 0;
+  color: #667085;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: clamp(.9rem, 1.1vw, 1.1rem);
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.lewc-path-rule {
+  position: relative;
+  width: 94px;
+  height: 8px;
+  margin: 24px auto 0;
+  border-radius: 999px;
+  background: #2f6fe4;
+}
+
+.lewc-path-rule span {
+  position: absolute;
+  top: 50%;
+  right: -13px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #20b6ac;
+  transform: translateY(-50%);
+}
+
+.lewc-path-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 30px;
+  align-items: stretch;
+}
+
+.lewc-path-card {
+  display: flex;
+  min-width: 0;
+  min-height: 570px;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 20px 22px 22px;
+  border: 1px solid rgba(220, 229, 241, .95);
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 18px 38px rgba(31, 63, 110, .09);
+  text-align: center;
+}
+
+.lewc-path-art {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 288px;
+  margin: 0 -6px 14px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: #eff8f7;
+}
+
+.lewc-path-card:nth-child(2) .lewc-path-art { background: #f2efff; }
+.lewc-path-card:nth-child(3) .lewc-path-art { background: #edf4ff; }
+
+.lewc-path-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.lewc-path-badge {
+  align-self: center;
+  min-width: 108px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: .78rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.lewc-path-badge.is-teal { background: #c9f3ee; color: #147f7b; }
+.lewc-path-badge.is-lavender { background: #e6ddff; color: #6d4eb7; }
+.lewc-path-badge.is-blue { background: #dbeaff; color: #2861b9; }
+
+.lewc-path-card h3 {
+  margin: 18px 0 0;
+  color: #071b55;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: clamp(1.08rem, 1.45vw, 1.35rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -.045em;
+}
+
+.lewc-path-card p {
+  max-width: 34ch;
+  margin: 11px auto 0;
+  color: #6f7787;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: .9rem;
+  font-weight: 400;
+  line-height: 1.48;
+}
+
+.lewc-path-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  align-self: center;
+  min-height: 48px;
+  margin-top: auto;
+  padding: 0 22px;
+  border: 2px solid #2f6fe4;
+  border-radius: 10px;
+  color: #2f6fe4;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: .9rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color .18s ease, color .18s ease, transform .18s ease;
+}
+
+.lewc-path-link svg { width: 17px; height: 17px; stroke-width: 2.4; }
+.lewc-path-link:hover { background: #2f6fe4; color: #fff; transform: translateY(-2px); }
+.lewc-path-link:active { transform: translateY(0) scale(.98); }
+
+.lewc-path-decoration {
+  position: absolute;
+  z-index: 0;
+  width: 320px;
+  height: 320px;
+  border-radius: 42% 58% 52% 48%;
+  background: rgba(216, 233, 252, .75);
+  pointer-events: none;
+}
+
+.lewc-path-decoration-left { top: -160px; left: -130px; transform: rotate(28deg); }
+.lewc-path-decoration-right { right: -150px; bottom: -190px; background: rgba(229, 224, 255, .72); transform: rotate(-18deg); }
+
+@media (max-width: 1050px) {
+  .lewc-path-section { padding: 64px 20px 74px; }
+  .lewc-path-grid { gap: 18px; }
+  .lewc-path-card { min-height: 530px; padding-inline: 18px; }
+  .lewc-path-art { height: 252px; }
+  .lewc-path-link { padding-inline: 20px; }
+}
+
+@media (max-width: 760px) {
+  .lewc-path-section { padding: 62px 18px 72px; }
+  .lewc-path-header { margin-bottom: 36px; }
+  .lewc-path-header h2 { font-size: clamp(1.75rem, 7vw, 2.35rem); }
+  .lewc-path-header p { font-size: .9rem; }
+  .lewc-path-grid { grid-template-columns: 1fr; width: min(100%, 500px); margin-inline: auto; gap: 18px; }
+  .lewc-path-card { min-height: 0; padding: 18px 18px 22px; }
+  .lewc-path-art { height: min(72vw, 310px); margin-inline: -4px; }
+  .lewc-path-card h3 { font-size: 1.22rem; }
+  .lewc-path-card p { font-size: .88rem; }
+  .lewc-path-link { width: 100%; margin-top: 24px; }
+}

@@ -1,0 +1,27 @@
+.lewc-about-hero h1,
+.lewc-about-section-top h2,
+.lewc-about-principles-head h2,
+.lewc-about-faq-head h2,
+.lewc-about-cta-panel h2 {
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-weight: 500;
+  line-height: 1.03;
+  letter-spacing: -.065em;
+}
+
+.lewc-about-hero > p,
+.lewc-about-belief-row p,
+.lewc-about-principle-card p,
+.lewc-about-faq-answer {
+ color: #697382;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.65;
+  letter-spacing: -.01em;
+}
+
+.lewc-about-principle-card h3,
+.lewc-about-faq-question,
+.lewc-about-cta-panel a {
+  font-family: "DM Sans", system-ui, sans-serif;
+}
