@@ -7,6 +7,8 @@ import {
   Wallet,
   BookOpen,
   TrendingUp,
+  Gauge,
+  Award,
   ShieldCheck,
   Download,
   PanelLeftClose,
@@ -38,6 +40,7 @@ const NAV_SECTIONS = [
         Icon: Wallet,
         label: { pt: "Assinaturas", en: "Subscriptions" },
       },
+      { to: "/admin/certificates", Icon: Award, label: { pt: "Certificados", en: "Certificates" } },
     ],
   },
   {
@@ -49,6 +52,7 @@ const NAV_SECTIONS = [
   {
     label: { pt: "Insights", en: "Insights" },
     items: [
+      { to: "/admin/performance", Icon: Gauge, label: { pt: "Desempenho", en: "Performance" } },
       { to: "/admin/analytics", Icon: TrendingUp, label: { pt: "Analytics", en: "Analytics" } },
       { to: "/admin/audit", Icon: ShieldCheck, label: { pt: "Auditoria", en: "Audit" } },
       { to: "/admin/reports", Icon: Download, label: { pt: "Relatórios", en: "Reports" } },
@@ -245,6 +249,8 @@ const MOBILE_PRIMARY = [
 
 const MOBILE_MORE_ITEMS = [
   { to: "/admin/subscriptions", Icon: Wallet, label: { pt: "Assinaturas", en: "Subscriptions" } },
+  { to: "/admin/certificates", Icon: Award, label: { pt: "Certificados", en: "Certificates" } },
+  { to: "/admin/performance", Icon: Gauge, label: { pt: "Desempenho", en: "Performance" } },
   { to: "/admin/analytics", Icon: TrendingUp, label: { pt: "Analytics", en: "Analytics" } },
   { to: "/admin/audit", Icon: ShieldCheck, label: { pt: "Auditoria", en: "Audit" } },
   { to: "/admin/reports", Icon: Download, label: { pt: "Relatórios", en: "Reports" } },

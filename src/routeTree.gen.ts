@@ -46,8 +46,10 @@ import { Route as CheckoutPlanIdRouteImport } from './routes/checkout.$planId'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin/subscriptions'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
+import { Route as AdminPerformanceRouteImport } from './routes/admin/performance'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
 import { Route as AdminCurriculumRouteImport } from './routes/admin/curriculum'
+import { Route as AdminCertificatesRouteImport } from './routes/admin/certificates'
 import { Route as AdminAuditRouteImport } from './routes/admin/audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 
@@ -236,6 +238,11 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPerformanceRoute = AdminPerformanceRouteImport.update({
+  id: '/performance',
+  path: '/performance',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
@@ -244,6 +251,11 @@ const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
 const AdminCurriculumRoute = AdminCurriculumRouteImport.update({
   id: '/curriculum',
   path: '/curriculum',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCertificatesRoute = AdminCertificatesRouteImport.update({
+  id: '/certificates',
+  path: '/certificates',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
@@ -288,8 +300,10 @@ export interface FileRoutesByFullPath {
   '/videos': typeof VideosRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/certificates': typeof AdminCertificatesRoute
   '/admin/curriculum': typeof AdminCurriculumRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/performance': typeof AdminPerformanceRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/users': typeof AdminUsersRoute
@@ -330,8 +344,10 @@ export interface FileRoutesByTo {
   '/videos': typeof VideosRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/certificates': typeof AdminCertificatesRoute
   '/admin/curriculum': typeof AdminCurriculumRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/performance': typeof AdminPerformanceRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/users': typeof AdminUsersRoute
@@ -374,8 +390,10 @@ export interface FileRoutesById {
   '/videos': typeof VideosRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/certificates': typeof AdminCertificatesRoute
   '/admin/curriculum': typeof AdminCurriculumRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/performance': typeof AdminPerformanceRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/users': typeof AdminUsersRoute
@@ -419,8 +437,10 @@ export interface FileRouteTypes {
     | '/videos'
     | '/admin/analytics'
     | '/admin/audit'
+    | '/admin/certificates'
     | '/admin/curriculum'
     | '/admin/payments'
+    | '/admin/performance'
     | '/admin/reports'
     | '/admin/subscriptions'
     | '/admin/users'
@@ -461,8 +481,10 @@ export interface FileRouteTypes {
     | '/videos'
     | '/admin/analytics'
     | '/admin/audit'
+    | '/admin/certificates'
     | '/admin/curriculum'
     | '/admin/payments'
+    | '/admin/performance'
     | '/admin/reports'
     | '/admin/subscriptions'
     | '/admin/users'
@@ -504,8 +526,10 @@ export interface FileRouteTypes {
     | '/videos'
     | '/admin/analytics'
     | '/admin/audit'
+    | '/admin/certificates'
     | '/admin/curriculum'
     | '/admin/payments'
+    | '/admin/performance'
     | '/admin/reports'
     | '/admin/subscriptions'
     | '/admin/users'
@@ -814,6 +838,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/performance': {
+      id: '/admin/performance'
+      path: '/performance'
+      fullPath: '/admin/performance'
+      preLoaderRoute: typeof AdminPerformanceRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/payments': {
       id: '/admin/payments'
       path: '/payments'
@@ -826,6 +857,13 @@ declare module '@tanstack/react-router' {
       path: '/curriculum'
       fullPath: '/admin/curriculum'
       preLoaderRoute: typeof AdminCurriculumRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/certificates': {
+      id: '/admin/certificates'
+      path: '/certificates'
+      fullPath: '/admin/certificates'
+      preLoaderRoute: typeof AdminCertificatesRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/audit': {
@@ -848,8 +886,10 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
+  AdminCertificatesRoute: typeof AdminCertificatesRoute
   AdminCurriculumRoute: typeof AdminCurriculumRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminPerformanceRoute: typeof AdminPerformanceRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -859,8 +899,10 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
+  AdminCertificatesRoute: AdminCertificatesRoute,
   AdminCurriculumRoute: AdminCurriculumRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminPerformanceRoute: AdminPerformanceRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminUsersRoute: AdminUsersRoute,
