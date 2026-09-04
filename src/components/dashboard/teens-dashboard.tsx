@@ -24,6 +24,8 @@ import {
   AchievementsCard,
   ClassesCard,
   ReminderCard,
+  NextStepCard,
+  SkillMasteryCard,
 } from "@/components/dashboard/extras";
 
 /** Teen layout: leaderboard/friends and games up front, casual tone, a
@@ -77,6 +79,8 @@ export function TeensDashboard(data: DashboardData) {
             {/* --- Main column --- */}
             <div className="space-y-6 min-w-0">
               <ProfileHeader />
+              <NextStepCard />
+              <SkillMasteryCard />
 
               <div>
                 <p className="text-sm font-medium text-muted-foreground">

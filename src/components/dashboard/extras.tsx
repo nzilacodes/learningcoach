@@ -18,8 +18,112 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useLocale } from "@/lib/i18n";
 import { useNotification } from "@/lib/notifications/notification-provider";
 import type { useStudyReminder } from "@/lib/learning";
+
+/* -------- Next step (recommendation engine) --------
+ * Section 17 of the content-architecture doc: weakest-skill-first
+ * recommendation. Renders nothing (not an empty/broken card) whenever there's
+ * no recommendation yet — a brand-new learner with zero attempts, or one who
+ * has already cleared every published lesson at their level. */
+type Recommendation = {
+  lesson_id: string;
+  lesson_title: string;
+  skill_label: string;
+  reason: "weak_skill" | "no_attempts_yet";
+};
+
+export function NextStepCard() {
+  const { user } = useAuth();
+  const { locale } = useLocale();
+  const { data: recommendation } = useQuery({
+    queryKey: ["my_recommendation"],
+    enabled: !!user,
+    queryFn: () => apiFetch<Recommendation | null>("/v1/me/recommendation"),
+  });
+
+  if (!recommendation) return null;
+
+  return (
+    <Card className="mb-8 rounded-3xl border-border bg-card p-6 shadow-card">
+      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        {locale === "pt" ? "O seu próximo objetivo" : "Your next objective"}
+      </div>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 font-display text-lg font-bold">
+            <Target className="h-5 w-5 shrink-0 text-magenta" />
+            <span className="truncate">{recommendation.lesson_title}</span>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {recommendation.reason === "weak_skill"
+              ? locale === "pt"
+                ? `A sua competência mais fraca agora é ${recommendation.skill_label}.`
+                : `Your weakest skill right now is ${recommendation.skill_label}.`
+              : locale === "pt"
+                ? `Um bom ponto de partida em ${recommendation.skill_label}.`
+                : `A solid starting point in ${recommendation.skill_label}.`}
+          </p>
+        </div>
+        <Button asChild size="sm">
+          <Link to="/lesson/$lessonId" params={{ lessonId: recommendation.lesson_id }}>
+            {locale === "pt" ? "Continuar" : "Continue"}
+          </Link>
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+/* -------- Skill mastery breakdown --------
+ * Section 7: one bar per competency, not a single blended percentage. Only
+ * shown once there's at least one attempt somewhere — an all-zero grid on
+ * day one would just read as broken, not "not started yet". */
+type SkillMastery = {
+  id: string;
+  code: string;
+  label: string;
+  attempts: number;
+  avg_score: number | null;
+};
+
+export function SkillMasteryCard() {
+  const { user } = useAuth();
+  const { locale } = useLocale();
+  const { data: mastery = [] } = useQuery({
+    queryKey: ["my_skill_mastery"],
+    enabled: !!user,
+    queryFn: () => apiFetch<SkillMastery[]>("/v1/me/skill-mastery"),
+  });
+
+  const withAttempts = mastery.filter((m) => m.attempts > 0);
+  if (withAttempts.length === 0) return null;
+
+  return (
+    <Card className="mb-8 rounded-3xl border-border bg-card p-6 shadow-card">
+      <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        {locale === "pt" ? "Desenvolver competências" : "Develop your skills"}
+      </div>
+      <div className="space-y-3">
+        {withAttempts.map((m) => (
+          <div key={m.id}>
+            <div className="flex items-center justify-between text-xs font-semibold">
+              <span>{m.label}</span>
+              <span className="text-muted-foreground">{m.avg_score ?? 0}%</span>
+            </div>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full bg-magenta transition-all"
+                style={{ width: `${m.avg_score ?? 0}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
 
 /* -------- Profile header -------- */
 export function ProfileHeader() {

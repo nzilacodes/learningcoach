@@ -37,6 +37,8 @@ import {
   GoalsCard,
   ClassesCard,
   ReminderCard,
+  NextStepCard,
+  SkillMasteryCard,
 } from "@/components/dashboard/extras";
 
 const QUICK_PRACTICE = (locale: "pt" | "en") => [
@@ -149,6 +151,10 @@ export function AdultsDashboard(data: DashboardData) {
                 <div className="space-y-8">
                   {/* Profile Header */}
                   <ProfileHeader />
+
+                  {/* Next step (recommendation engine) + skill mastery */}
+                  <NextStepCard />
+                  <SkillMasteryCard />
 
                   {/* Welcome */}
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -506,6 +512,10 @@ export function AdultsDashboard(data: DashboardData) {
             <div className="lg:hidden space-y-6">
               {/* Profile Header */}
               <ProfileHeader />
+
+              {/* Next step (recommendation engine) + skill mastery */}
+              <NextStepCard />
+              <SkillMasteryCard />
 
               {/* Welcome */}
               <div className="flex items-end justify-between">
