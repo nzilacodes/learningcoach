@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import type { LessonEditorValues } from "./lesson-editor";
 
 function TextField({
@@ -94,7 +95,12 @@ function WordlistFields({ form }: { form: UseFormReturn<LessonEditorValues> }) {
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "wordlist" });
   return (
     <div className="space-y-3">
-      <FormLabel className="text-xs font-semibold text-muted-foreground">Vocabulário</FormLabel>
+      {/* A plain Label, not FormLabel — this heads the whole word-list
+          section rather than one bound field, so there's no <FormField>/
+          <FormItem> around it for FormLabel's useFormField() to find. Using
+          FormLabel here threw "useFormField should be used within
+          <FormField>" on every vocabulary-type lesson. */}
+      <Label className="text-xs font-semibold text-muted-foreground">Vocabulário</Label>
       <div className="space-y-3">
         {fields.map((field, index) => (
           <div

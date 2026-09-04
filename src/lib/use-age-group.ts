@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useAgeTheme } from "@/lib/age-theme";
 import { ageFromYears, type AgeGroup } from "@/lib/age-tracks";
@@ -17,7 +17,18 @@ export function useAgeGroup(): {
   const { user } = useAuth();
   const { theme, setTheme } = useAgeTheme();
 
-  const age = user?.age ?? null;
+  // useAuth()'s session resolves asynchronously on the client, so `user` (and
+  // therefore `age`) legitimately differs between the server-rendered HTML
+  // and the client's very first render — using it unconditionally threw a
+  // hydration mismatch (LEARNINGCOACHFRONTEND-1: server "Adultos", client
+  // "Crianças"). Same fix AgeThemeProvider already applies to its own
+  // localStorage read: stay on the shared default (`theme`) through the
+  // first client render, and only switch to the profile-derived group in an
+  // effect, once mounted — a normal post-hydration update, not a mismatch.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const age = mounted ? (user?.age ?? null) : null;
   const derived: AgeGroup | null = age != null ? ageFromYears(age) : null;
 
   useEffect(() => {
