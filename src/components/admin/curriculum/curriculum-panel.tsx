@@ -100,6 +100,8 @@ type ReviewSummaryRow = { lesson_id: string; draft: number; in_review: number; p
 /** Draft + in_review — anything not yet published, i.e. still needs eyes on it. */
 const pendingCount = (r: ReviewSummaryRow | undefined) => (r ? r.draft + r.in_review : 0);
 
+type SkillRow = { id: string; code: string; label: string; order_index: number };
+
 type LessonPerformanceRow = {
   lesson_id: string;
   attempts: number;
@@ -368,8 +370,9 @@ export function CurriculumPanel() {
   const notify = useNotification();
   const qc = useQueryClient();
 
-  const [view, setView] = useState<"age" | "unit">("age");
+  const [view, setView] = useState<"age" | "unit" | "skill">("age");
   const [ageGroupCode, setAgeGroupCode] = useState<string | null>(null);
+  const [skillCode, setSkillCode] = useState<string | null>(null);
   const [level, setLevel] = useState("A1");
   const [unitId, setUnitId] = useState<string | null>(null);
   const [lessonId, setLessonId] = useState<string | null>(null);
@@ -395,6 +398,13 @@ export function CurriculumPanel() {
     queryFn: () => apiFetch<AgeGroupRow[]>("/v1/admin/age-groups"),
     enabled: !!user && isAdmin,
     staleTime: 30_000,
+  });
+
+  const { data: skills = [] } = useQuery({
+    queryKey: ["admin_skills"],
+    queryFn: () => apiFetch<SkillRow[]>("/v1/admin/skills"),
+    enabled: !!user && isAdmin,
+    staleTime: 5 * 60_000,
   });
 
   // Powers the pending-review badges below — one row per lesson with any
@@ -487,6 +497,21 @@ export function CurriculumPanel() {
   );
 
   const selectedUnit = units.find((u) => u.id === unitId) ?? null;
+
+  // "Por competência" cuts across units/levels entirely (a skill's lessons
+  // can live in any unit at any CEFR level), so this view flattens straight
+  // to lessons instead of reusing the unit-scoped columns above.
+  const selectedSkill = skills.find((s) => s.code === skillCode) ?? null;
+  const unitById = new Map((curriculum?.units ?? []).map((u) => [u.id, u]));
+  const lessonsForSkill = (curriculum?.lessons ?? [])
+    .filter((l) => selectedSkill && l.skill_id === selectedSkill.id)
+    .filter((l) => !searchLower || l.title.toLowerCase().includes(searchLower))
+    .map((l) => ({
+      lesson: l,
+      unit: unitById.get(l.unit_id),
+      level: courseById.get(unitById.get(l.unit_id)?.course_id ?? "")?.level,
+    }))
+    .sort((a, b) => a.lesson.title.localeCompare(b.lesson.title));
 
   const invalidateCurriculum = () => {
     qc.invalidateQueries({ queryKey: ["curriculum_admin"] });
@@ -681,6 +706,15 @@ export function CurriculumPanel() {
             >
               Por unidade
             </button>
+            <button
+              type="button"
+              onClick={() => setView("skill")}
+              className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
+                view === "skill" ? "bg-white text-sunset shadow-sm" : "text-muted-foreground"
+              }`}
+            >
+              Por competência
+            </button>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
@@ -711,31 +745,11 @@ export function CurriculumPanel() {
         </div>
       )}
 
-      <div className="rounded-2xl border border-gray-100 bg-white">
-        {view === "unit" ? (
-          <div className="flex flex-wrap items-center justify-end gap-1 border-b border-gray-100 px-6 py-4">
-            {CEFR_LEVELS.map((l) => (
-              <button
-                key={l}
-                onClick={() => {
-                  setLevel(l);
-                  setUnitId(null);
-                  setLessonId(null);
-                }}
-                className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${
-                  level === l
-                    ? "bg-sunset text-white"
-                    : "bg-muted text-muted-foreground hover:bg-muted/70"
-                }`}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
-        ) : (
-          levelsForAgeGroup.length > 0 && (
+      {view !== "skill" && (
+        <div className="rounded-2xl border border-gray-100 bg-white">
+          {view === "unit" ? (
             <div className="flex flex-wrap items-center justify-end gap-1 border-b border-gray-100 px-6 py-4">
-              {levelsForAgeGroup.map((l) => (
+              {CEFR_LEVELS.map((l) => (
                 <button
                   key={l}
                   onClick={() => {
@@ -753,178 +767,269 @@ export function CurriculumPanel() {
                 </button>
               ))}
             </div>
-          )
-        )}
-
-        {view === "age" && levelsForAgeGroup.length === 0 ? (
-          <p className="p-8 text-center text-sm text-muted-foreground">
-            Sem unidades nesta faixa etária ainda.
-          </p>
-        ) : (
-          <div className="grid divide-border md:grid-cols-[240px_260px_1fr] md:divide-x">
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
-                <span className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-                  Unidades
-                </span>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 px-2"
-                  disabled={!course}
-                  onClick={() => setCreateUnitOpen(true)}
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-              <div className="max-h-[520px] overflow-y-auto p-3">
-                {visibleUnits.map((u, i) => (
-                  <div
-                    key={u.id}
-                    className={`group flex w-full items-center gap-1 rounded-lg px-2 py-2 text-left text-sm ${
-                      unitId === u.id ? "bg-sunset/10 font-semibold text-sunset" : "hover:bg-muted"
+          ) : (
+            levelsForAgeGroup.length > 0 && (
+              <div className="flex flex-wrap items-center justify-end gap-1 border-b border-gray-100 px-6 py-4">
+                {levelsForAgeGroup.map((l) => (
+                  <button
+                    key={l}
+                    onClick={() => {
+                      setLevel(l);
+                      setUnitId(null);
+                      setLessonId(null);
+                    }}
+                    className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${
+                      level === l
+                        ? "bg-sunset text-white"
+                        : "bg-muted text-muted-foreground hover:bg-muted/70"
                     }`}
                   >
-                    <ReorderButtons
-                      // Swapping needs true adjacency (order_index-wise) — with a
-                      // search filter active, "adjacent in visibleUnits" isn't
-                      // necessarily adjacent in the real order, so reordering is
-                      // disabled rather than silently scrambling hidden items.
-                      disabledUp={!!searchLower || i === 0}
-                      disabledDown={!!searchLower || i === visibleUnits.length - 1}
-                      onUp={() => swapOrder("unit", u, visibleUnits[i - 1]!)}
-                      onDown={() => swapOrder("unit", u, visibleUnits[i + 1]!)}
-                    />
-                    <button
-                      onClick={() => {
-                        setUnitId(u.id);
-                        setLessonId(null);
-                      }}
-                      className="flex flex-1 items-center justify-between gap-2 truncate text-left"
+                    {l}
+                  </button>
+                ))}
+              </div>
+            )
+          )}
+
+          {view === "age" && levelsForAgeGroup.length === 0 ? (
+            <p className="p-8 text-center text-sm text-muted-foreground">
+              Sem unidades nesta faixa etária ainda.
+            </p>
+          ) : (
+            <div className="grid divide-border md:grid-cols-[240px_260px_1fr] md:divide-x">
+              <div className="flex flex-col">
+                <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
+                  <span className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+                    Unidades
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2"
+                    disabled={!course}
+                    onClick={() => setCreateUnitOpen(true)}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <div className="max-h-[520px] overflow-y-auto p-3">
+                  {visibleUnits.map((u, i) => (
+                    <div
+                      key={u.id}
+                      className={`group flex w-full items-center gap-1 rounded-lg px-2 py-2 text-left text-sm ${
+                        unitId === u.id
+                          ? "bg-sunset/10 font-semibold text-sunset"
+                          : "hover:bg-muted"
+                      }`}
                     >
-                      <span className="truncate">
-                        {String(i + 1).padStart(2, "0")}. {u.title}
-                      </span>
-                      <ReviewCountBadge count={pendingByUnit.get(u.id) ?? 0} />
-                    </button>
+                      <ReorderButtons
+                        // Swapping needs true adjacency (order_index-wise) — with a
+                        // search filter active, "adjacent in visibleUnits" isn't
+                        // necessarily adjacent in the real order, so reordering is
+                        // disabled rather than silently scrambling hidden items.
+                        disabledUp={!!searchLower || i === 0}
+                        disabledDown={!!searchLower || i === visibleUnits.length - 1}
+                        onUp={() => swapOrder("unit", u, visibleUnits[i - 1]!)}
+                        onDown={() => swapOrder("unit", u, visibleUnits[i + 1]!)}
+                      />
+                      <button
+                        onClick={() => {
+                          setUnitId(u.id);
+                          setLessonId(null);
+                        }}
+                        className="flex flex-1 items-center justify-between gap-2 truncate text-left"
+                      >
+                        <span className="truncate">
+                          {String(i + 1).padStart(2, "0")}. {u.title}
+                        </span>
+                        <ReviewCountBadge count={pendingByUnit.get(u.id) ?? 0} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTarget({ type: "unit", id: u.id, label: u.title })}
+                        className="text-gray-300 opacity-0 hover:text-red-500 group-hover:opacity-100"
+                        aria-label="Apagar unidade"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  {visibleUnits.length === 0 && (
+                    <p className="p-2 text-xs text-muted-foreground">Sem unidades.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col">
+                <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
+                  <span className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+                    Lições
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2"
+                    disabled={!unitId}
+                    onClick={() => setCreateLessonOpen(true)}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <div className="max-h-[520px] overflow-y-auto p-3">
+                  {visibleLessons.map((l, i) => (
+                    <div
+                      key={l.id}
+                      className={`group flex w-full items-center gap-1 rounded-lg px-2 py-2 text-left text-sm ${
+                        lessonId === l.id
+                          ? "bg-sunset/10 font-semibold text-sunset"
+                          : "hover:bg-muted"
+                      }`}
+                    >
+                      <ReorderButtons
+                        disabledUp={!!searchLower || i === 0}
+                        disabledDown={!!searchLower || i === visibleLessons.length - 1}
+                        onUp={() => swapOrder("lesson", l, visibleLessons[i - 1]!)}
+                        onDown={() => swapOrder("lesson", l, visibleLessons[i + 1]!)}
+                      />
+                      <button
+                        onClick={() => setLessonId(l.id)}
+                        className="flex-1 truncate text-left"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate">
+                            1.{i + 1} {l.title}
+                          </span>
+                          <span className="flex shrink-0 items-center">
+                            <ReviewCountBadge count={pendingCount(summaryByLesson.get(l.id))} />
+                            <PerformanceBadge row={performanceByLesson.get(l.id)} />
+                          </span>
+                        </div>
+                        <div className="mt-0.5 flex items-center justify-between">
+                          <span className="text-2xs uppercase tracking-wide text-muted-foreground">
+                            {l.lesson_type}
+                          </span>
+                          <LessonStatusBadge isPublished={l.is_published} />
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setDeleteTarget({ type: "lesson", id: l.id, label: l.title })
+                        }
+                        className="text-gray-300 opacity-0 hover:text-red-500 group-hover:opacity-100"
+                        aria-label="Apagar lição"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  {unitId && visibleLessons.length === 0 && (
+                    <p className="p-2 text-xs text-muted-foreground">Sem lições.</p>
+                  )}
+                  {!unitId && (
+                    <p className="p-2 text-xs text-muted-foreground">Selecione uma unidade.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-4">
+                {lessonId ? (
+                  <div>
                     <button
                       type="button"
-                      onClick={() => setDeleteTarget({ type: "unit", id: u.id, label: u.title })}
-                      className="text-gray-300 opacity-0 hover:text-red-500 group-hover:opacity-100"
-                      aria-label="Apagar unidade"
+                      onClick={() => setLessonId(null)}
+                      className="mb-3 text-2xs font-bold uppercase tracking-wide text-muted-foreground hover:text-ink"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      ← Voltar à unidade
                     </button>
+                    <LessonEditor key={lessonId} lessonId={lessonId} />
                   </div>
-                ))}
-                {visibleUnits.length === 0 && (
-                  <p className="p-2 text-xs text-muted-foreground">Sem unidades.</p>
+                ) : selectedUnit ? (
+                  <UnitDetailPanel
+                    unit={selectedUnit}
+                    lessons={lessons}
+                    summaryByLesson={summaryByLesson}
+                    onSelectFirstLesson={() => lessons[0] && setLessonId(lessons[0].id)}
+                    onEdit={() => setEditingUnit(selectedUnit)}
+                    onDuplicate={() => duplicateUnit(selectedUnit)}
+                    onDelete={() =>
+                      setDeleteTarget({
+                        type: "unit",
+                        id: selectedUnit.id,
+                        label: selectedUnit.title,
+                      })
+                    }
+                  />
+                ) : (
+                  <p className="p-4 text-sm text-muted-foreground">Selecione uma unidade.</p>
                 )}
               </div>
             </div>
+          )}
+        </div>
+      )}
 
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
-                <span className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
-                  Lições
-                </span>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 px-2"
-                  disabled={!unitId}
-                  onClick={() => setCreateLessonOpen(true)}
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-              <div className="max-h-[520px] overflow-y-auto p-3">
-                {visibleLessons.map((l, i) => (
-                  <div
-                    key={l.id}
-                    className={`group flex w-full items-center gap-1 rounded-lg px-2 py-2 text-left text-sm ${
-                      lessonId === l.id
+      {view === "skill" && (
+        <div className="rounded-2xl border border-gray-100 bg-white">
+          <div className="flex flex-wrap items-center justify-end gap-1 border-b border-gray-100 px-6 py-4">
+            {skills.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => {
+                  setSkillCode(s.code);
+                  setLessonId(null);
+                }}
+                className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${
+                  skillCode === s.code
+                    ? "bg-sunset text-white"
+                    : "bg-muted text-muted-foreground hover:bg-muted/70"
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+          {!selectedSkill ? (
+            <p className="p-8 text-center text-sm text-muted-foreground">
+              Selecione uma competência acima.
+            </p>
+          ) : (
+            <div className="grid divide-border md:grid-cols-[320px_1fr] md:divide-x">
+              <div className="max-h-[560px] overflow-y-auto p-3">
+                {lessonsForSkill.map(({ lesson, unit, level: lvl }) => (
+                  <button
+                    key={lesson.id}
+                    onClick={() => setLessonId(lesson.id)}
+                    className={`block w-full rounded-lg px-3 py-2 text-left text-sm ${
+                      lessonId === lesson.id
                         ? "bg-sunset/10 font-semibold text-sunset"
                         : "hover:bg-muted"
                     }`}
                   >
-                    <ReorderButtons
-                      disabledUp={!!searchLower || i === 0}
-                      disabledDown={!!searchLower || i === visibleLessons.length - 1}
-                      onUp={() => swapOrder("lesson", l, visibleLessons[i - 1]!)}
-                      onDown={() => swapOrder("lesson", l, visibleLessons[i + 1]!)}
-                    />
-                    <button onClick={() => setLessonId(l.id)} className="flex-1 truncate text-left">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="truncate">
-                          1.{i + 1} {l.title}
-                        </span>
-                        <span className="flex shrink-0 items-center">
-                          <ReviewCountBadge count={pendingCount(summaryByLesson.get(l.id))} />
-                          <PerformanceBadge row={performanceByLesson.get(l.id)} />
-                        </span>
-                      </div>
-                      <div className="mt-0.5 flex items-center justify-between">
-                        <span className="text-2xs uppercase tracking-wide text-muted-foreground">
-                          {l.lesson_type}
-                        </span>
-                        <LessonStatusBadge isPublished={l.is_published} />
-                      </div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDeleteTarget({ type: "lesson", id: l.id, label: l.title })}
-                      className="text-gray-300 opacity-0 hover:text-red-500 group-hover:opacity-100"
-                      aria-label="Apagar lição"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate">{lesson.title}</span>
+                      <LessonStatusBadge isPublished={lesson.is_published} />
+                    </div>
+                    <div className="text-2xs text-muted-foreground">
+                      {lvl ?? "—"} · {unit?.title ?? "—"}
+                    </div>
+                  </button>
                 ))}
-                {unitId && visibleLessons.length === 0 && (
-                  <p className="p-2 text-xs text-muted-foreground">Sem lições.</p>
+                {lessonsForSkill.length === 0 && (
+                  <p className="p-2 text-xs text-muted-foreground">Sem lições nesta competência.</p>
                 )}
-                {!unitId && (
-                  <p className="p-2 text-xs text-muted-foreground">Selecione uma unidade.</p>
+              </div>
+              <div className="p-4">
+                {lessonId ? (
+                  <LessonEditor key={lessonId} lessonId={lessonId} />
+                ) : (
+                  <p className="p-4 text-sm text-muted-foreground">Selecione uma lição.</p>
                 )}
               </div>
             </div>
-
-            <div className="p-4">
-              {lessonId ? (
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => setLessonId(null)}
-                    className="mb-3 text-2xs font-bold uppercase tracking-wide text-muted-foreground hover:text-ink"
-                  >
-                    ← Voltar à unidade
-                  </button>
-                  <LessonEditor key={lessonId} lessonId={lessonId} />
-                </div>
-              ) : selectedUnit ? (
-                <UnitDetailPanel
-                  unit={selectedUnit}
-                  lessons={lessons}
-                  summaryByLesson={summaryByLesson}
-                  onSelectFirstLesson={() => lessons[0] && setLessonId(lessons[0].id)}
-                  onEdit={() => setEditingUnit(selectedUnit)}
-                  onDuplicate={() => duplicateUnit(selectedUnit)}
-                  onDelete={() =>
-                    setDeleteTarget({
-                      type: "unit",
-                      id: selectedUnit.id,
-                      label: selectedUnit.title,
-                    })
-                  }
-                />
-              ) : (
-                <p className="p-4 text-sm text-muted-foreground">Selecione uma unidade.</p>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       <Dialog open={createUnitOpen} onOpenChange={setCreateUnitOpen}>
         <DialogContent>

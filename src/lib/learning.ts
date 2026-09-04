@@ -51,6 +51,8 @@ export type LessonRow = {
   order_index: number;
   lesson_type: string;
   is_published: boolean;
+  skill_id: string | null;
+  difficulty: number;
 };
 
 // ---------- SUBSCRIPTION (used by useDashboardData) ----------

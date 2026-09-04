@@ -18,10 +18,18 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import type { AdminExercise, ContentStatus } from "./exercise-shared";
 import { ExerciseEditor } from "./exercise-editor";
 import { LessonContentFields } from "./lesson-content-fields";
 import { contentToFormValues, formValuesToContent } from "./lesson-content-shape";
+import { PrerequisitesEditor } from "./prerequisites-editor";
 
 type AdminLessonDetail = {
   id: string;
@@ -31,6 +39,18 @@ type AdminLessonDetail = {
   xp_reward: number;
   is_published: boolean;
   lesson_type: string;
+  skill_id: string | null;
+  difficulty: number;
+};
+
+type SkillRow = { id: string; code: string; label: string; order_index: number };
+
+const DIFFICULTY_LABELS: Record<number, string> = {
+  1: "1 — Muito fácil",
+  2: "2 — Fácil",
+  3: "3 — Normal",
+  4: "4 — Difícil",
+  5: "5 — Avançado",
 };
 
 const wordlistItemSchema = z.object({
@@ -45,6 +65,8 @@ const lessonEditorSchema = z.object({
   summary: z.string(),
   xpReward: z.coerce.number().min(0, "XP não pode ser negativo"),
   published: z.boolean(),
+  skillId: z.string(),
+  difficulty: z.coerce.number().int().min(1).max(5),
   objective: z.string(),
   wordlist: z.array(wordlistItemSchema),
   activities: z.string(),
@@ -87,6 +109,11 @@ export function LessonEditor({ lessonId }: { lessonId: string }) {
         `/v1/admin/lessons/${lessonId}/exercises${statusFilter ? `?status=${statusFilter}` : ""}`,
       ),
   });
+  const { data: skills = [] } = useQuery({
+    queryKey: ["admin_skills"],
+    queryFn: () => apiFetch<SkillRow[]>("/v1/admin/skills"),
+    staleTime: 5 * 60_000,
+  });
 
   const form = useForm<LessonEditorValues>({
     resolver: zodResolver(lessonEditorSchema),
@@ -95,6 +122,8 @@ export function LessonEditor({ lessonId }: { lessonId: string }) {
       summary: "",
       xpReward: 10,
       published: true,
+      skillId: "",
+      difficulty: 3,
       ...contentToFormValues(null),
     },
   });
@@ -106,6 +135,8 @@ export function LessonEditor({ lessonId }: { lessonId: string }) {
       summary: lesson.summary ?? "",
       xpReward: lesson.xp_reward,
       published: lesson.is_published,
+      skillId: lesson.skill_id ?? "",
+      difficulty: lesson.difficulty,
       ...contentToFormValues(lesson.content),
     });
   }, [lesson, form]);
@@ -127,6 +158,8 @@ export function LessonEditor({ lessonId }: { lessonId: string }) {
           summary: values.summary,
           xpReward: values.xpReward,
           isPublished: values.published,
+          skillId: values.skillId || undefined,
+          difficulty: values.difficulty,
           content: formValuesToContent(values, lesson!.lesson_type),
         }),
       }),
@@ -219,6 +252,63 @@ export function LessonEditor({ lessonId }: { lessonId: string }) {
               </FormItem>
             )}
           />
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="skillId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs font-semibold text-muted-foreground">
+                    Competência
+                  </FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione…" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {skills.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="difficulty"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs font-semibold text-muted-foreground">
+                    Dificuldade
+                  </FormLabel>
+                  <Select
+                    value={String(field.value)}
+                    onValueChange={(v) => field.onChange(Number(v))}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {[1, 2, 3, 4, 5].map((d) => (
+                        <SelectItem key={d} value={String(d)}>
+                          {DIFFICULTY_LABELS[d]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
             name="objective"
@@ -253,6 +343,10 @@ export function LessonEditor({ lessonId }: { lessonId: string }) {
           onStatusFilterChange={setStatusFilter}
           onChanged={invalidateLesson}
         />
+      </div>
+
+      <div className="mt-6 border-t border-border pt-4">
+        <PrerequisitesEditor lessonId={lessonId} />
       </div>
     </div>
   );
