@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Award } from "lucide-react";
+import { Award, ShieldCheck, ShieldX } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { useLocale } from "@/lib/i18n";
@@ -189,12 +189,46 @@ export function CertificatesPanel() {
     },
   ];
 
+  const revoked = certificates.filter((c) => c.revoked_at).length;
+  const valid = certificates.length - revoked;
+
   return (
     <div className="space-y-6">
       <h2 className="flex items-center gap-2 font-display text-2xl font-bold text-ink">
         <Award className="h-5 w-5 text-amber-500" />{" "}
         {locale === "pt" ? "Certificados" : "Certificates"}
       </h2>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-2xl border border-gray-100 bg-white p-5">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+            <Award className="h-5 w-5" />
+          </div>
+          <div className="mt-3 text-2xl font-bold text-ink">{certificates.length}</div>
+          <div className="text-xs text-muted-foreground">
+            {locale === "pt" ? "Total emitidos" : "Total issued"}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-gray-100 bg-white p-5">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <div className="mt-3 text-2xl font-bold text-ink">{valid}</div>
+          <div className="text-xs text-muted-foreground">
+            {locale === "pt" ? "Válidos" : "Valid"}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-gray-100 bg-white p-5">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-500">
+            <ShieldX className="h-5 w-5" />
+          </div>
+          <div className="mt-3 text-2xl font-bold text-ink">{revoked}</div>
+          <div className="text-xs text-muted-foreground">
+            {locale === "pt" ? "Revogados" : "Revoked"}
+          </div>
+        </div>
+      </div>
+
       <AdminDataTable
         columns={columns}
         data={certificates}

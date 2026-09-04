@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Gauge, History } from "lucide-react";
+import { Gauge, History, Users, Target, TrendingUp } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { useLocale } from "@/lib/i18n";
@@ -185,12 +185,51 @@ export function PerformancePanel() {
     },
   ];
 
+  const active = students.filter((s) => s.attempts > 0);
+  const avgScore = active.length
+    ? Math.round(active.reduce((sum, s) => sum + (s.avg_score ?? 0), 0) / active.length)
+    : 0;
+  const avgPassRate = active.length
+    ? Math.round(active.reduce((sum, s) => sum + (s.pass_rate ?? 0), 0) / active.length)
+    : 0;
+
   return (
     <div className="space-y-6">
       <h2 className="flex items-center gap-2 font-display text-2xl font-bold text-ink">
         <Gauge className="h-5 w-5 text-violet" />{" "}
         {locale === "pt" ? "Desempenho de alunos" : "Student performance"}
       </h2>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-2xl border border-gray-100 bg-white p-5">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-sunset/10 text-sunset">
+            <Users className="h-5 w-5" />
+          </div>
+          <div className="mt-3 text-2xl font-bold text-ink">{active.length}</div>
+          <div className="text-xs text-muted-foreground">
+            {locale === "pt" ? "Alunos com tentativas" : "Learners with attempts"}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-gray-100 bg-white p-5">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-violet/10 text-violet">
+            <Target className="h-5 w-5" />
+          </div>
+          <div className="mt-3 text-2xl font-bold text-ink">{avgScore}%</div>
+          <div className="text-xs text-muted-foreground">
+            {locale === "pt" ? "Nota média geral" : "Overall avg score"}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-gray-100 bg-white p-5">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+            <TrendingUp className="h-5 w-5" />
+          </div>
+          <div className="mt-3 text-2xl font-bold text-ink">{avgPassRate}%</div>
+          <div className="text-xs text-muted-foreground">
+            {locale === "pt" ? "Taxa de aprovação geral" : "Overall pass rate"}
+          </div>
+        </div>
+      </div>
+
       <AdminDataTable
         columns={columns}
         data={students}

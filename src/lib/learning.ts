@@ -26,6 +26,19 @@ export type UnitRow = {
   description: string | null;
   theme: string | null;
   order_index: number;
+  age_group_codes: string[];
+};
+
+export type AgeGroupRow = {
+  id: string;
+  code: string;
+  label: string;
+  min_age: number;
+  max_age: number | null;
+  order_index: number;
+  unit_count: number;
+  lesson_count: number;
+  published_lesson_count: number;
 };
 export type LessonRow = {
   id: string;
@@ -37,6 +50,7 @@ export type LessonRow = {
   xp_reward: number | null;
   order_index: number;
   lesson_type: string;
+  is_published: boolean;
 };
 
 // ---------- SUBSCRIPTION (used by useDashboardData) ----------
